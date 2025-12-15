@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Member {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  role      Role     @default(MEMBER)
+  balance   Decimal  @default(0.0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments        Payment[]
+  eventsCreated   Event[]   @relation("EventCreatedBy")
+  eventsAttending Event[]   @relation("EventAttendees")
+  posts           Post[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  plan        String?
+  coverImage  String?
+  location    String?
+  startAt     DateTime
+
+  createdById String
+  createdBy   Member @relation("EventCreatedBy", fields: [createdById], references: [id])
+
+  attendees Member[] @relation("EventAttendees")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id      String @id @default(cuid())
+  title   String
+  content String
+
+  authorId String
+  author   Member @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id     String        @id @default(cuid())
+  period String // f.eks. "2025-12"
+  status PaymentStatus @default(UNPAID)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id])
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([memberId, period])
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+}
