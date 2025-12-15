@@ -3,7 +3,26 @@
 import Link from "next/link";
 
 import { useClerk } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV, type NavItem } from "./nav";
+
+function SidebarLink({ item }: { item: NavItem }) {
+  const pathname = usePathname();
+  const isActive = pathname === item.href;
+
+  return (
+    <Link
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${isActive
+          ? "bg-[#1A1A1A] text-white shadow-sm border border-white/5"
+          : "hover:bg-white/5 text-white/60 hover:text-white"
+        }`}
+      href={item.href}
+    >
+      <span className="material-symbols-outlined text-[1.125rem]">{item.icon}</span>
+      <p className="text-sm font-medium">{item.label}</p>
+    </Link>
+  );
+}
 
 export default function Sidebar({ role }: { role?: string }) {
   const isAdmin = role === "ADMIN";
@@ -32,40 +51,18 @@ export default function Sidebar({ role }: { role?: string }) {
         <div className="flex flex-col gap-2">
           <h3 className="px-3 text-[10px] font-bold text-white/60 uppercase tracking-widest">Hovedmeny</h3>
           <nav className="flex flex-col gap-1">
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#1A1A1A] text-white shadow-sm border border-white/5" href="/dashboard">
-              <span className="material-symbols-outlined text-[1.125rem]">home</span>
-              <p className="text-sm font-medium">Hjem</p>
-            </Link>
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/posts">
-              <span className="material-symbols-outlined text-[1.125rem]">news</span>
-              <p className="text-sm font-medium">Innlegg</p>
-            </Link>
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/events">
-              <span className="material-symbols-outlined text-[1.125rem]">calendar_month</span>
-              <p className="text-sm font-medium">Events</p>
-            </Link>
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/gallery">
-              <span className="material-symbols-outlined text-[1.125rem]">photo_library</span>
-              <p className="text-sm font-medium">Bildearkiv</p>
-            </Link>
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/members">
-              <span className="material-symbols-outlined text-[1.125rem]">group</span>
-              <p className="text-sm font-medium">Medlemmer</p>
-            </Link>
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/about">
-              <span className="material-symbols-outlined text-[1.125rem]">info</span>
-              <p className="text-sm font-medium">Om</p>
-            </Link>
+            {MAIN_NAV.map((item) => (
+              <SidebarLink key={item.href} item={item} />
+            ))}
           </nav>
         </div>
 
         <div className="flex flex-col gap-2">
           <h3 className="px-3 text-[10px] font-bold text-white/60 uppercase tracking-widest">Min Konto</h3>
           <nav className="flex flex-col gap-1">
-            <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/">
-              <span className="material-symbols-outlined text-[1.125rem]">account_balance_wallet</span>
-              <p className="text-sm font-medium">Saldo</p>
-            </Link>
+            {ACCOUNT_NAV.map((item) => (
+              <SidebarLink key={item.href} item={item} />
+            ))}
             <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/">
               <span className="material-symbols-outlined text-[1.125rem]">settings</span>
               <p className="text-sm font-medium">Innstillinger</p>
@@ -77,10 +74,9 @@ export default function Sidebar({ role }: { role?: string }) {
           <div className="flex flex-col gap-2">
             <h3 className="px-3 text-[10px] font-bold text-white/60 uppercase tracking-widest">Admin</h3>
             <nav className="flex flex-col gap-1">
-              <Link className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-all" href="/admin">
-                <span className="material-symbols-outlined text-[1.125rem]">admin_panel_settings</span>
-                <p className="text-sm font-medium">Admin Dashboard</p>
-              </Link>
+              {ADMIN_NAV.map((item) => (
+                <SidebarLink key={item.href} item={item} />
+              ))}
             </nav>
           </div>
         )}

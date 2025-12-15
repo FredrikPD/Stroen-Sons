@@ -4,13 +4,11 @@ export default function TopHeader({
   loading,
   userName,
   avatarUrl,
-  breadcrumbs,
   onMenuClick,
 }: {
   loading: boolean;
   userName: string | null;
   avatarUrl: string | null;
-  breadcrumbs: { section: string; page: string };
   onMenuClick: () => void;
 }) {
   return (
@@ -29,11 +27,7 @@ export default function TopHeader({
 
         {/* Path (Desktop) */}
         <div className="hidden md:flex items-center gap-2 text-sm">
-          <span className="text-text-secondary text-xs uppercase tracking-wide font-medium">Events</span>
-          <span className="text-text-secondary/40 text-[10px] icon-[material-symbols--chevron-right]">/</span>
-          <span className="text-text-secondary text-xs uppercase tracking-wide font-medium">2024</span>
-          <span className="text-text-secondary/40 text-[10px] icon-[material-symbols--chevron-right]">/</span>
-          <span className="text-text-main font-bold text-sm">Sommerfest</span>
+          <span className="text-text-main font-bold text-sm">Hjem</span>
         </div>
       </div>
 
