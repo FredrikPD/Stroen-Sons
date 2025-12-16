@@ -28,7 +28,7 @@
   --c-cream: #f4efe6;
   --c-cream-muted: #c9c2b8;
 
-  --font-display: "Manrope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-display: "Inter", sans-serif;
 }
 
 /* 2) Tailwind v4 theme tokens point to your vars (Tailwind still gets bg-*, text-*, etc.) */

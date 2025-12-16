@@ -6,7 +6,13 @@ import { useDashboard } from "@/hooks/useDashboard";
 export default function DashboardPage() {
   const { data, loading } = useDashboard();
 
-  if (loading) return <div className="p-8 text-center text-text-secondary">Laster dashboard...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A1A1A]"></div>
+      </div>
+    );
+  }
   if (!data) return <div className="p-8 text-center text-red-500">Klarte ikke laste data.</div>;
 
   const firstName = data.member.firstName ?? data.member.email.split("@")[0];
