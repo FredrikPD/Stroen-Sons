@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/server/db";
 import CommentSection from "@/components/posts/CommentSection";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 

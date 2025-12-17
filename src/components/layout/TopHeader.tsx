@@ -63,12 +63,12 @@ export default function TopHeader({
       <div className="flex items-center gap-5">
         <div className="h-6 w-px bg-gray-200" />
 
-        <button className="relative text-gray-500 hover:text-[#BFA181] transition-colors flex items-center">
+        <button className="relative text-gray-500 hover:text-[#4F46E5] transition-colors flex items-center">
           <span className="material-symbols-outlined text-[1.5rem]">notifications</span>
           <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-red-500 border border-white"></span>
         </button>
 
-        <div className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#BFA181]/20 transition-all">
+        <div className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all">
           {loading || !userName ? (
             <div className="animate-pulse bg-white/20 w-full h-full rounded-full" />
           ) : (

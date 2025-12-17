@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 
 export const runtime = "nodejs";
@@ -51,7 +51,6 @@ export async function GET() {
     nextEvent: nextEvent ? {
       ...nextEvent,
       startAt: nextEvent.startAt.toISOString(),
-      plan: nextEvent.plan,
       coverImage: "https://weblium.com/blog/wp-content/uploads/2019/12/imgonline-com-ua-Compressed-8vwTmURAw7-1344x734.jpg"
     } : null,
     paymentStatus: payment?.status ?? "UNPAID",

@@ -1,7 +1,7 @@
 "use server";
 
 import { ensureMember } from "@/server/auth/ensureMember";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/server/db";
 import { revalidatePath } from "next/cache";
 
 export async function joinEvent(eventId: string) {

@@ -65,6 +65,8 @@ async function main() {
             startAt: new Date("2023-12-15T18:00:00Z"),
             location: "Grand Hotel",
             address: "Karl Johans gate 31, 0159 Oslo",
+            totalCost: 3500,
+            clubSubsidy: 1500,
             createdById: author.id,
             program: {
                 create: [

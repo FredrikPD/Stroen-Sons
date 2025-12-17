@@ -47,7 +47,6 @@ async function main() {
         data: {
             title: "Julebord 2025",
             description: "Årets høydepunkt! Vi samles for god mat, drikke og stemning.",
-            plan: "18:00 - Oppmøte\n19:00 - Middag\n22:00 - Fest",
             location: "Grand Hotel",
             startAt: new Date("2026-01-15T18:00:00Z"),
             coverImage: coverImage,
@@ -59,7 +58,6 @@ async function main() {
         data: {
             title: "Sommerfest 2026",
             description: "Vi griller og koser oss i parken.",
-            plan: "Ta med eget drikke, vi stiller med mat.",
             location: "Frognerparken",
             startAt: new Date("2026-06-15T14:00:00Z"),
             coverImage: coverImage,

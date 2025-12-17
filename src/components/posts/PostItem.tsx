@@ -49,6 +49,20 @@ export default function PostItem({ post }: { post: PostWithDetails }) {
         }
     };
 
+    const getCategoryIcon = (category: string) => {
+        switch (category) {
+            case "EVENT":
+                return "calendar_month";
+            case "REFERAT":
+                return "description";
+            case "SOSIALT":
+                return "groups";
+            case "NYHET":
+            default:
+                return "article";
+        }
+    };
+
     return (
         <article className="bg-white rounded-xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-md transition-shadow">
             <Link href={`/posts/${post.id}`} className="block p-6">
@@ -64,7 +78,8 @@ export default function PostItem({ post }: { post: PostWithDetails }) {
                                 <span className="font-bold text-gray-900">{authorName}</span>
                                 <span className="text-gray-300">•</span>
                                 <span>{date}</span>
-                                <span className={`ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
+                                <span className={`ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)} flex items-center gap-1`}>
+                                    <span className="material-symbols-outlined text-[10px] leading-none">{getCategoryIcon(post.category)}</span>
                                     {post.category}
                                 </span>
                             </div>

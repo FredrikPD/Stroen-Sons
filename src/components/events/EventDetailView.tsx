@@ -29,6 +29,8 @@ type EventDetail = {
     endAt?: string | null; // Optional end time
     location: string | null;
     address?: string | null;
+    totalCost?: number | null;
+    clubSubsidy?: number | null;
     coverImage: string | null;
     hasPassed: boolean;
     program?: PlanItem[];
@@ -102,9 +104,6 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     Påmelding åpen
                                 </span>
                             )}
-                            <span className="bg-black/40 text-white/80 backdrop-blur-md px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-white/10">
-                                Medlemmer & Ledsagere
-                            </span>
                         </div>
 
                         {/* Title & Loc */}
@@ -124,10 +123,6 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             {/* Action Buttons */}
                             <div className="flex items-center gap-3">
                                 <button className="h-10 px-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-2 text-white text-xs font-bold transition-all">
-                                    <span className="material-symbols-outlined text-[1.1rem]">share</span>
-                                    <span>Del event</span>
-                                </button>
-                                <button className="h-10 px-4 bg-white text-black hover:bg-gray-100 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shadow-lg">
                                     <span className="material-symbols-outlined text-[1.1rem]">photo_library</span>
                                     <span>Se alle bilder</span>
                                 </button>
@@ -291,6 +286,45 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             )}
                         </div>
                     </div>
+
+                    {/* Economy Card */}
+                    {event.totalCost && (
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-6">
+                            <h3 className="text-lg font-bold text-gray-900">Kostnad</h3>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#9A8568]">
+                                            <span className="material-symbols-outlined">receipt_long</span>
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-600">Total kostnad</span>
+                                    </div>
+                                    <span className="font-bold text-gray-900">{event.totalCost.toLocaleString("nb-NO")},-</span>
+                                </div>
+
+                                {event.clubSubsidy && (
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#2A9D8F]">
+                                                <span className="material-symbols-outlined">loyalty</span>
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-600">Klubben dekker</span>
+                                        </div>
+                                        <span className="font-bold text-[#2A9D8F]">- {event.clubSubsidy.toLocaleString("nb-NO")},-</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="border-t border-gray-100 pt-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-base font-bold text-gray-900">Din andel</span>
+                                    <span className="text-xl font-bold text-[#C5A66B]">
+                                        {((event.totalCost || 0) - (event.clubSubsidy || 0)).toLocaleString("nb-NO")},-
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Attendees Card */}
                     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-6">

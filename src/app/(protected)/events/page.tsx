@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
 import EventsView from "@/components/events/EventsView";

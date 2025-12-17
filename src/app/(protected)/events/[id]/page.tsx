@@ -1,8 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect, notFound } from "next/navigation";
 import EventDetailView from "@/components/events/EventDetailView";
 import { Metadata } from "next";
+import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -61,17 +62,22 @@ export default async function EventDetailPage({ params }: Props) {
         startAt: event.startAt.toISOString(),
         location: event.location,
         address: event.address,
+        totalCost: event.totalCost,
+        clubSubsidy: event.clubSubsidy,
         coverImage: event.coverImage,
         program: event.program,
         hasPassed,
     };
 
     return (
-        <EventDetailView
-            event={serializedEvent}
-            attendees={event.attendees}
-            currentUserIsAttending={isAttending}
-            attendeeCount={event._count.attendees}
-        />
+        <>
+            <PageTitleUpdater title={event.title} />
+            <EventDetailView
+                event={serializedEvent}
+                attendees={event.attendees}
+                currentUserIsAttending={isAttending}
+                attendeeCount={event._count.attendees}
+            />
+        </>
     );
 }

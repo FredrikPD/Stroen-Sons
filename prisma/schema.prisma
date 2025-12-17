@@ -7,21 +7,23 @@ datasource db {
 }
 
 model Member {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique
-  email     String   @unique
-  firstName String?
-  lastName  String?
-  role      Role     @default(MEMBER)
-  balance   Decimal  @default(0.0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  clerkId        String   @unique
+  email          String   @unique
+  firstName      String?
+  lastName       String?
+  membershipType String   @default("STANDARD")
+  role           Role     @default(MEMBER)
+  balance        Decimal  @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   payments        Payment[]
-  eventsCreated   Event[]   @relation("EventCreatedBy")
-  eventsAttending Event[]   @relation("EventAttendees")
+  eventsCreated   Event[]       @relation("EventCreatedBy")
+  eventsAttending Event[]       @relation("EventAttendees")
   posts           Post[]
   comments        Comment[]
+  transactions    Transaction[]
 }
 
 model Event {
@@ -29,20 +31,24 @@ model Event {
   title       String
   description String?
 
-  program    PlanItem[] // Relations
-  coverImage String?
-  location   String?
-  address    String?
-  startAt    DateTime
+  program     PlanItem[] // Relations
+  coverImage  String?
+  location    String?
+  address     String?
+  startAt     DateTime
+  totalCost   Int?
+  clubSubsidy Int?
 
   createdById String
   createdBy   Member @relation("EventCreatedBy", fields: [createdById], references: [id])
 
   attendees Member[] @relation("EventAttendees")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  posts        Post[]
+  photos       Photo[]
+  transactions Transaction[]
 }
 
 model PlanItem {
@@ -96,7 +102,9 @@ model Comment {
 model Payment {
   id     String        @id @default(cuid())
   period String // f.eks. "2025-12"
+  amount Int?
   status PaymentStatus @default(UNPAID)
+  paidAt DateTime?     @default(now())
 
   memberId String
   member   Member @relation(fields: [memberId], references: [id])
@@ -121,4 +129,33 @@ enum PostCategory {
   NYHET
   REFERAT
   SOSIALT
+}
+
+model Photo {
+  id      String  @id @default(cuid())
+  url     String
+  caption String?
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  amount      Decimal
+  description String
+  category    String // e.g., "MEMBER_FEE", "EVENT", "EXPENSE"
+  date        DateTime @default(now())
+
+  memberId String?
+  member   Member? @relation(fields: [memberId], references: [id])
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
