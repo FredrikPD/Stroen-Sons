@@ -12,11 +12,23 @@ export async function ensureMember() {
   const email = user.emailAddresses?.[0]?.emailAddress;
   if (!email) throw new Error("Missing email");
 
-  // Opprett hvis ikke finnes
-  const member = await prisma.member.upsert({
+  // Read first (fastest)
+  const existingMember = await prisma.member.findUnique({
     where: { clerkId: userId },
-    update: { email, firstName: user.firstName, lastName: user.lastName },
-    create: { clerkId: userId, email, firstName: user.firstName, lastName: user.lastName },
+  });
+
+  if (existingMember) {
+    return existingMember;
+  }
+
+  // Only write if doesn't exist
+  const member = await prisma.member.create({
+    data: {
+      clerkId: userId,
+      email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
   });
 
   return member;

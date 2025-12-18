@@ -34,6 +34,7 @@ export async function getAlbums(): Promise<Album[]> {
         orderBy: {
             startAt: "desc",
         },
+        cacheStrategy: { ttl: 60, swr: 60 }
     });
 
     // Transform to a cleaner shape
@@ -42,7 +43,7 @@ export async function getAlbums(): Promise<Album[]> {
         title: event.title,
         coverImage: event.coverImage,
         location: event.location,
-        photoCount: event._count.photos,
+        photoCount: (event as any)._count.photos,
         year: event.startAt.getFullYear(),
         date: event.startAt,
     }));

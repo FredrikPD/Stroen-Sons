@@ -14,15 +14,6 @@ export default function AdminDashboardPage() {
         );
     }
 
-    // Mock data for admin specific stats
-    // In a real app we would fetch these from an admin specific API
-    const stats = {
-        treasury: "45,200 kr",
-        unpaidFees: 5,
-    };
-
-
-
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -88,10 +79,10 @@ export default function AdminDashboardPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
                     <div className="flex items-center gap-2 mb-2">
                         <span className="material-symbols-outlined text-red-500 text-lg">warning</span>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ubetalt</span>
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ubetalt ({new Date().toLocaleString('nb-NO', { month: 'long' })})</span>
                     </div>
                     <div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.unpaidFees} stk</p>
+                        <p className="text-3xl font-bold text-gray-900">{data?.unpaidCount ?? 0} stk</p>
                     </div>
                     <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
                         <span className="material-symbols-outlined text-7xl text-red-500">money_off</span>
@@ -135,7 +126,7 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* Upload Photos */}
-                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                    <Link href="/admin/photos" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
                         <div className="mb-4">
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">cloud_upload</span>
@@ -143,11 +134,11 @@ export default function AdminDashboardPage() {
                             <h3 className="text-base font-bold text-gray-900 mb-1">Administrer Bilder</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Last opp eller slett bilder fra arkivet.</p>
                         </div>
-                        <button className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                        <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
                             <span className="material-symbols-outlined text-base">settings_photo_camera</span>
                             Administrer
-                        </button>
-                    </div>
+                        </div>
+                    </Link>
 
                     {/* Finance Portal */}
                     <Link href="/admin/finance" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-emerald-500/50 transition-colors shadow-sm hover:shadow-md">

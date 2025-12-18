@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { useDashboard } from "@/hooks/useDashboard";
+import { getCurrentMember } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
 
 // Types for finance data
@@ -26,21 +26,28 @@ type FinanceStats = {
 };
 
 export default function FinancePortalPage() {
-    const { data: dashboardData, loading: dashboardLoading } = useDashboard();
+    const [currentMember, setCurrentMember] = useState<any>(null);
+    const [authLoading, setAuthLoading] = useState(true);
     const [financeData, setFinanceData] = useState<FinanceStats | null>(null);
     const [financeLoading, setFinanceLoading] = useState(true);
     const [filter, setFilter] = useState<'ALL' | 'INNTEKT' | 'UTGIFT'>('ALL');
     const router = useRouter();
 
     useEffect(() => {
-        if (!dashboardLoading && dashboardData?.member.role !== "ADMIN") {
-            router.push("/dashboard");
-        }
-    }, [dashboardData, dashboardLoading, router]);
+        const checkAuth = async () => {
+            const member = await getCurrentMember();
+            setCurrentMember(member);
+            setAuthLoading(false);
+            if (!member || member.role !== "ADMIN") {
+                router.push("/dashboard");
+            }
+        };
+        checkAuth();
+    }, [router]);
 
     useEffect(() => {
         const fetchFinanceData = async () => {
-            if (dashboardData?.member.role !== "ADMIN") return;
+            if (!currentMember || currentMember.role !== "ADMIN") return;
             try {
                 const res = await fetch("/api/admin/finance");
                 if (res.ok) {
@@ -54,12 +61,12 @@ export default function FinancePortalPage() {
             }
         };
 
-        if (!dashboardLoading) {
+        if (!authLoading) {
             fetchFinanceData();
         }
-    }, [dashboardData, dashboardLoading]);
+    }, [currentMember, authLoading]);
 
-    if (dashboardLoading || financeLoading) {
+    if (authLoading || financeLoading) {
         return (
             <div className="flex justify-center items-center h-[50vh]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -67,7 +74,7 @@ export default function FinancePortalPage() {
         );
     }
 
-    if (dashboardData?.member.role !== "ADMIN") {
+    if (!currentMember || currentMember.role !== "ADMIN") {
         return null; // Will redirect
     }
 
@@ -115,16 +122,6 @@ export default function FinancePortalPage() {
                     <p className="text-gray-500 text-sm max-w-3xl">
                         Sentralisert oversikt over klubbens økonomi. Registrer nye transaksjoner og se løpende statistikk.
                     </p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                        <span className="material-symbols-outlined text-[1.125rem]">download</span>
-                        Last ned årsregnskap
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                        <span className="material-symbols-outlined text-[1.125rem]">settings</span>
-                        Innstillinger
-                    </button>
                 </div>
             </div>
 
@@ -190,36 +187,42 @@ export default function FinancePortalPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Card 1: Registrer Inntekt */}
-                    <Link href="/admin/finance/income" className="block p-8 rounded-2xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100/80 transition-all group">
-                        <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
+                    <Link href="/admin/finance/income" className="flex items-center gap-4 p-8 rounded-2xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100/80 transition-all group">
+                        <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm flex-shrink-0">
                             <span className="material-symbols-outlined text-3xl">add_circle</span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Registrer Inntekt</h3>
-                        <p className="text-sm text-emerald-800/70 leading-relaxed font-medium">
-                            Kontingent, arrangement og støtte
-                        </p>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">Medlemskontigent</h3>
+                            <p className="text-sm text-emerald-800/70 leading-relaxed font-medium">
+                                Registrer innbetalte medlemskontigenter
+                            </p>
+                        </div>
                     </Link>
 
                     {/* Card 2: Bokfør Utgifter */}
-                    <Link href="/admin/finance/expenses" className="text-left w-full p-8 rounded-2xl bg-red-50 border border-red-100 hover:bg-red-100/80 transition-all group block">
-                        <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
+                    <Link href="/admin/finance/expenses" className="flex items-center gap-4 p-8 rounded-2xl bg-red-50 border border-red-100 hover:bg-red-100/80 transition-all group text-left">
+                        <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm flex-shrink-0">
                             <span className="material-symbols-outlined text-3xl">remove_circle</span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Bokfør Utgifter</h3>
-                        <p className="text-sm text-red-800/70 leading-relaxed font-medium">
-                            Kvitteringer, innkjøp og husleie
-                        </p>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">Utgifter</h3>
+                            <p className="text-sm text-red-800/70 leading-relaxed font-medium">
+                                Registrer utgifter
+                            </p>
+                        </div>
                     </Link>
 
                     {/* Card 3: Saldo og Historikk */}
-                    <Link href="/admin/finance/income" className="block p-8 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100/80 transition-all group">
-                        <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
+                    <Link href="/admin/finance/balance" className="flex items-center gap-4 p-8 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100/80 transition-all group">
+                        <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm flex-shrink-0">
                             <span className="material-symbols-outlined text-3xl">account_balance_wallet</span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Medlemmers Saldo og Historikk</h3>
-                        <p className="text-sm text-blue-800/70 leading-relaxed font-medium">
-                            Oversikt over innbetalinger og gjeld
-                        </p>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">Saldo og Historikk</h3>
+                            <p className="text-sm text-blue-800/70 leading-relaxed font-medium">
+                                Se saldo og historikk for enkeltmedlemmer
+                            </p>
+                        </div>
                     </Link>
                 </div>
             </div>

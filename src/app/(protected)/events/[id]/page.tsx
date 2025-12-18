@@ -46,13 +46,13 @@ export default async function EventDetailPage({ params }: Props) {
                 select: { attendees: true }
             }
         }
-    });
+    }) as any;
 
     if (!event) {
         notFound();
     }
 
-    const isAttending = event.attendees.some(a => a.id === member.id);
+    const isAttending = event.attendees.some((a: any) => a.id === member.id);
     const hasPassed = new Date(event.startAt) < new Date();
 
     const serializedEvent = {

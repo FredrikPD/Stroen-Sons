@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import PostItem, { PostWithDetails } from "./PostItem";
+import { getPosts } from "@/server/actions/posts";
 
 export default function PostList() {
     const [posts, setPosts] = useState<PostWithDetails[]>([]);
@@ -30,20 +31,20 @@ export default function PostList() {
     const fetchPosts = async (nextCursor?: string) => {
         try {
             setLoading(true);
-            const params = new URLSearchParams({
-                limit: "10",
+
+            console.log("Fetching posts...", { nextCursor, search, sort, category });
+            // Call Server Action
+            const data = await getPosts({
+                cursor: nextCursor,
+                limit: 10,
                 search,
-                sort,
+                sort: sort as "newest" | "oldest",
                 category,
             });
-            if (nextCursor) params.append("cursor", nextCursor);
-
-            console.log("Fetching posts...", params.toString());
-            const res = await fetch(`/api/posts?${params.toString()}`);
-            if (!res.ok) throw new Error("Failed to fetch posts");
-            const data = await res.json();
             console.log("Fetched posts:", data);
 
+            // Server actions return Date objects, JSON returns strings. PostWithDetails interface needs to handle Date.
+            // Or we check PostItem. Assuming PostItem handles it (uses new Date()).
             setPosts((prev) => (nextCursor ? [...prev, ...data.items] : data.items));
             setCursor(data.nextCursor);
             setHasMore(!!data.nextCursor);

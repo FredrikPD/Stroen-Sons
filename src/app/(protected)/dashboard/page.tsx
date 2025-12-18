@@ -1,23 +1,72 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { useDashboard } from "@/hooks/useDashboard";
+import Image from "next/image";
+import { prisma } from "@/server/db";
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-  const { data, loading } = useDashboard();
+import { unstable_cache } from "next/cache";
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A1A1A]"></div>
-      </div>
-    );
+function currentPeriod() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
+}
+
+const getNextEvent = unstable_cache(
+  async () => {
+    return prisma.event.findFirst({
+      where: { startAt: { gte: new Date() } },
+      orderBy: { startAt: "asc" },
+    });
+  },
+  ["dashboard-next-event"],
+  { revalidate: 3600, tags: ["events"] }
+);
+
+const getRecentPosts = unstable_cache(
+  async () => {
+    return prisma.post.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: { author: { select: { firstName: true, lastName: true } } },
+    });
+  },
+  ["dashboard-recent-posts"],
+  { revalidate: 3600, tags: ["posts"] }
+);
+
+export default async function DashboardPage() {
+  let member;
+  try {
+    member = await ensureMember();
+  } catch (error) {
+    redirect("/sign-in");
   }
-  if (!data) return <div className="p-8 text-center text-red-500">Klarte ikke laste data.</div>;
 
-  const firstName = data.member.firstName ?? data.member.email.split("@")[0];
-  const currentDate = new Date().toLocaleDateString("nb-NO", { weekday: 'long', day: 'numeric', month: 'long' });
+  const period = currentPeriod();
+
+  const [cachedNextEvent, payment, cachedPosts] = await Promise.all([
+    getNextEvent(),
+    prisma.payment.findUnique({
+      where: { memberId_period: { memberId: member.id, period } },
+    }),
+    getRecentPosts(),
+  ]);
+
+  // Restore Date objects from cache serialization
+  const nextEvent = cachedNextEvent ? {
+    ...cachedNextEvent,
+    startAt: new Date(cachedNextEvent.startAt)
+  } : null;
+
+  const posts = cachedPosts.map(post => ({
+    ...post,
+    createdAt: new Date(post.createdAt)
+  }));
+
+  const firstName = member.firstName ?? member.email.split("@")[0];
+  const paymentStatus = payment?.status ?? "UNPAID";
 
   // Mock weather data
   const weather = { temp: 18, desc: "Lettskyet", location: "Aker Brygge" };
@@ -39,13 +88,13 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-8">
 
           {/* Hero Card (Next Event) */}
-          {data.nextEvent ? (
-            <Link href={`/events/${data.nextEvent.id}`} className="relative w-full h-[320px] rounded-2xl overflow-hidden shadow-sm group block border border-gray-200">
+          {nextEvent ? (
+            <Link href={`/events/${nextEvent.id}`} className="relative w-full h-[320px] rounded-2xl overflow-hidden shadow-sm group block border border-gray-200">
               {/* Background Image */}
-              {data.nextEvent.coverImage ? (
+              {nextEvent.coverImage ? (
                 <Image
-                  src={data.nextEvent.coverImage}
-                  alt={data.nextEvent.title}
+                  src={nextEvent.coverImage}
+                  alt={nextEvent.title}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -63,15 +112,11 @@ export default function DashboardPage() {
                     Neste Samling
                   </span>
 
-                  {/* Mock Countdown Widget */}
+                  {/* Mock Countdown Widget - Removed static values would need client comp for real countdown or just static calc */}
                   <div className="flex gap-2">
                     <div className="bg-white/10 backdrop-blur-md rounded-lg p-1.5 text-center min-w-[50px]">
                       <span className="block text-xl font-bold leading-none">14</span>
                       <span className="text-[9px] uppercase text-white/70">Dager</span>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-lg p-1.5 text-center min-w-[50px]">
-                      <span className="block text-xl font-bold leading-none">06</span>
-                      <span className="text-[9px] uppercase text-white/70">Timer</span>
                     </div>
                   </div>
                 </div>
@@ -79,10 +124,10 @@ export default function DashboardPage() {
                 <div className="space-y-6">
                   <div>
                     <h2 className="text-3xl font-bold mb-2 leading-tight text-white drop-shadow-sm">
-                      {data.nextEvent.title}
+                      {nextEvent.title}
                     </h2>
                     <p className="text-white/90 max-w-lg text-base font-medium leading-relaxed drop-shadow-sm">
-                      {data.nextEvent.description || "Gjør deg klar for årets høydepunkt."}
+                      {nextEvent.description || "Gjør deg klar for årets høydepunkt."}
                     </p>
                   </div>
 
@@ -91,22 +136,22 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-lg">calendar_today</span>
                         <span className="font-semibold text-sm">
-                          {new Date(data.nextEvent.startAt).toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
+                          {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
                         </span>
                       </div>
                       <div className="w-px h-5 bg-white/20" />
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-lg">schedule</span>
                         <span className="font-semibold text-sm">
-                          {new Date(data.nextEvent.startAt).toLocaleTimeString("nb-NO", { hour: '2-digit', minute: '2-digit' })}
+                          {nextEvent.startAt.toLocaleTimeString("nb-NO", { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      {data.nextEvent.location && (
+                      {nextEvent.location && (
                         <>
                           <div className="w-px h-5 bg-white/20" />
                           <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-lg">location_on</span>
-                            <span className="font-semibold text-sm">{data.nextEvent.location}</span>
+                            <span className="font-semibold text-sm">{nextEvent.location}</span>
                           </div>
                         </>
                       )}
@@ -133,7 +178,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid gap-4">
-              {data.posts.map(post => (
+              {posts.map(post => (
                 <Link key={post.id} href={`/posts/${post.id}`} className="bg-white border border-gray-200 p-5 rounded-2xl flex items-start gap-4 hover:border-[#4F46E5]/50 transition-all cursor-pointer group shadow-sm hover:shadow-md block">
                   <div className="bg-gray-50 p-3 rounded-xl text-gray-400 group-hover:text-[#4F46E5] group-hover:bg-[#4F46E5]/10 transition-colors">
                     <span className="material-symbols-outlined text-xl">article</span>
@@ -142,7 +187,7 @@ export default function DashboardPage() {
                     <div className="flex items-baseline justify-between mb-1">
                       <h4 className="font-bold text-base text-gray-900 truncate pr-4 group-hover:text-[#4F46E5] transition-colors">{post.title}</h4>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {new Date(post.createdAt).toLocaleDateString("nb-NO", { month: 'short', day: 'numeric' })}
+                        {post.createdAt.toLocaleDateString("nb-NO", { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                     <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{post.content}</p>
@@ -160,13 +205,13 @@ export default function DashboardPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Medlemsstatus</h4>
-              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${data.paymentStatus === "PAID"
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${paymentStatus === "PAID"
                 ? "bg-emerald-50 border-emerald-100 text-emerald-700"
                 : "bg-red-50 border-red-100 text-red-700"
                 }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${data.paymentStatus === "PAID" ? "bg-emerald-500" : "bg-red-500"}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${paymentStatus === "PAID" ? "bg-emerald-500" : "bg-red-500"}`} />
                 <span className="text-[10px] font-bold uppercase tracking-wide">
-                  {data.paymentStatus === "PAID" ? "Aktiv" : "Inaktiv"}
+                  {paymentStatus === "PAID" ? "Aktiv" : "Inaktiv"}
                 </span>
               </div>
             </div>
@@ -177,9 +222,9 @@ export default function DashboardPage() {
                   payments
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-medium mb-0.5">Årsavgift {data.period}</p>
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">Årsavgift {period}</p>
                   <p className="text-gray-900 font-bold text-xl">
-                    {data.paymentStatus === "PAID" ? "Betalt" : "Ikke betalt"}
+                    {paymentStatus === "PAID" ? "Betalt" : "Ikke betalt"}
                   </p>
 
                 </div>
@@ -192,7 +237,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs text-gray-500 font-medium mb-0.5">Medlem siden</p>
                   <p className="text-gray-900 font-bold text-xl">
-                    {new Date(data.member.joinedAt || Date.now()).toLocaleDateString("nb-NO", { month: 'short', year: 'numeric' })}
+                    {member.createdAt.toLocaleDateString("nb-NO", { month: 'short', year: 'numeric' })}
                   </p>
                 </div>
               </div>

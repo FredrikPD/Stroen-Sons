@@ -48,12 +48,12 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
         let potentialIncome = 0;
         let paidCount = 0;
 
-        const memberStatuses = members.map(member => {
+        const memberStatuses = members.map((member: any) => {
             const fee = MEMBER_FEES[member.membershipType as keyof typeof MEMBER_FEES] || 750;
             potentialIncome += fee;
 
             const paymentsMap = new Map();
-            member.payments.forEach(p => {
+            member.payments.forEach((p: any) => {
                 paymentsMap.set(p.period, p);
             });
 
@@ -212,7 +212,8 @@ export async function getMembersAndEvents() {
                     lastName: true,
                     role: true,
                     createdAt: true
-                }
+                },
+                cacheStrategy: { ttl: 60, swr: 60 }
             }),
             prisma.event.findMany({
                 orderBy: { startAt: 'desc' },
@@ -225,7 +226,8 @@ export async function getMembersAndEvents() {
                     id: true,
                     title: true,
                     startAt: true
-                }
+                },
+                cacheStrategy: { ttl: 60, swr: 60 }
             })
         ]);
 
@@ -268,29 +270,29 @@ export async function registerExpense(data: {
 
             // Create transactions and update balances in a transaction
             await prisma.$transaction(async (tx) => {
-                for (const memberId of splitMemberIds) {
-                    // Create transaction for member
-                    await tx.transaction.create({
-                        data: {
-                            amount: -splitAmount,
-                            description: `${description} (Splittet)`,
-                            category,
-                            date,
-                            eventId: eventId || null,
-                            memberId
-                        }
-                    });
-
-                    // Update member balance (Expenses reduce balance/increase debt)
-                    await tx.member.update({
-                        where: { id: memberId },
-                        data: {
-                            balance: {
-                                decrement: splitAmount
+                await Promise.all(splitMemberIds.map(async (memberId) => {
+                    // Create transaction for member & update balance in parallel
+                    return Promise.all([
+                        tx.transaction.create({
+                            data: {
+                                amount: -splitAmount,
+                                description: `${description} (Splittet)`,
+                                category,
+                                date,
+                                eventId: eventId || null,
+                                memberId
                             }
-                        }
-                    });
-                }
+                        }),
+                        tx.member.update({
+                            where: { id: memberId },
+                            data: {
+                                balance: {
+                                    decrement: splitAmount
+                                }
+                            }
+                        })
+                    ]);
+                }));
             });
         }
 
@@ -300,5 +302,17 @@ export async function registerExpense(data: {
     } catch (error) {
         console.error("Failed to register expense:", error);
         return { success: false, error: "Kunne ikke registrere utgift" };
+    }
+}
+
+export async function getCurrentMember() {
+    try {
+        const member = await ensureMember();
+        return {
+            ...member,
+            balance: member.balance.toNumber()
+        };
+    } catch (error) {
+        return null;
     }
 }

@@ -17,7 +17,11 @@ export async function GET() {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const [nextEvent, memberCount, treasurySum] = await Promise.all([
+    // Determine current period (YYYY-MM)
+    const now = new Date();
+    const period = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}`;
+
+    const [nextEvent, memberCount, treasurySum, paidCount] = await Promise.all([
         prisma.event.findFirst({
             where: { startAt: { gte: new Date() } },
             orderBy: { startAt: "asc" },
@@ -26,11 +30,20 @@ export async function GET() {
         prisma.transaction.aggregate({
             _sum: { amount: true },
         }),
+        prisma.payment.count({
+            where: {
+                period: period,
+                status: "PAID",
+            }
+        })
     ]);
+
+    const unpaidCount = Math.max(0, memberCount - paidCount);
 
     return NextResponse.json({
         firstName: member.firstName,
         memberCount,
+        unpaidCount,
         treasuryBalance: treasurySum._sum.amount?.toNumber() ?? 0,
         nextEvent: nextEvent ? {
             ...nextEvent,

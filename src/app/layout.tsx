@@ -1,6 +1,8 @@
-// src/app/layout.tsx
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +21,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body className="bg-background-main text-text-main font-display">
+          <NextSSRPlugin
+            /**
+             * The `extractRouterConfig` will extract all the route configurations
+             * from the router to prevent additional network requests.
+             */
+            routerConfig={extractRouterConfig(ourFileRouter)}
+          />
           {children}
         </body>
       </html>

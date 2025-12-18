@@ -48,7 +48,7 @@ export default function EventsView({ initialEvents }: EventsViewProps) {
                 <div className="flex flex-col gap-2">
                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Events & Arrangementer</h1>
                     <p className="text-gray-500 max-w-2xl text-sm md:text-base leading-relaxed">
-                        Her finner du oversikt over kommende turer, middager og samlinger, samt et arkiv over våre tidligere bragder.
+                        Oversikt over kommende og tidligere arrangementer.
                     </p>
                 </div>
 
@@ -64,6 +64,9 @@ export default function EventsView({ initialEvents }: EventsViewProps) {
                     />
                 </div>
             </div>
+
+            {/* Separator */}
+            <div className="w-full border-b border-gray-200" />
 
             {/* UPCOMING EVENTS */}
             <div>

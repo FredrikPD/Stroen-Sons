@@ -35,7 +35,7 @@ export default function EventCard({ event }: { event: EventWithDetails }) {
         <Link href={`/events/${event.id}`} className="block group">
             <article className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                 {/* Image Section */}
-                <div className="relative h-56 bg-gray-100 overflow-hidden">
+                <div className="relative h-40 bg-gray-100 overflow-hidden">
                     {event.coverImage ? (
                         <img
                             src={event.coverImage}

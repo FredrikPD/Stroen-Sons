@@ -24,6 +24,8 @@ model Member {
   posts           Post[]
   comments        Comment[]
   transactions    Transaction[]
+
+  @@index([firstName])
 }
 
 model Event {
@@ -49,6 +51,8 @@ model Event {
   posts        Post[]
   photos       Photo[]
   transactions Transaction[]
+
+  @@index([startAt])
 }
 
 model PlanItem {
@@ -79,6 +83,8 @@ model Post {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
 }
 
 model Comment {
@@ -112,6 +118,7 @@ model Payment {
   updatedAt DateTime @updatedAt
 
   @@unique([memberId, period])
+  @@index([period])
 }
 
 enum Role {
@@ -158,4 +165,8 @@ model Transaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@index([category])
+  @@index([memberId])
 }

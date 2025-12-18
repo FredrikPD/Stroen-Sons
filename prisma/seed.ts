@@ -1,13 +1,10 @@
 import { PrismaClient, Role, PaymentStatus } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import 'dotenv/config'
 
-const connectionString = process.env.DATABASE_URL
-
-const pool = new Pool({ connectionString })
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
+const prisma = new PrismaClient({
+    accelerateUrl: process.env.DATABASE_URL
+}).$extends(withAccelerate())
 
 async function main() {
     console.log('Start seeding ...')
@@ -84,39 +81,51 @@ async function main() {
         {
             title: 'Grand Opening Gala',
             description: 'The official opening of the Stroen Sons club. Black tie event.',
-            plan: '18:00 - Arrival, 19:00 - Dinner, 21:00 - Party',
             location: 'Grand Hall',
             startAt: new Date('2025-06-15T18:00:00Z'), // Past event
             coverImage: 'https://images.unsplash.com/photo-1511578314322-379afb476865',
+            programItems: [
+                { time: '18:00', title: 'Arrival', order: 1 },
+                { time: '19:00', title: 'Dinner', order: 2 },
+                { time: '21:00', title: 'Party', order: 3 },
+            ]
         },
         {
             title: 'Summer BBQ',
             description: 'Casual gathering with grill and drinks.',
-            plan: 'Bring your own drinks (BYOD). Grill provided.',
             location: 'The Garden',
             startAt: new Date('2025-07-20T14:00:00Z'), // Upcoming event
             coverImage: 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9',
+            programItems: [
+                { time: '14:00', title: 'Grill Start', description: 'Bring your own drinks (BYOD). Grill provided.', order: 1 }
+            ]
         },
         {
             title: 'Winter Formal',
             description: 'End of year celebration.',
-            plan: 'Food, music, and awards ceremony.',
             location: 'Downtown Hotel',
             startAt: new Date('2025-12-20T19:00:00Z'), // Upcoming event
             coverImage: 'https://images.unsplash.com/photo-1519671482538-518b760640b0',
+            programItems: [
+                { time: '19:00', title: 'Ceremony', description: 'Food, music, and awards ceremony.', order: 1 }
+            ]
         },
     ]
 
     for (const e of events) {
+        const { programItems, ...eventData } = e;
         const event = await prisma.event.create({
             data: {
-                ...e,
+                ...eventData,
                 createdBy: { connect: { id: admin.id } },
+                program: {
+                    create: programItems
+                },
                 attendees: {
                     connect: [
                         { id: admin.id },
-                        { id: members[0].id }, // Alice attending all
-                        { id: members[1].id }, // Bob attending all
+                        { id: members[0].id },
+                        { id: members[1].id },
                     ],
                 },
             },

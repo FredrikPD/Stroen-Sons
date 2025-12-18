@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 export type AdminDashboardData = {
     firstName: string | null;
     memberCount: number;
+    unpaidCount?: number;
     treasuryBalance: number;
     nextEvent: null | {
         id: string;

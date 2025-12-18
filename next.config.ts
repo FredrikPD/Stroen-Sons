@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  reactCompiler: true,
+  reactCompiler: false,
   images: {
     remotePatterns: [
       {
@@ -13,8 +13,29 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "weblium.com",
       },
+      {
+        protocol: "https",
+        hostname: "christmascentral.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.christmascentral.com",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.ufs.sh",
+      },
     ],
   },
+  serverExternalPackages: ["uploadthing"],
 };
 
 export default nextConfig;
