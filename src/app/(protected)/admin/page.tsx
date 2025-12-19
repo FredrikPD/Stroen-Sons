@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
                     </Link>
 
                     {/* Invite Users */}
-                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                    <Link href="/admin/invite" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
                         <div className="mb-4">
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">person_add</span>
@@ -164,10 +164,10 @@ export default function AdminDashboardPage() {
                             <h3 className="text-base font-bold text-gray-900 mb-1">Inviter Brukere</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Send invitasjon til potensielle nye medlemmer.</p>
                         </div>
-                        <button className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-900 rounded-lg font-bold text-xs transition-colors">
+                        <div className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-900 rounded-lg font-bold text-xs transition-colors flex items-center justify-center">
                             Inviter
-                        </button>
-                    </div>
+                        </div>
+                    </Link>
 
                     {/* Member Roles */}
                     <Link href="/admin/roles" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
