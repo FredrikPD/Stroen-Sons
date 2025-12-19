@@ -31,77 +31,80 @@ export default function PostItem({ post }: { post: PostWithDetails }) {
 
     const date = new Date(post.createdAt).toLocaleDateString("no-NO", {
         day: "numeric",
-        month: "short",
+        month: "long",
         year: "numeric",
     });
 
     const getCategoryStyle = (category: string) => {
         switch (category) {
             case "EVENT":
-                return "bg-red-50 text-red-600 border-red-100";
+                return "bg-purple-50 text-purple-700 border-purple-100";
             case "REFERAT":
                 return "bg-amber-50 text-amber-700 border-amber-100";
             case "SOSIALT":
                 return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "NYHET":
             default:
-                return "bg-blue-50 text-blue-600 border-blue-100";
+                return "bg-indigo-50 text-indigo-700 border-indigo-100";
         }
     };
 
-    const getCategoryIcon = (category: string) => {
+    const getCategoryLabel = (category: string) => {
         switch (category) {
-            case "EVENT":
-                return "calendar_month";
-            case "REFERAT":
-                return "description";
-            case "SOSIALT":
-                return "groups";
-            case "NYHET":
-            default:
-                return "article";
+            case "EVENT": return "Arrangement";
+            case "REFERAT": return "Referat";
+            case "SOSIALT": return "Sosialt";
+            case "NYHET": return "Nyhet";
+            default: return category;
         }
     };
+
+    // Strip markdown or html from content for preview (simple approach)
+    const previewText = post.content.replace(/[#*`]/g, '');
 
     return (
-        <article className="bg-white rounded-xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-md transition-shadow">
-            <Link href={`/posts/${post.id}`} className="block p-6">
-                <div className="flex justify-between items-center gap-4">
-                    {/* Left Side: Metadata & Title */}
-                    <div className="flex flex-col gap-2">
-                        {/* Metadata Row */}
+        <article className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-indigo-100 transition-all duration-300 relative overflow-hidden">
+            {/* Hover Accent Line */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            <Link href={`/posts/${post.id}`} className="block p-5 sm:p-6">
+                <div className="flex flex-col gap-3">
+                    {/* Header: Category & Date */}
+                    <div className="flex items-center justify-between">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getCategoryStyle(post.category)}`}>
+                            {getCategoryLabel(post.category)}
+                        </span>
+                        <span className="text-xs font-medium text-gray-400 font-mono">
+                            {date}
+                        </span>
+                    </div>
+
+                    {/* Body: Title & Excerpt */}
+                    <div className="space-y-2">
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                            {post.title}
+                        </h2>
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+                            {previewText}
+                        </p>
+                    </div>
+
+                    {/* Footer: Author & Stats */}
+                    <div className="pt-3 mt-1 border-t border-gray-50 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#222] to-[#444] flex items-center justify-center text-white text-[9px] font-bold shadow-sm">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-800 to-black text-white flex items-center justify-center text-[9px] font-bold ring-2 ring-white shadow-sm">
                                 {authorName.charAt(0).toUpperCase()}
                             </div>
-                            <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
-                                <span className="font-bold text-gray-900">{authorName}</span>
-                                <span className="text-gray-300">•</span>
-                                <span>{date}</span>
-                                <span className={`ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)} flex items-center gap-1`}>
-                                    <span className="material-symbols-outlined text-[10px] leading-none">{getCategoryIcon(post.category)}</span>
-                                    {post.category}
-                                </span>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-bold text-gray-900">{authorName}</span>
                             </div>
                         </div>
 
-                        {/* Title */}
-                        <h2 className="text-lg font-bold text-gray-900 leading-tight">{post.title}</h2>
-                    </div>
-
-                    {/* Right Side: Stats (Comments only as we lack Likes) */}
-                    <div className="flex items-center gap-4 pl-4 border-l border-gray-100 h-full min-h-[40px]">
-                        {/* Placeholder for Likes (Static/Hidden since no backend support) */}
-                        {/* 
-                         <div className="flex items-center gap-1.5 text-gray-400">
-                            <span className="material-symbols-outlined text-[1.1rem]">thumb_up</span>
-                            <span className="text-xs font-semibold">0</span>
-                         </div>
-                         */}
-
-                        <div className="flex items-center gap-1.5 text-gray-400">
-                            <span className="material-symbols-outlined text-[1.1rem]">chat_bubble</span>
-                            <span className="text-xs font-semibold">{post._count.comments}</span>
+                        <div className="flex items-center gap-4 text-gray-400">
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                <span className="material-symbols-outlined text-[1rem]">chat_bubble_outline</span>
+                                <span className="text-[10px] font-bold">{post._count.comments}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

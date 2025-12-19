@@ -58,52 +58,55 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen font-display bg-[#222222] flex flex-col antialiased selection:bg-[#BFA181] selection:text-white">
-      {/* Background Image (Optional, kept low opacity for texture) */}
+    <div className="min-h-screen font-display bg-gray-50 flex flex-col antialiased selection:bg-[#4F46E5] selection:text-white">
+      {/* Background decoration - subtle gradient matching dashboard cards */}
       <div className="fixed inset-0 z-0 w-full h-full pointer-events-none">
-        <div className="absolute inset-0 bg-[#222222]/90 z-10" />
-        <img
-          alt="Dark moody abstract social club atmosphere with dim lighting"
-          className="w-full h-full object-cover opacity-40 grayscale"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSy86arc4Q78md_DN2sSI6jsDtd_pSaIsUma4ZRk24_7s_8uBsILW8TmirOfFBct9Xwc9e8rp0gs8J-k9AbwjuJb4Pmo1M52NTNu-CGqSjwlT5fMfrJlbApXKdikDXv46mUTrZql-lu24UTGw5tNqGv43aEBccx-rRE13riHNZ_7CcX767_fJKLkA3CySY_17TquHM6oasqTmNZXMBykZ9TL-j4wd8yNFolfT8o0-JevdOBwEnIzfxO-VmaPnBEb_ymO0EpouamMZI"
-        />
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-50/50 to-transparent" />
       </div>
 
       {/* Content */}
-      <main className="relative z-10 flex-grow flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-12 pb-10">
-        <div className="w-full max-w-[480px] flex flex-col gap-2">
+      <main className="relative z-10 flex-grow flex items-center justify-center px-4 sm:px-6 py-12">
+        <div className="w-full max-w-[420px] flex flex-col gap-6">
           {/* Branding */}
-          <div className="flex flex-col items-center gap-2 mb-6">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
-              Strøen Søns
-            </h1>
-            <p className="text-white/60 text-sm font-medium tracking-wide uppercase">
-              Medlemsportal
-            </p>
+          <div className="flex flex-col items-center gap-3">
+            <img
+              src="/SS-Logo-2.png" // Using the logo found in public
+              alt="Strøen Søns Logo"
+              className="w-16 h-16 rounded-full shadow-md"
+            />
+            <div className="text-center">
+              <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+                Strøen Søns
+              </h1>
+              <p className="text-gray-500 text-sm font-medium tracking-wide">
+                Medlemsportal
+              </p>
+            </div>
           </div>
 
           {/* Card */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden p-8">
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden p-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900">
                 Logg inn
               </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Velkommen tilbake! Vennligst logg inn på kontoen din.
+              </p>
             </div>
 
             <form className="flex flex-col gap-5" onSubmit={onSubmit}>
               <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
-                  <label
-                    className="text-sm font-bold text-gray-700"
-                    htmlFor="email"
-                  >
-                    E-post
-                  </label>
-                </div>
+                <label
+                  className="text-xs font-bold text-gray-700 uppercase tracking-wide"
+                  htmlFor="email"
+                >
+                  E-post
+                </label>
 
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-gray-400 group-focus-within:text-[#BFA181] transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-gray-400 group-focus-within:text-[#4F46E5] transition-colors text-xl">
                       mail
                     </span>
                   </div>
@@ -113,8 +116,8 @@ export default function SignInPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="block w-full rounded-xl border-gray-200 bg-gray-50
-                                pl-11 pr-4 py-3.5 text-gray-900 placeholder-gray-400
-                                focus:border-[#BFA181] focus:ring-[#BFA181] sm:text-sm transition-all shadow-sm focus:bg-white"
+                                pl-10 pr-4 py-3 text-gray-900 placeholder-gray-400
+                                focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm transition-all shadow-sm focus:bg-white"
                     placeholder="navn@domene.no"
                     autoComplete="email"
                     type="email"
@@ -125,16 +128,16 @@ export default function SignInPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
+                <div className="flex justify-between items-center">
                   <label
-                    className="text-sm font-bold text-gray-700"
+                    className="text-xs font-bold text-gray-700 uppercase tracking-wide"
                     htmlFor="password"
                   >
                     Passord
                   </label>
 
                   <a
-                    className="text-xs font-bold text-[#BFA181] hover:text-[#a88b6b] transition-colors"
+                    className="text-xs font-medium text-[#4F46E5] hover:text-[#4338ca] transition-colors"
                     href="/sign-in"
                     onClick={(e) => {
                       e.preventDefault();
@@ -146,8 +149,8 @@ export default function SignInPage() {
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-gray-400 group-focus-within:text-[#BFA181] transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-gray-400 group-focus-within:text-[#4F46E5] transition-colors text-xl">
                       lock
                     </span>
                   </div>
@@ -155,8 +158,8 @@ export default function SignInPage() {
                   <input
                     id="password"
                     className="block w-full rounded-xl border-gray-200 bg-gray-50
-                                pl-11 pr-12 py-3.5 text-gray-900
-                                focus:border-[#BFA181] focus:ring-[#BFA181] sm:text-sm shadow-sm focus:bg-white"
+                                pl-10 pr-10 py-3 text-gray-900
+                                focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm shadow-sm focus:bg-white"
                     type={showPw ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -170,7 +173,7 @@ export default function SignInPage() {
                     className="absolute inset-y-0 right-0 pr-3 inline-flex items-center justify-center
                                 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <span className="material-symbols-outlined block text-[22px] leading-none">
+                    <span className="material-symbols-outlined block text-[20px] leading-none">
                       {showPw ? "visibility_off" : "visibility"}
                     </span>
                   </button>
@@ -179,24 +182,25 @@ export default function SignInPage() {
 
               {/* Error */}
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3 font-medium">
-                  {error}
-                </p>
+                <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl">
+                  <span className="material-symbols-outlined text-lg">error</span>
+                  <p className="font-medium">{error}</p>
+                </div>
               )}
 
               {/* Submit */}
               <button
                 disabled={loading}
-                className="mt-4 flex w-full items-center justify-center rounded-xl bg-[#BFA181] px-5 py-3.5 text-base font-bold text-[#2A2A2A]
-           shadow-lg shadow-[#BFA181]/25 ring-1 ring-white/10
-           hover:bg-[#a88b6b] hover:shadow-2xl hover:shadow-[#BFA181]/40
+                className="mt-2 flex w-full items-center justify-center rounded-xl bg-[#4F46E5] px-5 py-3 text-sm font-bold text-white
+           shadow-md shadow-indigo-500/20
+           hover:bg-[#4338ca] hover:shadow-lg hover:shadow-indigo-500/30
            hover:-translate-y-[1px]
-           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#BFA181]
-           transition-all duration-200 active:translate-y-0 active:scale-[0.98] disabled:opacity-60"
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F46E5]
+           transition-all duration-200 active:translate-y-0 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0"
                 type="submit"
               >
                 {loading ? "Logger inn..." : "Logg inn"}
-                <span className="material-symbols-outlined ml-2 text-xl">login</span>
+                {!loading && <span className="material-symbols-outlined ml-2 text-lg">arrow_forward</span>}
               </button>
             </form>
 
@@ -205,12 +209,6 @@ export default function SignInPage() {
               <p className="text-xs text-gray-400">
                 © 2025 Gutteklubben. Alle rettigheter forbeholdt.
               </p>
-              <div className="mt-4 flex justify-center gap-4 text-xs text-gray-300">
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">lock</span>
-                  Sikker tilkobling
-                </span>
-              </div>
             </div>
           </div>
         </div>

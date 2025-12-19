@@ -122,10 +122,13 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                             {/* Action Buttons */}
                             <div className="flex items-center gap-3">
-                                <button className="h-10 px-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-2 text-white text-xs font-bold transition-all">
+                                <Link
+                                    href={`/gallery/${event.id}`}
+                                    className="h-10 px-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-2 text-white text-xs font-bold transition-all"
+                                >
                                     <span className="material-symbols-outlined text-[1.1rem]">photo_library</span>
                                     <span>Se alle bilder</span>
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -193,8 +196,8 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 Bildearkiv
                                 <span className="material-symbols-outlined text-gray-400 text-sm">lock</span>
                             </h2>
-                            <Link href="/gallery" className="text-[#C5A66B] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
-                                <span>Se alle 142 bilder</span>
+                            <Link href={`/gallery/${event.id}`} className="text-[#C5A66B] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                                <span>Se alle bilder</span>
                                 <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
                             </Link>
                         </div>

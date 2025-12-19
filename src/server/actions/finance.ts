@@ -3,90 +3,166 @@
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { revalidatePath } from "next/cache";
-
 import { MEMBER_FEES } from "@/lib/finance";
+import { PaymentCategory, RequestStatus, Prisma } from "@prisma/client";
+import { markRequestAsPaid } from "./payment-requests";
 
-export async function getMonthlyPaymentStatus(year: number, month: number) {
+// Helper to format consistent titles
+const getFeeTitle = (year: number, month: number) => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `Medlemskontingent ${year}-${pad(month)}`;
+};
+
+/**
+ * Generate (or ensure existence of) monthly fee requests for all active members.
+ */
+export async function generateMonthlyFees(year: number, month: number) {
     try {
-        await ensureMember(); // Security check
+        await ensureMember(); // Security check (Admin only ideally, but ensureMember checks role?)
+        // TODO: Ensure strict Admin check here if ensureMember doesn't throw for non-admins?
+        // ensureMember returns the member, usually callers check role.
 
-        // Format periods: Current, Previous, Pre-previous
-        // "2025-12"
-        const pad = (n: number) => n.toString().padStart(2, '0');
+        const title = getFeeTitle(year, month);
+        const dueDate = new Date(year, month - 1, 25); // Due date 25th of the month
 
-        const currentPeriod = `${year}-${pad(month)}`;
-
-        const prevDate = new Date(year, month - 2, 1); // month is 1-based in args? let's assume 1-based provided
-        const prevPeriod = `${prevDate.getFullYear()}-${pad(prevDate.getMonth() + 1)}`;
-
-        const prevPrevDate = new Date(year, month - 3, 1);
-        const prevPrevPeriod = `${prevPrevDate.getFullYear()}-${pad(prevPrevDate.getMonth() + 1)}`;
-
-        const periods = [currentPeriod, prevPeriod, prevPrevPeriod];
-
-        // Fetch all non-admin members (or all members? typically admins also pay)
-        // Let's fetch all active members
+        // 1. Get all active members
         const members = await prisma.member.findMany({
-            orderBy: { firstName: 'asc' },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                membershipType: true,
-                role: true,
-                clerkId: true, // fallback for avatar
-                payments: {
-                    where: {
-                        period: { in: periods }
-                    }
-                }
+            where: {
+                // Add logic for active members if "status" exists, otherwise all
             }
         });
 
-        // Calculate stats for CURRENT period
+        // 2. Create requests if they don't exist
+        // logic: upsert is hard with many-to-many logic, but we can check existing first
+        const existingRequests = await prisma.paymentRequest.findMany({
+            where: {
+                title,
+                category: PaymentCategory.MEMBERSHIP_FEE
+            },
+            select: { memberId: true }
+        });
+
+        const existingMemberIds = new Set(existingRequests.map(r => r.memberId));
+
+        const newRequests = members
+            .filter(m => !existingMemberIds.has(m.id))
+            .map(m => ({
+                title,
+                description: `Månedlig kontingent for ${month}/${year}`,
+                amount: MEMBER_FEES[m.membershipType as keyof typeof MEMBER_FEES] || 750,
+                dueDate,
+                memberId: m.id,
+                category: PaymentCategory.MEMBERSHIP_FEE,
+                status: RequestStatus.PENDING
+            }));
+
+        if (newRequests.length > 0) {
+            await prisma.paymentRequest.createMany({
+                data: newRequests
+            });
+        }
+
+        revalidatePath("/admin/finance/income");
+        return { success: true, count: newRequests.length };
+
+    } catch (error) {
+        console.error("Failed to generate fees:", error);
+        return { success: false, error: "Failed to generate fees" };
+    }
+}
+
+export async function getMonthlyPaymentStatus(year: number, month: number) {
+    try {
+        await ensureMember();
+
+        const pad = (n: number) => n.toString().padStart(2, '0');
+
+        // We look at 3 periods: Current, Prev, PrevPrev
+        const periods = [];
+        for (let i = 0; i < 3; i++) {
+            const d = new Date(year, month - 1 - i, 1);
+            periods.push({
+                year: d.getFullYear(),
+                month: d.getMonth() + 1,
+                title: getFeeTitle(d.getFullYear(), d.getMonth() + 1)
+            });
+        }
+
+        const titles = periods.map(p => p.title);
+
+
+        type MemberWithPayments = Prisma.MemberGetPayload<{
+            include: { paymentRequests: true }
+        }>;
+
+        // Fetch members with their requests for these 3 periods
+        const members = (await prisma.member.findMany({
+            orderBy: { firstName: 'asc' },
+            include: {
+                paymentRequests: {
+                    where: {
+                        title: { in: titles },
+                        category: PaymentCategory.MEMBERSHIP_FEE
+                    }
+                }
+            }
+        })) as unknown as MemberWithPayments[];
+
+        // Calculate stats for CURRENT period (index 0)
         let totalCollected = 0;
-        let potentialIncome = 0;
+        let potentialIncome = 0; // Based on Requests generated
         let paidCount = 0;
+        let totalRequestsThisMonth = 0;
 
-        const memberStatuses = members.map((member: any) => {
-            const fee = MEMBER_FEES[member.membershipType as keyof typeof MEMBER_FEES] || 750;
-            potentialIncome += fee;
+        const currentTitle = titles[0];
 
-            const paymentsMap = new Map();
-            member.payments.forEach((p: any) => {
-                paymentsMap.set(p.period, p);
+        const memberStatuses = members.map((member) => {
+            // Map requests by title for easy lookup
+            const requestMap = new Map();
+            member.paymentRequests.forEach(r => {
+                requestMap.set(r.title, r);
             });
 
-            // Check current month payment for stats
-            const currentPayment = paymentsMap.get(currentPeriod);
-            if (currentPayment?.status === 'PAID') {
-                totalCollected += (currentPayment.amount || 0); // Use actual paid amount
-                paidCount++;
+            const currentRequest = requestMap.get(currentTitle);
+
+            if (currentRequest) {
+                totalRequestsThisMonth++;
+                potentialIncome += currentRequest.amount;
+                if (currentRequest.status === 'PAID') {
+                    totalCollected += currentRequest.amount;
+                    paidCount++;
+                }
             }
+
+            // If no request exists, status is "NO_REQUEST" (or treated as Exempt/Unpaid?)
+            // For now, let's treat missing request as "N/A" or handling it in UI.
 
             return {
                 id: member.id,
                 name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Ukjent Navn',
                 membershipType: member.membershipType,
-                avatarUrl: null, // Don't use clerkId as URL, fall back to initials
+                avatarUrl: null,
                 history: {
-                    [currentPeriod]: paymentsMap.get(currentPeriod)?.status || 'UNPAID',
-                    [prevPeriod]: paymentsMap.get(prevPeriod)?.status || 'UNPAID',
-                    [prevPrevPeriod]: paymentsMap.get(prevPrevPeriod)?.status || 'UNPAID',
+                    // Return the Request Object, or Status?
+                    // UI expects status string currently.
+                    // Returning { status: 'PAID', requestId: '...' } is better for clicking.
+                    [titles[0]]: currentRequest ? { status: currentRequest.status, id: currentRequest.id } : null,
+                    [titles[1]]: requestMap.get(titles[1]) ? { status: requestMap.get(titles[1])?.status, id: requestMap.get(titles[1])?.id } : null,
+                    [titles[2]]: requestMap.get(titles[2]) ? { status: requestMap.get(titles[2])?.status, id: requestMap.get(titles[2])?.id } : null,
                 }
             };
         });
 
         return {
             members: memberStatuses,
-            periods: periods,
+            periods: titles, // Passing titles as keys
             stats: {
                 totalCollected,
                 expectedTotal: potentialIncome,
                 missing: potentialIncome - totalCollected,
                 paidCount,
-                totalCount: members.length,
-                percentage: members.length > 0 ? Math.round((paidCount / members.length) * 100) : 0
+                totalCount: totalRequestsThisMonth,
+                percentage: totalRequestsThisMonth > 0 ? Math.round((paidCount / totalRequestsThisMonth) * 100) : 0
             }
         };
 
@@ -96,111 +172,55 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
     }
 }
 
-export async function registerPayment(memberId: string, period: string) {
+
+/* 
+ * Toggle Payment Status:
+ * If Paid -> Unpaid (Void Transaction)
+ * If Unpaid -> Paid (Create Transaction)
+ */
+export async function togglePaymentStatus(requestId: string) {
     try {
         const user = await ensureMember();
-        if (user.role !== 'ADMIN') {
-            throw new Error("Unauthorized");
-        }
+        if (user.role !== 'ADMIN') throw new Error("Unauthorized");
 
-        // Get member to find correct fee
-        const member = await prisma.member.findUnique({ where: { id: memberId } });
-        if (!member) throw new Error("Member not found");
+        const request = await prisma.paymentRequest.findUnique({
+            where: { id: requestId },
+            include: { transaction: true }
+        });
 
-        const fee = MEMBER_FEES[member.membershipType as keyof typeof MEMBER_FEES] || 750; // Default if type unknown
+        if (!request) throw new Error("Request not found");
 
-        // 1. Create/Update Payment Record
-        const payment = await prisma.payment.upsert({
-            where: {
-                memberId_period: {
-                    memberId,
-                    period
+        if (request.status === 'PAID') {
+            // Mark UNPAID and Delete Transaction
+            await prisma.$transaction(async (tx) => {
+                if (request.transactionId) {
+                    await tx.transaction.delete({ where: { id: request.transactionId } });
                 }
-            },
-            update: {
-                status: 'PAID',
-                amount: fee,
-                paidAt: new Date()
-            },
-            create: {
-                memberId,
-                period,
-                status: 'PAID',
-                amount: fee,
-                paidAt: new Date()
-            }
-        });
-
-        // 2. Create Accounting Transaction
-        await prisma.transaction.create({
-            data: {
-                amount: fee,
-                description: `Kontingent ${period}`,
-                category: "KONTINGENT",
-                memberId: memberId,
-                date: new Date()
-            }
-        });
+                await tx.paymentRequest.update({
+                    where: { id: requestId },
+                    data: {
+                        status: RequestStatus.PENDING,
+                        transactionId: null
+                    }
+                });
+            });
+        } else {
+            // Use our helper to Mark PAID
+            await markRequestAsPaid(requestId);
+        }
 
         revalidatePath('/admin/finance/income');
         return { success: true };
 
     } catch (error) {
-        console.error("Error registering payment:", error);
-        return { success: false, error: "Feil ved registrering av betaling" };
+        console.error("Error toggling payment:", error);
+        return { success: false, error: "Failed to toggle status" };
     }
 }
 
-export async function unregisterPayment(memberId: string, period: string) {
-    try {
-        const user = await ensureMember();
-        if (user.role !== 'ADMIN') {
-            throw new Error("Unauthorized");
-        }
 
-        const payment = await prisma.payment.findUnique({
-            where: {
-                memberId_period: {
-                    memberId,
-                    period
-                }
-            }
-        });
+// Start: Legacy / Other Helpers (kept for compatibility or expense logic) ----------------
 
-        if (payment) {
-            // Update to UNPAID instead of deleting to keep record? 
-            // Or delete if it was a mistake?
-            // Strategy: Update to UNPAID is safer for history, but if we want "Sparse", deleting is actually more correct if it was never paid. 
-            // BUT, if we unregister, we should probably also VOID the transaction.
-            // For now, let's just set status UNPAID and amount 0.
-
-            await prisma.payment.update({
-                where: { id: payment.id },
-                data: {
-                    status: 'UNPAID',
-                    amount: 0,
-                    paidAt: null
-                }
-            });
-
-            // Delete the corresponding transaction(s) to cleanup finance history
-            await prisma.transaction.deleteMany({
-                where: {
-                    memberId: memberId,
-                    category: "KONTINGENT",
-                    description: `Kontingent ${period}`
-                }
-            });
-        }
-
-        revalidatePath('/admin/finance/income');
-        return { success: true };
-    } catch (error) {
-        console.error("Error unregistering:", error);
-        return { success: false };
-    }
-}
-// Helper to get members and events for the expense form
 export async function getMembersAndEvents() {
     try {
         const [members, events] = await Promise.all([
@@ -219,7 +239,7 @@ export async function getMembersAndEvents() {
                 orderBy: { startAt: 'desc' },
                 where: {
                     startAt: {
-                        gte: new Date(new Date().getFullYear(), 0, 1) // Only events from this year
+                        gte: new Date(new Date().getFullYear(), 0, 1)
                     }
                 },
                 select: {
@@ -247,12 +267,11 @@ export async function registerExpense(data: {
     splitMemberIds: string[];
 }) {
     try {
-        await ensureMember(); // Ensure admin
+        await ensureMember();
 
         const { amount, description, category, date, eventId, splitMemberIds } = data;
-        const totalAmount = Math.abs(amount); // Ensure positive for calculation, will be negated for storage
+        const totalAmount = Math.abs(amount);
 
-        // 1. If splitMemberIds is empty, create a general transaction
         if (splitMemberIds.length === 0) {
             await prisma.transaction.create({
                 data: {
@@ -264,14 +283,11 @@ export async function registerExpense(data: {
                 }
             });
         }
-        // 2. If split, divide amount and create transaction per member
         else {
             const splitAmount = totalAmount / splitMemberIds.length;
 
-            // Create transactions and update balances in a transaction
             await prisma.$transaction(async (tx) => {
                 await Promise.all(splitMemberIds.map(async (memberId) => {
-                    // Create transaction for member & update balance in parallel
                     return Promise.all([
                         tx.transaction.create({
                             data: {
@@ -314,5 +330,57 @@ export async function getCurrentMember() {
         };
     } catch (error) {
         return null;
+    }
+}
+
+export async function getMyFinancialData() {
+    try {
+        const member = await ensureMember();
+
+        const [paymentRequests, transactions, balanceAgg] = await Promise.all([
+            // Get unpaid or pending requests
+            prisma.paymentRequest.findMany({
+                where: {
+                    memberId: member.id,
+                    status: { not: 'PAID' }
+                },
+                orderBy: { dueDate: 'asc' }
+            }),
+            // Get recent transactions
+            prisma.transaction.findMany({
+                where: {
+                    memberId: member.id
+                },
+                orderBy: { date: 'desc' },
+                take: 20
+            }),
+            // Calculate actual balance from all transactions
+            prisma.transaction.aggregate({
+                where: {
+                    memberId: member.id
+                },
+                _sum: {
+                    amount: true
+                }
+            })
+        ]);
+
+        return {
+            memberId: member.id,
+            balance: balanceAgg._sum.amount ? balanceAgg._sum.amount.toNumber() : 0,
+            paymentRequests: paymentRequests.map(pr => ({
+                ...pr,
+                dueDate: pr.dueDate ? pr.dueDate.toISOString() : null,
+                createdAt: pr.createdAt.toISOString(),
+                updatedAt: pr.updatedAt.toISOString(),
+            })),
+            transactions: transactions.map(tx => ({
+                ...tx,
+                amount: tx.amount.toNumber()
+            }))
+        };
+    } catch (error) {
+        console.error("Error fetching financial data:", error);
+        throw new Error("Kunne ikke hente økonomisk data");
     }
 }

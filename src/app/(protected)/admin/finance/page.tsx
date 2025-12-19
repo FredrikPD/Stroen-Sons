@@ -185,43 +185,80 @@ export default function FinancePortalPage() {
                     <p className="text-gray-500 text-sm">Direkte tilgang til de mest brukte funksjonene for økonomistyring.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Card 1: Registrer Inntekt */}
-                    <Link href="/admin/finance/income" className="flex items-center gap-4 p-8 rounded-2xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100/80 transition-all group">
-                        <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm flex-shrink-0">
-                            <span className="material-symbols-outlined text-3xl">add_circle</span>
+                    <Link href="/admin/finance/income" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:shadow-md transition-all relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none">
+                            <span className="material-symbols-outlined text-8xl text-emerald-500">add_circle</span>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">Medlemskontigent</h3>
-                            <p className="text-sm text-emerald-800/70 leading-relaxed font-medium">
-                                Registrer innbetalte medlemskontigenter
-                            </p>
+                        <div className="mb-4 relative z-10">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-lg">add_circle</span>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Medlemskontigent</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Registrer innbetalte medlemskontigenter</p>
+                        </div>
+                        <div className="w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 relative z-10">
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            Gå til Inntekt
                         </div>
                     </Link>
 
                     {/* Card 2: Bokfør Utgifter */}
-                    <Link href="/admin/finance/expenses" className="flex items-center gap-4 p-8 rounded-2xl bg-red-50 border border-red-100 hover:bg-red-100/80 transition-all group text-left">
-                        <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm flex-shrink-0">
-                            <span className="material-symbols-outlined text-3xl">remove_circle</span>
+                    <Link href="/admin/finance/expenses" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:shadow-md transition-all relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none">
+                            <span className="material-symbols-outlined text-8xl text-red-500">remove_circle</span>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">Utgifter</h3>
-                            <p className="text-sm text-red-800/70 leading-relaxed font-medium">
-                                Registrer utgifter
-                            </p>
+                        <div className="mb-4 relative z-10">
+                            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mb-3 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-lg">remove_circle</span>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Utgifter</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Registrer utgifter</p>
+                        </div>
+                        <div className="w-full py-2.5 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 relative z-10">
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            Gå til Utgifter
                         </div>
                     </Link>
 
                     {/* Card 3: Saldo og Historikk */}
-                    <Link href="/admin/finance/balance" className="flex items-center gap-4 p-8 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100/80 transition-all group">
-                        <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm flex-shrink-0">
-                            <span className="material-symbols-outlined text-3xl">account_balance_wallet</span>
+                    <Link href="/admin/finance/balance" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:shadow-md transition-all relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none">
+                            <span className="material-symbols-outlined text-8xl text-blue-500">account_balance_wallet</span>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">Saldo og Historikk</h3>
-                            <p className="text-sm text-blue-800/70 leading-relaxed font-medium">
-                                Se saldo og historikk for enkeltmedlemmer
-                            </p>
+                        <div className="mb-4 relative z-10">
+                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Saldo og Historikk</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Se saldo og historikk for enkeltmedlemmer</p>
+                        </div>
+                        <div className="w-full py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 relative z-10">
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            Se Saldo
+                        </div>
+                    </Link>
+
+                    {/* Card 4: Fakturaer */}
+                    <Link href="/admin/finance/invoices" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:shadow-md transition-all relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent pointer-events-none" />
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none">
+                            <span className="material-symbols-outlined text-8xl text-violet-500">receipt_long</span>
+                        </div>
+                        <div className="mb-4 relative z-10">
+                            <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center mb-3 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-lg">receipt_long</span>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Fakturaer</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Opprett og administrer ekstraordinære krav</p>
+                        </div>
+                        <div className="w-full py-2.5 bg-violet-50 text-violet-700 hover:bg-violet-100 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 relative z-10">
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            Se Fakturaer
                         </div>
                     </Link>
                 </div>

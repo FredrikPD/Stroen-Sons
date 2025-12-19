@@ -42,11 +42,11 @@ export default function EventsView({ initialEvents }: EventsViewProps) {
     const displayedYears = yearFilter === "ALL" ? years : years.filter(y => y === yearFilter);
 
     return (
-        <div className="flex flex-col gap-8 max-w-7xl mx-auto px-4 pb-8 pt-2 md:px-8 md:pb-8 md:pt-2">
+        <div className="space-y-8">
             {/* Header Section */}
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Events & Arrangementer</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Events & Arrangementer</h1>
                     <p className="text-gray-500 max-w-2xl text-sm md:text-base leading-relaxed">
                         Oversikt over kommende og tidligere arrangementer.
                     </p>

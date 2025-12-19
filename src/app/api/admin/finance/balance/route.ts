@@ -1,9 +1,6 @@
 import { db } from "@/server/db";
 import { getCurrentMember } from "@/server/actions/finance";
 import { NextResponse } from "next/server";
-
-// ... imports
-
 import { Prisma } from "@prisma/client";
 
 export async function GET() {
@@ -15,22 +12,22 @@ export async function GET() {
         }
 
         // Define the type explicitly to ensure TypeScript understands the included relation
-        type MemberWithPayments = Prisma.MemberGetPayload<{
-            include: { payments: true }
+        type MemberWithRequests = Prisma.MemberGetPayload<{
+            include: { paymentRequests: true }
         }>;
 
         const members = await db.member.findMany({
             include: {
-                payments: {
+                paymentRequests: {
                     orderBy: {
-                        period: 'desc'
+                        createdAt: 'desc'
                     }
                 }
             },
             orderBy: {
                 firstName: 'asc'
             }
-        }) as unknown as MemberWithPayments[];
+        }) as unknown as MemberWithRequests[];
 
         // Format data for the frontend
         const memberData = members.map(member => ({
@@ -38,13 +35,14 @@ export async function GET() {
             name: `${member.firstName} ${member.lastName}`,
             email: member.email,
             balance: member.balance.toNumber(),
-            unpaidCount: member.payments.filter(p => p.status === "UNPAID").length,
-            payments: member.payments.map(payment => ({
-                id: payment.id,
-                period: payment.period,
-                amount: payment.amount,
-                status: payment.status,
-                paidAt: payment.paidAt
+            unpaidCount: member.paymentRequests.filter(r => r.status === "PENDING").length,
+            requests: member.paymentRequests.map(req => ({
+                id: req.id,
+                title: req.title, // Use title instead of period
+                amount: req.amount,
+                status: req.status, // "PENDING" | "PAID" | "WAIVED"
+                dueDate: req.dueDate,
+                category: req.category
             }))
         }));
 

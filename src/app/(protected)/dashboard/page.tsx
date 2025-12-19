@@ -3,8 +3,10 @@ import Image from "next/image";
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
-
 import { unstable_cache } from "next/cache";
+
+import { MyInvoices } from "@/components/dashboard/MyInvoices";
+import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
 
 function currentPeriod() {
   const d = new Date();
@@ -46,13 +48,28 @@ export default async function DashboardPage() {
 
   const period = currentPeriod();
 
-  const [cachedNextEvent, payment, cachedPosts] = await Promise.all([
+  const [cachedNextEvent, payment, cachedPosts, transactions, paymentRequestsRes] = await Promise.all([
     getNextEvent(),
     prisma.payment.findUnique({
       where: { memberId_period: { memberId: member.id, period } },
     }),
     getRecentPosts(),
+    prisma.transaction.findMany({
+      where: { memberId: member.id },
+      orderBy: { date: "desc" },
+      take: 3,
+    }),
+    getMemberPaymentRequests(member.id)
   ]);
+
+  const unpaidInvoices = paymentRequestsRes.success && paymentRequestsRes.data
+    ? paymentRequestsRes.data.filter(r => r.status === 'PENDING').map(r => ({
+      ...r,
+      dueDate: r.dueDate ? r.dueDate.toISOString() : null,
+      category: r.category.toString(),
+      amount: Number(r.amount)
+    }))
+    : [];
 
   // Restore Date objects from cache serialization
   const nextEvent = cachedNextEvent ? {
@@ -67,9 +84,6 @@ export default async function DashboardPage() {
 
   const firstName = member.firstName ?? member.email.split("@")[0];
   const paymentStatus = payment?.status ?? "UNPAID";
-
-  // Mock weather data
-  const weather = { temp: 18, desc: "Lettskyet", location: "Aker Brygge" };
 
   return (
     <div className="flex flex-col gap-8">
@@ -112,7 +126,7 @@ export default async function DashboardPage() {
                     Neste Samling
                   </span>
 
-                  {/* Mock Countdown Widget - Removed static values would need client comp for real countdown or just static calc */}
+                  {/* Mock Countdown Widget */}
                   <div className="flex gap-2">
                     <div className="bg-white/10 backdrop-blur-md rounded-lg p-1.5 text-center min-w-[50px]">
                       <span className="block text-xl font-bold leading-none">14</span>
@@ -170,6 +184,8 @@ export default async function DashboardPage() {
             </div>
           )}
 
+          <MyInvoices invoices={unpaidInvoices} />
+
           {/* Siste Nytt (News Feed) */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -201,9 +217,9 @@ export default async function DashboardPage() {
         {/* RIGHT COLUMN (Sidebar) */}
         <div className="space-y-6">
 
-          {/* Status Card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          {/* Status Card & Transactions */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+            <div className="flex items-center justify-between">
               <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Medlemsstatus</h4>
               <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${paymentStatus === "PAID"
                 ? "bg-emerald-50 border-emerald-100 text-emerald-700"
@@ -211,22 +227,21 @@ export default async function DashboardPage() {
                 }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${paymentStatus === "PAID" ? "bg-emerald-500" : "bg-red-500"}`} />
                 <span className="text-[10px] font-bold uppercase tracking-wide">
-                  {paymentStatus === "PAID" ? "Aktiv" : "Inaktiv"}
+                  {paymentStatus === "PAID" ? "Betalt kontigent" : "Ubetalt kontigent"}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex items-start gap-4">
                 <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl material-symbols-outlined text-xl">
                   payments
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-medium mb-0.5">Årsavgift {period}</p>
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">Kontigent {period}</p>
                   <p className="text-gray-900 font-bold text-xl">
                     {paymentStatus === "PAID" ? "Betalt" : "Ikke betalt"}
                   </p>
-
                 </div>
               </div>
 
@@ -242,20 +257,42 @@ export default async function DashboardPage() {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Weather Widget */}
-          <div className="bg-[#1A1A1A] text-white rounded-2xl p-6 relative overflow-hidden min-h-[160px] flex flex-col justify-between shadow-sm">
-            {/* Gradient Background Mock */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+            <div className="w-full h-px bg-gray-100" />
 
+            {/* Recent Transactions */}
             <div>
-              <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Værmelding</span>
-            </div>
-
-            <div>
-              <p className="text-5xl font-black mb-1">{weather.temp}°</p>
-              <p className="text-white/60 font-medium">{weather.desc}</p>
+              <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Siste Transaksjoner</h4>
+              <div className="space-y-3">
+                {transactions.length > 0 ? (
+                  transactions.map((tx) => {
+                    const isPositive = Number(tx.amount) > 0;
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between text-sm group p-2 hover:bg-gray-50 rounded-lg transition-colors -mx-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                            <span className="material-symbols-outlined text-base">
+                              {isPositive ? "arrow_upward" : "arrow_downward"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-900 group-hover:text-[#4F46E5] transition-colors line-clamp-1">{tx.description}</span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(tx.date).toLocaleDateString("nb-NO", { day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={`font-mono font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {isPositive ? "+" : ""}
+                          {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(tx.amount))}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-gray-400 italic">Ingen transaksjoner funnet.</p>
+                )}
+              </div>
             </div>
           </div>
 

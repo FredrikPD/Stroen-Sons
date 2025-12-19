@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrentMember } from "@/server/actions/finance";
 
-type Payment = {
+type PaymentRequest = {
     id: string;
-    period: string;
-    amount: number | null;
-    status: "PAID" | "UNPAID";
-    paidAt: string | null;
+    title: string;
+    description: string | null;
+    amount: number;
+    status: "PENDING" | "PAID" | "WAIVED";
+    category: "MEMBERSHIP_FEE" | "EVENT" | "OTHER";
+    dueDate: string | null;
 };
 
 type MemberBalance = {
@@ -19,7 +21,7 @@ type MemberBalance = {
     email: string;
     balance: number;
     unpaidCount: number;
-    payments: Payment[];
+    requests: PaymentRequest[];
 };
 
 export default function MemberBalancePage() {
@@ -70,12 +72,6 @@ export default function MemberBalancePage() {
         });
     };
 
-    const getMonthName = (period: string) => {
-        const [year, month] = period.split('-');
-        const date = new Date(parseInt(year), parseInt(month) - 1, 1);
-        return date.toLocaleDateString('nb-NO', { month: 'long', year: 'numeric' });
-    };
-
     if (loading) {
         return (
             <div className="flex justify-center items-center h-[50vh]">
@@ -94,7 +90,7 @@ export default function MemberBalancePage() {
                 </Link>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Saldo og Historikk</h1>
                 <p className="text-gray-500 text-sm max-w-3xl">
-                    Oversikt over medlemmenes saldo og innbetalingshistorikk. Søk opp medlemmer for å se detaljert historikk.
+                    Oversikt over medlemmenes betalingskrav og historikk.
                 </p>
             </div>
 
@@ -120,7 +116,7 @@ export default function MemberBalancePage() {
                             className="p-6 cursor-pointer flex items-center justify-between group"
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${member.balance < 0 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${member.unpaidCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                     {member.name.charAt(0)}
                                 </div>
                                 <div>
@@ -130,12 +126,6 @@ export default function MemberBalancePage() {
                             </div>
 
                             <div className="flex items-center gap-8">
-                                <div className="text-right">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo</p>
-                                    <p className={`font-bold ${member.balance < 0 ? 'text-red-500' : 'text-gray-900'}`}>
-                                        {formatCurrency(member.balance)}
-                                    </p>
-                                </div>
                                 <div className="text-right min-w-[80px]">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ubetalte</p>
                                     <p className={`font-bold ${member.unpaidCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
@@ -156,32 +146,40 @@ export default function MemberBalancePage() {
                                     Betalingshistorikk
                                 </h4>
 
-                                {member.payments.length > 0 ? (
+                                {member.requests && member.requests.length > 0 ? (
                                     <div className="grid gap-2">
-                                        {member.payments.map((payment) => (
-                                            <div key={payment.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                                        {member.requests.map((req) => (
+                                            <div key={req.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-2 h-12 rounded-full ${payment.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-400'}`}></div>
+                                                    <div className={`w-1 h-12 rounded-full ${req.status === 'PAID' ? 'bg-emerald-500' : (req.status === 'WAIVED' ? 'bg-gray-400' : 'bg-amber-400')}`}></div>
                                                     <div>
-                                                        <p className="font-bold text-gray-900 capitalize">{getMonthName(payment.period)}</p>
-                                                        <p className="text-xs text-gray-500">Periode: {payment.period}</p>
+                                                        <p className="font-bold text-gray-900 text-sm">{req.title}</p>
+                                                        <p className="text-xs text-gray-500">{req.category === 'MEMBERSHIP_FEE' ? 'Medlemskontigent' : 'Faktura'}</p>
                                                     </div>
                                                 </div>
 
                                                 <div className="flex items-center gap-6">
-                                                    {payment.amount && (
-                                                        <div className="text-right">
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Beløp</p>
-                                                            <p className="text-sm font-medium text-gray-900">{formatCurrency(payment.amount)}</p>
-                                                        </div>
-                                                    )}
+                                                    <div className="text-right">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Beløp</p>
+                                                        <p className="text-sm font-medium text-gray-900">{formatCurrency(req.amount)}</p>
+                                                    </div>
+
+                                                    <div className="text-right min-w-[100px]">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Forfall</p>
+                                                        <p className="text-sm text-gray-500">{formatDate(req.dueDate)}</p>
+                                                    </div>
 
                                                     <div className="text-right min-w-[100px]">
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
-                                                        {payment.status === 'PAID' ? (
+                                                        {req.status === 'PAID' ? (
                                                             <div className="flex items-center justify-end gap-1 text-emerald-600 text-sm font-bold">
                                                                 <span className="material-symbols-outlined text-base">check_circle</span>
                                                                 <span>Betalt</span>
+                                                            </div>
+                                                        ) : req.status === 'WAIVED' ? (
+                                                            <div className="flex items-center justify-end gap-1 text-gray-500 text-sm font-bold">
+                                                                <span className="material-symbols-outlined text-base">remove_circle</span>
+                                                                <span>Fritatt</span>
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center justify-end gap-1 text-amber-500 text-sm font-bold">
@@ -190,18 +188,13 @@ export default function MemberBalancePage() {
                                                             </div>
                                                         )}
                                                     </div>
-
-                                                    <div className="text-right min-w-[100px]">
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Betalt Dato</p>
-                                                        <p className="text-sm text-gray-500">{formatDate(payment.paidAt)}</p>
-                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="text-center py-8 text-gray-500 text-sm bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
-                                        Ingen betalingshistorikk funnet for dette medlemmet.
+                                        Ingen betalingskrav funnet for dette medlemmet.
                                     </div>
                                 )}
                             </div>

@@ -15,6 +15,7 @@ export const MAIN_NAV: NavItem[] = [
 ];
 
 export const ACCOUNT_NAV: NavItem[] = [
+  { href: "/account", label: "Min Konto", icon: "person" },
   { href: "/balance", label: "Saldo", icon: "account_balance" },
   { href: "/signed-up-events", label: "Påmeldinger", icon: "event_upcoming" }
 ];
