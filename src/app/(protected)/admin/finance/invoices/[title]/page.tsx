@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { getInvoiceGroupDetails } from "@/server/actions/invoices";
+import { getInvoiceGroupDetails, updateInvoiceGroup, getInvoiceFormData } from "@/server/actions/invoices";
 import { togglePaymentStatus } from "@/server/actions/finance";
 import { RequestStatus } from "@prisma/client";
 
@@ -17,15 +17,64 @@ export default function InvoiceDetailPage() {
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+    // Filter Data
+    const [allMembers, setAllMembers] = useState<any[]>([]);
+    const [memberSearch, setMemberSearch] = useState("");
+
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({
+        description: '',
+        amount: 0,
+        dueDate: ''
+    });
+    const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
+
     useEffect(() => {
         if (!title) return;
-        getInvoiceGroupDetails(title).then(res => {
-            if (res.success && res.requests) {
-                setRequests(res.requests);
+
+        Promise.all([
+            getInvoiceGroupDetails(title),
+            getInvoiceFormData()
+        ]).then(([resDetails, resForm]) => {
+            if (resDetails.success && resDetails.requests) {
+                setRequests(resDetails.requests);
+                // Initialize form with first request data
+                if (resDetails.requests.length > 0) {
+                    const first = resDetails.requests[0];
+                    setEditForm({
+                        description: first.description || '',
+                        amount: first.amount,
+                        dueDate: first.dueDate ? new Date(first.dueDate).toISOString().split('T')[0] : ''
+                    });
+                    // Set selected members
+                    setSelectedMemberIds(resDetails.requests.map((r: any) => r.memberId));
+                }
+            }
+            if (resForm && resForm.members) {
+                setAllMembers(resForm.members);
             }
             setLoading(false);
         });
     }, [title]);
+
+    const handleSave = async () => {
+        setUpdatingId('group');
+        const res = await updateInvoiceGroup(title, {
+            description: editForm.description,
+            amount: editForm.amount,
+            dueDate: editForm.dueDate ? new Date(editForm.dueDate) : undefined
+        }, selectedMemberIds);
+
+        if (res.success) {
+            setIsEditing(false);
+            // Reload window to refresh data cleanly or manual update
+            window.location.reload();
+        } else {
+            alert("Feil: " + res.error);
+        }
+        setUpdatingId(null);
+    };
 
 
     const handleToggle = async (req: any) => {
@@ -42,7 +91,13 @@ export default function InvoiceDetailPage() {
         setUpdatingId(null);
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Laster...</div>;
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
 
     const totalAmount = requests.reduce((sum, r) => sum + r.amount, 0);
     const paidAmount = requests.reduce((sum, r) => r.status === 'PAID' ? sum + r.amount : sum, 0);
@@ -57,22 +112,135 @@ export default function InvoiceDetailPage() {
                 </Link>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">{title}</h1>
-                <p className="text-sm text-gray-500 mb-4">
-                    {paidCount} av {requests.length} har betalt.
-                </p>
-                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-2">
-                    <div
-                        className="bg-indigo-500 h-2 transition-all duration-500"
-                        style={{ width: `${(paidCount / requests.length) * 100}%` }}
-                    ></div>
+            {isEditing ? (
+                <div className="bg-white border border-indigo-200 rounded-xl p-6 mb-6 shadow-sm ring-4 ring-indigo-50/50">
+                    <div className="flex justify-between items-start mb-4">
+                        <h2 className="font-bold text-lg text-gray-900">Rediger fakturadetaljer</h2>
+                        <button onClick={() => setIsEditing(false)} className="text-gray-400 hover:text-gray-600">
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Beskrivelse</label>
+                            <input
+                                type="text"
+                                value={editForm.description}
+                                onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Forfallsdato</label>
+                            <input
+                                type="date"
+                                value={editForm.dueDate}
+                                onChange={e => setEditForm({ ...editForm, dueDate: e.target.value })}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Beløp (NOK)</label>
+                            <input
+                                type="number"
+                                value={editForm.amount}
+                                onChange={e => setEditForm({ ...editForm, amount: Number(e.target.value) })}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
+                            <p className="text-[10px] text-gray-400 mt-1">Dette vil oppdatere beløpet for ALLE i denne gruppen.</p>
+                        </div>
+                    </div>
+
+                    <div className="mb-6 pt-4 border-t border-gray-100">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Mottakere ({selectedMemberIds.length})</label>
+                        <input
+                            type="text"
+                            placeholder="Søk etter medlem..."
+                            value={memberSearch}
+                            onChange={(e) => setMemberSearch(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <div className="max-h-60 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border border-gray-200 rounded-lg bg-gray-50/50">
+                            {allMembers
+                                .filter(m => (m.firstName + " " + m.lastName).toLowerCase().includes(memberSearch.toLowerCase()))
+                                .map(m => (
+                                    <label key={m.id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${selectedMemberIds.includes(m.id)
+                                        ? 'bg-indigo-50 border-indigo-200'
+                                        : 'bg-white border-gray-100 hover:border-indigo-200'
+                                        }`}>
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                            checked={selectedMemberIds.includes(m.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) setSelectedMemberIds([...selectedMemberIds, m.id]);
+                                                else setSelectedMemberIds(selectedMemberIds.filter(id => id !== m.id));
+                                            }}
+                                        />
+                                        <span className={`text-sm font-medium ${selectedMemberIds.includes(m.id) ? 'text-indigo-900' : 'text-gray-700'}`}>
+                                            {m.firstName} {m.lastName}
+                                        </span>
+                                    </label>
+                                ))}
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-2">
+                            Tips: Fjerner du en person som allerede har betalt, vil fjerningen bli ignorert for sikkerhet.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="px-4 py-2 text-gray-600 font-medium text-sm hover:bg-gray-100 rounded-lg transition"
+                        >
+                            Avbryt
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={updatingId === 'group'}
+                            className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+                        >
+                            {updatingId === 'group' ? (
+                                <>
+                                    <span className="animate-spin text-xs material-symbols-outlined">progress_activity</span>
+                                    Lagrer...
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined text-sm">save</span>
+                                    Lagre endringer
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
-                <div className="flex justify-between text-sm font-medium">
-                    <span className="text-gray-500">Innkommet: {paidAmount.toLocaleString()} kr</span>
-                    <span className="text-gray-900">Totalt: {totalAmount.toLocaleString()} kr</span>
+            ) : (
+                <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 relative group">
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all"
+                        title="Rediger gruppe"
+                    >
+                        <span className="material-symbols-outlined">edit</span>
+                    </button>
+
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">{title}</h1>
+                    <p className="text-sm text-gray-500 mb-4">
+                        {paidCount} av {requests.length} har betalt.
+                    </p>
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-2">
+                        <div
+                            className="bg-indigo-500 h-2 transition-all duration-500"
+                            style={{ width: `${(paidCount / requests.length) * 100}%` }}
+                        ></div>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium">
+                        <span className="text-gray-500">Innkommet: {paidAmount.toLocaleString()} kr</span>
+                        <span className="text-gray-900">Totalt: {totalAmount.toLocaleString()} kr</span>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <table className="w-full">
@@ -109,8 +277,8 @@ export default function InvoiceDetailPage() {
                                         onClick={() => handleToggle(req)}
                                         disabled={updatingId === req.id}
                                         className={`text-sm font-bold transition-colors ${req.status === 'PAID'
-                                                ? 'text-gray-400 hover:text-red-600'
-                                                : 'text-emerald-600 hover:text-emerald-700'
+                                            ? 'text-gray-400 hover:text-red-600'
+                                            : 'text-emerald-600 hover:text-emerald-700'
                                             }`}
                                     >
                                         {updatingId === req.id ? 'Lagrer...' : (req.status === 'PAID' ? 'Merk som ubetalt' : 'Registrer betaling')}

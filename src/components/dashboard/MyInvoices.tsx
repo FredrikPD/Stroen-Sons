@@ -13,7 +13,20 @@ type Invoice = {
 };
 
 export function MyInvoices({ invoices, className = "" }: { invoices: Invoice[], className?: string }) {
-    if (invoices.length === 0) return null;
+    if (invoices.length === 0) {
+        return (
+            <div className={`bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden ${className}`}>
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-transparent pointer-events-none" />
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                    <span className="material-symbols-outlined text-3xl">task_alt</span>
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Ingen fakturaer</h3>
+                <p className="text-gray-500 text-sm max-w-[250px]">
+                    Du har ingen ubetalte fakturaer.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className={`bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow ${className}`}>

@@ -39,19 +39,11 @@ export async function getProfile() {
             return { success: false, error: "Fant ikke medlem" };
         }
 
-        // Calculate real balance from transactions
-        const balanceAgg = await db.transaction.aggregate({
-            where: { memberId: member.id },
-            _sum: { amount: true }
-        });
-
-        const calculatedBalance = balanceAgg._sum.amount ? balanceAgg._sum.amount.toNumber() : 0;
-
         return {
             success: true,
             data: {
                 ...member,
-                balance: calculatedBalance
+                balance: member.balance.toNumber()
             }
         };
     } catch (error) {

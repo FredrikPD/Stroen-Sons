@@ -4,6 +4,11 @@ import { z } from "zod";
 import { db } from "@/server/db";
 import { clerkClient } from "@clerk/nextjs/server";
 import { Role } from "@prisma/client";
+import { Resend } from "resend";
+import WelcomeEmail from "@/components/emails/welcome-email";
+import { render } from "@react-email/render";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const InviteMemberSchema = z.object({
     firstName: z.string().min(1, "Fornavn er påkrevd"),
@@ -41,36 +46,95 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
 
     const { firstName, lastName, email, password, role, membershipType } = validatedFields.data;
 
+    // 1. Check if user already exists in DB
+    const existingMember = await db.member.findUnique({
+        where: { email },
+    });
+
+    if (existingMember) {
+        return { error: "En bruker med denne e-posten finnes allerede i systemet." };
+    }
+
+    let clerkUser;
+
     try {
-        // 1. Create user in Clerk
+        // 2. Create user in Clerk
         const client = await clerkClient();
 
-        // Check if user already exists in Clerk to avoid cryptic errors (though Clerk handles this, custom handling is nice)
-        // For now we trust the create call to throw.
-
-        const clerkUser = await client.users.createUser({
-            firstName,
-            lastName,
+        // Check if user exists in Clerk explicitly before trying to create
+        const existingClerkUsers = await client.users.getUserList({
             emailAddress: [email],
-            password,
-            publicMetadata: {
-                role,
-            },
+            limit: 1,
         });
 
-        // 2. Create user in Prisma
-        await db.member.create({
-            data: {
-                clerkId: clerkUser.id,
-                email: email,
+        if (existingClerkUsers.data.length > 0) {
+            return { error: "En bruker med denne e-posten finnes allerede hos Clerk (kan være en inaktiv bruker)." };
+        }
+
+        try {
+            clerkUser = await client.users.createUser({
                 firstName,
                 lastName,
-                role,
-                membershipType,
-            },
-        });
+                emailAddress: [email],
+                password,
+                publicMetadata: {
+                    role,
+                },
+            });
+        } catch (clerkError: any) {
+            // Check for specific Clerk error codes if possible, or string match
+            const msg = clerkError?.errors?.[0]?.message || clerkError?.message || "Feil med Clerk brukerregistrering";
+            if (msg.includes("already exists") || msg.includes("identifier_exists")) {
+                return { error: "Denne e-posten er allerede registrert hos Clerk (kan være en inaktiv bruker)." };
+            }
+            throw clerkError;
+        }
 
-        return { message: "Medlem invitert og opprettet!" };
+        // 3. Create user in Prisma
+        try {
+            await db.member.create({
+                data: {
+                    clerkId: clerkUser.id,
+                    email: email,
+                    firstName,
+                    lastName,
+                    role,
+                    membershipType,
+                },
+            });
+        } catch (prismaError) {
+            console.error("Prisma creation failed, rolling back Clerk user:", prismaError);
+            // ROLLBACK: Delete the just-created Clerk user to maintain consistency
+            await client.users.deleteUser(clerkUser.id);
+            throw new Error("Kunne ikke lagre bruker i databasen. Clerk-bruker er rullet tilbake.");
+        }
+
+
+
+        // 3. Send invite email
+        try {
+            const emailHtml = await render(
+                WelcomeEmail({
+                    firstName,
+                    email,
+                    password,
+                    loginUrl: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/sign-in` : "https://stroen-sons.com/sign-in"
+                })
+            );
+
+            await resend.emails.send({
+                from: 'Strøen & Sønner <onboarding@resend.dev>', // UPDATE THIS with verified domain later if available
+                to: [email],
+                subject: 'Velkommen til Strøen & Sønner',
+                html: emailHtml,
+            });
+        } catch (emailError) {
+            console.error("Failed to send welcome email:", emailError);
+            // We don't throw here because the user is already created
+            // You might want to return a warning message instead
+        }
+
+        return { message: "Medlem invitert og opprettet! E-post er sendt." };
     } catch (err) {
         console.error("Failed to invite member:", err);
 

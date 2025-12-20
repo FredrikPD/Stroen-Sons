@@ -5,6 +5,11 @@ import { prisma } from "@/server/db";
 import CommentSection from "@/components/posts/CommentSection";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 
+import ReactMarkdown from "react-markdown";
+
+import DeletePostButton from "@/components/posts/DeletePostButton";
+import { ensureMember } from "@/server/auth/ensureMember";
+
 // Force dynamic rendering since we are fetching specific post
 export const dynamic = "force-dynamic";
 
@@ -28,6 +33,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PostDetailPage({ params }: PageProps) {
     const { postId } = await params;
+
+    // Fetch current user for permission check
+    const currentUser = await ensureMember();
 
     const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -86,9 +94,20 @@ export default async function PostDetailPage({ params }: PageProps) {
                 <div className="p-6 md:p-8">
                     {/* Header Top Row: Category + Date */}
                     <div className="flex flex-wrap justify-between items-start gap-4 mb-5">
-                        <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
-                            {post.category}
-                        </span>
+                        <div className="flex items-center gap-3">
+                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
+                                {post.category}
+                            </span>
+                            {currentUser?.role === "ADMIN" && (
+                                <div className="flex items-center gap-2">
+                                    <Link href={`/admin/posts/${post.id}/edit`} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100">
+                                        <span className="material-symbols-outlined text-[1.1rem]">edit</span>
+                                        Rediger
+                                    </Link>
+                                    <DeletePostButton postId={post.id} />
+                                </div>
+                            )}
+                        </div>
                         <div className="flex items-center text-gray-400 text-xs font-medium">
                             <span className="material-symbols-outlined mr-1.5 text-[1rem]">calendar_today</span>
                             Publisert {date}
@@ -115,8 +134,8 @@ export default async function PostDetailPage({ params }: PageProps) {
                     <div className="w-full h-px bg-gray-100 mb-8" />
 
                     {/* Content */}
-                    <div className="prose max-w-none text-gray-600 whitespace-pre-wrap leading-relaxed">
-                        {post.content}
+                    <div className="prose prose-zinc max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-indigo-600 prose-li:text-gray-600">
+                        <ReactMarkdown>{post.content}</ReactMarkdown>
                     </div>
                 </div>
 

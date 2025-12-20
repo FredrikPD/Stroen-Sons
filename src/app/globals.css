@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* 1) Put the actual hex values in :root -> VS Code swatches will work */
 :root {

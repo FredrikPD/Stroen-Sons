@@ -69,7 +69,7 @@ export default function FinancePortalPage() {
     if (authLoading || financeLoading) {
         return (
             <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
         );
     }
@@ -351,9 +351,12 @@ export default function FinancePortalPage() {
                     </tbody>
                 </table>
                 <div className="p-4 border-t border-gray-100 bg-gray-50/30 flex justify-center">
-                    <button className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+                    <Link
+                        href="/admin/finance/transactions"
+                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
                         Se alle transaksjoner
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>

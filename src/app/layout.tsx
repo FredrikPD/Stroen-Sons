@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { ModalProvider } from "@/components/providers/ModalContext";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
              */
             routerConfig={extractRouterConfig(ourFileRouter)}
           />
-          {children}
+          <ModalProvider>
+            {children}
+          </ModalProvider>
         </body>
       </html>
     </ClerkProvider>

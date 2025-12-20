@@ -3,6 +3,7 @@
 import { db } from "@/server/db";
 import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/server/actions/notifications";
 
 /**
  * Create a single payment request for a member.
@@ -22,6 +23,16 @@ export async function createPaymentRequest(data: {
                 ...data,
                 status: RequestStatus.PENDING,
             },
+        });
+
+        // Notify member
+        const categoryLabel = data.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' : 'Faktura';
+        await createNotification({
+            memberId: data.memberId,
+            type: "INVOICE_CREATED",
+            title: `Ny ${categoryLabel}: ${data.title}`,
+            message: `Du har mottatt et krav på ${data.amount} kr.`,
+            link: "/dashboard"
         });
 
         revalidatePath("/admin/finance/income");
@@ -61,6 +72,19 @@ export async function createBulkPaymentRequests(data: {
             data: requests,
         });
 
+        // Notify all members
+        const categoryLabel = data.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' : 'Faktura';
+
+        await Promise.all(data.memberIds.map(async (memberId) => {
+            await createNotification({
+                memberId: memberId,
+                type: "INVOICE_CREATED",
+                title: `Ny ${categoryLabel}: ${data.title}`,
+                message: `Du har mottatt et krav på ${data.amount} kr.`,
+                link: "/dashboard"
+            });
+        }));
+
         revalidatePath("/admin/finance/income");
         return { success: true, count: requests.length };
     } catch (error) {
@@ -89,7 +113,7 @@ export async function markRequestAsPaid(requestId: string) {
             return { success: false, error: "Already paid" };
         }
 
-        // 2. Transactionally update status and create Transaction
+        // 2. Transactionally update status, create Transaction, AND update Member Balance
         await db.$transaction(async (tx) => {
             // Create the official Accounting Transaction
             const transaction = await tx.transaction.create({
@@ -112,6 +136,16 @@ export async function markRequestAsPaid(requestId: string) {
                 data: {
                     status: RequestStatus.PAID,
                     transactionId: transaction.id
+                }
+            });
+
+            // Update Member Balance (Increment because they paid money IN)
+            await tx.member.update({
+                where: { id: request.memberId },
+                data: {
+                    balance: {
+                        increment: request.amount
+                    }
                 }
             });
         });

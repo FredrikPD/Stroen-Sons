@@ -54,13 +54,9 @@ export default async function BalancePage() {
                 </div>
 
                 {/* Unpaid Invoices (Right - 2/3 width) */}
-                {data.paymentRequests.length > 0 && (
-                    <div className="lg:col-span-2 relative min-h-[400px] lg:min-h-0">
-                        <div className="lg:absolute lg:inset-0">
-                            <MyInvoices invoices={data.paymentRequests} className="h-full" />
-                        </div>
-                    </div>
-                )}
+                <div className="lg:col-span-2">
+                    <MyInvoices invoices={data.paymentRequests} className="h-full" />
+                </div>
             </div>
 
             {/* Status / Quick Stats Cards */}

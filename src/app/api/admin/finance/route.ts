@@ -24,7 +24,7 @@ export async function GET() {
     const [transactions, treasurySum, incomeSum, expenseSum, members] = await Promise.all([
         // Fetch recent transactions
         prisma.transaction.findMany({
-            take: 50,
+            take: 100,
             orderBy: { date: "desc" },
         }),
         // Calculate current balance (sum of all transactions)
@@ -72,8 +72,6 @@ export async function GET() {
         if (groupedTransactionsMap.has(key)) {
             const existing = groupedTransactionsMap.get(key);
             existing.amount += Number(tx.amount);
-            // Keep the ID of the first one, or maybe create a composite ID?
-            // For UI keys, using the first ID is fine as long as we don't try to delete/edit by it without care.
         } else {
             groupedTransactionsMap.set(key, {
                 id: tx.id,
@@ -95,6 +93,6 @@ export async function GET() {
         totalIncome: incomeSum._sum.amount?.toNumber() ?? 0,
         totalExpenses: expenseSum._sum.amount?.toNumber() ?? 0,
         expectedAnnualIncome,
-        transactions: groupedTransactions,
+        transactions: groupedTransactions.slice(0, 10), // Limit to 10 for dashboard
     });
 }

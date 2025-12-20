@@ -38,6 +38,21 @@ const getRecentPosts = unstable_cache(
   { revalidate: 3600, tags: ["posts"] }
 );
 
+const getRecentMemories = unstable_cache(
+  async () => {
+    return prisma.event.findMany({
+      where: {
+        startAt: { lt: new Date() },
+        coverImage: { not: null },
+      },
+      orderBy: { startAt: "desc" },
+      take: 4,
+    });
+  },
+  ["dashboard-recent-memories"],
+  { revalidate: 3600, tags: ["events"] }
+);
+
 export default async function DashboardPage() {
   let member;
   try {
@@ -48,7 +63,7 @@ export default async function DashboardPage() {
 
   const period = currentPeriod();
 
-  const [cachedNextEvent, payment, cachedPosts, transactions, paymentRequestsRes] = await Promise.all([
+  const [cachedNextEvent, payment, cachedPosts, transactions, paymentRequestsRes, cachedMemories] = await Promise.all([
     getNextEvent(),
     prisma.payment.findUnique({
       where: { memberId_period: { memberId: member.id, period } },
@@ -59,7 +74,8 @@ export default async function DashboardPage() {
       orderBy: { date: "desc" },
       take: 3,
     }),
-    getMemberPaymentRequests(member.id)
+    getMemberPaymentRequests(member.id),
+    getRecentMemories()
   ]);
 
   const unpaidInvoices = paymentRequestsRes.success && paymentRequestsRes.data
@@ -80,6 +96,11 @@ export default async function DashboardPage() {
   const posts = cachedPosts.map(post => ({
     ...post,
     createdAt: new Date(post.createdAt)
+  }));
+
+  const memories = cachedMemories.map(event => ({
+    ...event,
+    startAt: new Date(event.startAt)
   }));
 
   const firstName = member.firstName ?? member.email.split("@")[0];
@@ -190,7 +211,7 @@ export default async function DashboardPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">Siste Nytt</h3>
-              <button className="text-[#4F46E5] text-sm font-semibold hover:underline">Se alle</button>
+              <Link href="/posts" className="text-[#4F46E5] text-sm font-semibold hover:underline">Se alle</Link>
             </div>
 
             <div className="grid gap-4">
@@ -296,23 +317,37 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Nylige Minner (Mock Images) */}
+          {/* Nylige Minner */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">Nylige Minner</h3>
-              <button className="text-[#4F46E5] text-xs font-bold hover:underline">Arkiv</button>
+              <Link href="/gallery" className="text-[#4F46E5] text-xs font-bold hover:underline">Arkiv</Link>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative group cursor-pointer border border-gray-200">
-                  <Image
-                    src={`https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=300&q=80`}
-                    alt="Minne"
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+              {memories.length > 0 ? (
+                memories.map((event) => (
+                  <Link key={event.id} href={`/gallery/${event.id}`} className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative group cursor-pointer border border-gray-200 block">
+                    <Image
+                      src={event.coverImage!}
+                      alt={event.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 pt-12 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-white text-xs font-bold leading-tight line-clamp-2 drop-shadow-sm">
+                        {event.title}
+                      </p>
+                      <p className="text-[10px] text-white/70 font-medium mt-0.5 uppercase tracking-wider">
+                        {event.startAt.getFullYear()}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-6 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+                  <p className="text-sm text-gray-400 italic">Ingen minner å vise enda.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 

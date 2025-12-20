@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import PostItem, { PostWithDetails } from "./PostItem";
 import { getPosts } from "@/server/actions/posts";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 export default function PostList() {
     const [posts, setPosts] = useState<PostWithDetails[]>([]);
@@ -121,28 +123,43 @@ export default function PostList() {
                 </div>
             </div>
 
-            {/* Separator Line */}
-            <div className="w-full h-px bg-gray-200" />
-
             {/* List */}
             <div className="flex flex-col gap-6">
                 {posts.map((post, index) => {
-                    if (posts.length === index + 1) {
-                        return (
-                            <div ref={lastPostElementRef} key={post.id}>
+                    const currentMonth = format(new Date(post.createdAt), "MMMM yyyy", { locale: nb });
+                    const prevMonth = index > 0
+                        ? format(new Date(posts[index - 1].createdAt), "MMMM yyyy", { locale: nb })
+                        : null;
+
+                    const showSeparator = currentMonth !== prevMonth;
+
+                    return (
+                        <div key={post.id} className="flex flex-col gap-6">
+                            {showSeparator && (
+                                <div className="flex items-center gap-4 py-2 mt-4 first:mt-0">
+                                    <div className="text-sm font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                        {currentMonth}
+                                    </div>
+                                    <div className="h-px bg-gray-200 w-full" />
+                                </div>
+                            )}
+
+                            {posts.length === index + 1 ? (
+                                <div ref={lastPostElementRef}>
+                                    <PostItem post={post} />
+                                </div>
+                            ) : (
                                 <PostItem post={post} />
-                            </div>
-                        );
-                    } else {
-                        return <PostItem key={post.id} post={post} />;
-                    }
+                            )}
+                        </div>
+                    );
                 })}
             </div>
 
             {
                 loading && (
                     <div className="flex justify-center p-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A1A1A]"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                     </div>
                 )
             }

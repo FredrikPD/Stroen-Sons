@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useUploadThing } from "@/lib/uploadthing";
 import { deletePhotos, getRecentEvents, getRecentPhotos, getStorageStats } from "@/actions/admin-photos";
+import { notifyNewPhotos } from "@/server/actions/notifications";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -31,6 +32,12 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
         onClientUploadComplete: () => {
             setIsUploading(false);
             setUploadProgress(0);
+
+            // Notify about new photos
+            if (selectedEventId) {
+                notifyNewPhotos(selectedEventId);
+            }
+
             router.refresh();
             alert("Bilder lastet opp!");
         },
@@ -257,7 +264,7 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
 
                             {isUploading ? (
                                 <div className="flex flex-col items-center animate-in fade-in duration-300 w-full max-w-xs">
-                                    <div className="w-16 h-16 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+                                    <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-4"></div>
                                     <h3 className="text-lg font-bold text-gray-900 mb-1">Laster opp bilder...</h3>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
                                         <div

@@ -9,7 +9,7 @@ export default function AdminDashboardPage() {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
         );
     }
@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* New Post */}
-                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                    <Link href="/admin/posts/new" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
                         <div className="mb-4">
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">post_add</span>
@@ -119,11 +119,11 @@ export default function AdminDashboardPage() {
                             <h3 className="text-base font-bold text-gray-900 mb-1">Nytt Innlegg</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Publiser nyheter eller beskjeder til tavlen.</p>
                         </div>
-                        <button className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                        <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
                             <span className="material-symbols-outlined text-base">edit</span>
                             Skriv Innlegg
-                        </button>
-                    </div>
+                        </div>
+                    </Link>
 
                     {/* Upload Photos */}
                     <Link href="/admin/photos" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
@@ -137,6 +137,21 @@ export default function AdminDashboardPage() {
                         <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
                             <span className="material-symbols-outlined text-base">settings_photo_camera</span>
                             Administrer
+                        </div>
+                    </Link>
+
+                    {/* User Management Shortcut */}
+                    <Link href="/admin/users" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#1A56DB]/50 transition-colors shadow-sm hover:shadow-md">
+                        <div className="mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center text-[#1A56DB] mb-3 group-hover:bg-[#1A56DB] group-hover:text-white transition-all">
+                                <span className="material-symbols-outlined text-lg">manage_accounts</span>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Brukeradministrasjon</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Inviter, slett eller endre roller.</p>
+                        </div>
+                        <div className="w-full py-2.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            Gå til Brukere
                         </div>
                     </Link>
 
@@ -154,48 +169,6 @@ export default function AdminDashboardPage() {
                             Se Økonomi
                         </div>
                     </Link>
-
-                    {/* Invite Users */}
-                    <Link href="/admin/invite" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
-                        <div className="mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">person_add</span>
-                            </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Inviter Brukere</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Send invitasjon til potensielle nye medlemmer.</p>
-                        </div>
-                        <div className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-900 rounded-lg font-bold text-xs transition-colors flex items-center justify-center">
-                            Inviter
-                        </div>
-                    </Link>
-
-                    {/* Member Roles */}
-                    <Link href="/admin/roles" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
-                        <div className="mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-                            </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Medlemsroller</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Administrer tilganger og styreverv.</p>
-                        </div>
-                        <div className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-900 rounded-lg font-bold text-xs transition-colors flex items-center justify-center">
-                            Endre Roller
-                        </div>
-                    </Link>
-
-                    {/* Remove User */}
-                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-red-500/50 transition-colors shadow-sm hover:shadow-md">
-                        <div className="mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500 mb-3 group-hover:bg-red-500 group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">person_remove</span>
-                            </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Fjern Bruker</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Fjern en bruker fra systemet.</p>
-                        </div>
-                        <button className="w-full py-2.5 border border-gray-200 hover:bg-red-50 hover:text-red-700 hover:border-red-200 text-gray-900 rounded-lg font-bold text-xs transition-colors">
-                            Fjern
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

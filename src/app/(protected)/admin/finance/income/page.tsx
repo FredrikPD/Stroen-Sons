@@ -4,9 +4,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { Avatar } from "@/components/Avatar";
-import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus } from "@/server/actions/finance";
+import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus, deleteMonthlyFees, deleteSingleInvoice } from "@/server/actions/finance";
 import Link from "next/link";
 import { RequestStatus } from "@prisma/client";
+import { useModal } from "@/components/providers/ModalContext";
+import { CreateInvoiceModal } from "@/components/admin/finance/CreateInvoiceModal";
 
 // Helper to get month name
 const getMonthName = (monthIndex: number) => {
@@ -40,8 +42,9 @@ type FinanceStats = {
 
 export default function IncomePage() {
     const { data: dashboardData, loading: dashboardLoading } = useAdminDashboard();
+    const { openConfirm, openAlert } = useModal();
 
-    // State for period selection
+    // ... existing state ...
     const today = new Date();
     const [selectedYear, setSelectedYear] = useState(today.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1); // 1-12
@@ -53,6 +56,7 @@ export default function IncomePage() {
     const [loadingData, setLoadingData] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
     const [generating, setGenerating] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     // Fetch Data
     const fetchData = useCallback(async () => {
@@ -84,14 +88,25 @@ export default function IncomePage() {
             await fetchData();
         } catch (error) {
             console.error("Failed to toggle payment", error);
-            alert("Feil ved oppdatering av betaling");
+            await openAlert({
+                title: "Feil",
+                message: "Feil ved oppdatering av betaling",
+                type: "error"
+            });
         } finally {
             setUpdating(null);
         }
     };
 
     const handleGenerateFees = async () => {
-        if (!confirm(`Generer fakturaer for ${getMonthName(selectedMonth - 1)} ${selectedYear}?`)) return;
+        const confirmed = await openConfirm({
+            title: "Generer fakturaer",
+            message: `Generer fakturaer for ${getMonthName(selectedMonth - 1)} ${selectedYear}?`,
+            type: "info",
+            confirmText: "Generer"
+        });
+
+        if (!confirmed) return;
 
         setGenerating(true);
         try {
@@ -99,10 +114,96 @@ export default function IncomePage() {
             if (res.success) {
                 await fetchData();
             } else {
-                alert("Feil ved generering: " + res.error);
+                await openAlert({
+                    title: "Feil ved generering",
+                    message: typeof res.error === 'string' ? res.error : "Ukjent feil",
+                    type: "error"
+                });
             }
         } catch (e) {
-            alert("En feil oppstod");
+            await openAlert({
+                title: "Feil",
+                message: "En feil oppstod under generering",
+                type: "error"
+            });
+        } finally {
+            setGenerating(false);
+        }
+    };
+
+    const handleDeleteFees = async () => {
+        const confirmed = await openConfirm({
+            title: "Slett alle krav",
+            message: `ER DU SIKKER? Dette vil slette ALLE ubetalte krav for ${getMonthName(selectedMonth - 1)} ${selectedYear}.`,
+            type: "warning",
+            confirmText: "Slett",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setGenerating(true); // Reuse generating loading state
+        try {
+            const res = await deleteMonthlyFees(selectedYear, selectedMonth);
+            if (res.success) {
+                await fetchData();
+                await openAlert({
+                    title: "Suksess",
+                    message: `Slettet ${res.count} krav.`,
+                    type: "success"
+                });
+            } else {
+                await openAlert({
+                    title: "Kunne ikke slette",
+                    message: typeof res.error === 'string' ? res.error : "Ukjent feil",
+                    type: "error"
+                });
+            }
+        } catch (e) {
+            await openAlert({
+                title: "Feil",
+                message: "En feil oppstod under sletting.",
+                type: "error"
+            });
+        } finally {
+            setGenerating(false);
+        }
+    };
+
+    const handleDeleteSingle = async (requestId: string, memberName: string) => {
+        const confirmed = await openConfirm({
+            title: "Slett enkeltkrav",
+            message: `Vil du slette kravet for ${memberName}?`,
+            type: "warning",
+            confirmText: "Slett",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setGenerating(true);
+        try {
+            const res = await deleteSingleInvoice(requestId);
+            if (res.success) {
+                await fetchData();
+                await openAlert({
+                    title: "Slettet",
+                    message: "Kravet ble slettet.",
+                    type: "success"
+                });
+            } else {
+                await openAlert({
+                    title: "Kunne ikke slette",
+                    message: res.error || "Ukjent feil",
+                    type: "error"
+                });
+            }
+        } catch (e) {
+            await openAlert({
+                title: "Feil",
+                message: "Kunne ikke slette kravet.",
+                type: "error"
+            });
         } finally {
             setGenerating(false);
         }
@@ -133,19 +234,20 @@ export default function IncomePage() {
     if (dashboardLoading) {
         return (
             <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A1A1A]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <Link href="/admin/finance" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
-                <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                Tilbake til oversikt
-            </Link>
+            <div className="flex justify-between items-center">
+                <Link href="/admin/finance" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
+                    <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
+                    Tilbake til oversikt
+                </Link>
+            </div>
 
-            {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Månedskontingent</h1>
@@ -153,7 +255,16 @@ export default function IncomePage() {
                         Administrer innbetalinger av medlemskontingent.
                     </p>
                 </div>
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm shadow-sm"
+                >
+                    <span className="material-symbols-outlined text-[1.2rem]">add</span>
+                    Nytt enkeltkrav
+                </button>
             </div>
+
+
 
             {/* Stats & Overview Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -233,6 +344,20 @@ export default function IncomePage() {
                                     </div>
                                 )
                             )}
+
+                            {/* Delete Button (Only if requests exist) */}
+                            {stats && stats.totalCount > 0 && (
+                                <div className="mt-4 flex justify-end">
+                                    <button
+                                        onClick={handleDeleteFees}
+                                        disabled={generating} // Re-use generating state or add deleting state
+                                        className="text-red-500 hover:text-red-700 text-xs font-medium flex items-center gap-1 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[1rem]">delete</span>
+                                        Slett alle generatede krav
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -257,7 +382,7 @@ export default function IncomePage() {
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                 {loadingData ? (
                     <div className="flex justify-center items-center h-40">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1A1A1A]"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                     </div>
                 ) : (
                     <>
@@ -319,21 +444,31 @@ export default function IncomePage() {
                                     {/* Current Period */}
                                     <div className="col-span-6 md:col-span-2 flex items-center justify-between md:justify-center gap-4">
                                         {member.history[periods[0]] ? (
-                                            <>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleTogglePayment(member.history[periods[0]]!.id)}
+                                                        disabled={updating === member.history[periods[0]]!.id}
+                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${member.history[periods[0]]!.status === 'PAID' ? 'bg-emerald-500' : 'bg-gray-200'
+                                                            } ${updating === member.history[periods[0]]!.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        <span className={`${member.history[periods[0]]!.status === 'PAID' ? 'translate-x-6' : 'translate-x-1'
+                                                            } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
+                                                    </button>
+                                                    <span className={`text-xs font-medium w-12 ${member.history[periods[0]]!.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'
+                                                        }`}>
+                                                        {member.history[periods[0]]!.status === 'PAID' ? "Betalt" : "Ubetalt"}
+                                                    </span>
+                                                </div>
+
                                                 <button
-                                                    onClick={() => handleTogglePayment(member.history[periods[0]]!.id)}
-                                                    disabled={updating === member.history[periods[0]]!.id}
-                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${member.history[periods[0]]!.status === 'PAID' ? 'bg-emerald-500' : 'bg-gray-200'
-                                                        } ${updating === member.history[periods[0]]!.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    onClick={() => handleDeleteSingle(member.history[periods[0]]!.id, member.name)}
+                                                    className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
+                                                    title="Slett enkeltkrav"
                                                 >
-                                                    <span className={`${member.history[periods[0]]!.status === 'PAID' ? 'translate-x-6' : 'translate-x-1'
-                                                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
+                                                    <span className="material-symbols-outlined text-sm">delete</span>
                                                 </button>
-                                                <span className={`text-xs font-medium w-12 ${member.history[periods[0]]!.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'
-                                                    }`}>
-                                                    {member.history[periods[0]]!.status === 'PAID' ? "Betalt" : "Ubetalt"}
-                                                </span>
-                                            </>
+                                            </div>
                                         ) : (
                                             <span className="text-xs text-gray-400 italic">Ingen krav</span>
                                         )}
@@ -344,6 +479,12 @@ export default function IncomePage() {
                     </>
                 )}
             </div>
+            <CreateInvoiceModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                members={members.map(m => ({ id: m.id, name: m.name }))}
+                onSuccess={fetchData}
+            />
         </div>
     );
 }

@@ -1,0 +1,42 @@
+"use client";
+
+import { deletePost } from "@/server/actions/posts";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export default function DeletePostButton({ postId }: { postId: string }) {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+
+    const handleDelete = async () => {
+        if (!confirm("Er du sikker på at du vil slette dette innlegget? Det kan ikke angres.")) {
+            return;
+        }
+
+        setLoading(true);
+        const res = await deletePost(postId);
+
+        if (res.success) {
+            router.push("/posts");
+            router.refresh();
+        } else {
+            alert(res.error || "Noe gikk galt");
+            setLoading(false);
+        }
+    };
+
+    return (
+        <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100 disabled:opacity-50"
+        >
+            {loading ? (
+                <div className="animate-spin h-3 w-3 border-2 border-red-600 border-t-transparent rounded-full" />
+            ) : (
+                <span className="material-symbols-outlined text-[1.1rem]">delete</span>
+            )}
+            Slett
+        </button>
+    );
+}

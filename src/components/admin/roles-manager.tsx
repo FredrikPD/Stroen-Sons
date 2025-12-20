@@ -63,7 +63,7 @@ export default function RolesManager() {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
         );
     }
@@ -160,7 +160,7 @@ export default function RolesManager() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         {updatingId === member.id ? (
                                             <span className="text-indigo-600 flex items-center justify-end gap-1">
-                                                <span className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                                                <span className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></span>
                                                 Lagrer...
                                             </span>
                                         ) : (

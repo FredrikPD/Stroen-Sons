@@ -171,14 +171,13 @@ export default function InviteMemberPage() {
                             {/* Decorative Background Elements */}
                             <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
                             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
-                            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10" />
 
                             {/* Card Content */}
                             <div className="relative z-10 flex flex-col justify-between h-full">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Medlemskort</p>
-                                        <h3 className="text-lg font-bold mt-1 tracking-wide">STRØEN & SØNNER</h3>
+                                        <h3 className="text-lg font-bold mt-1 tracking-wide">STRØEN SØNS</h3>
                                     </div>
                                     <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
                                         <span className="material-symbols-outlined text-base">verified</span>
@@ -204,11 +203,11 @@ export default function InviteMemberPage() {
 
                                     <div className="flex justify-between items-end border-t border-white/10 pt-4">
                                         <div>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Status</p>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
                                             <div className="flex items-center gap-1.5 mt-1">
                                                 <div className={`w-1.5 h-1.5 rounded-full ${preview.role === 'ADMIN' ? 'bg-indigo-400' : 'bg-emerald-400'} animate-pulse`} />
                                                 <span className="text-xs font-semibold tracking-wide">
-                                                    {preview.role === 'ADMIN' ? 'Administrator' : 'Aktivt Medlem'}
+                                                    {preview.role === 'ADMIN' ? 'Administrator' : 'Medlem'}
                                                 </span>
                                             </div>
                                         </div>
@@ -227,7 +226,6 @@ export default function InviteMemberPage() {
 
                     <div className="mt-8 text-center max-w-xs">
                         <p className="text-sm font-medium text-gray-900">Forhåndsvisning</p>
-                        <p className="text-xs text-gray-500 mt-1">Slik vil medlemskapet se ut i systemet. Kortet oppdateres i sanntid mens du skriver.</p>
                     </div>
                 </div>
             </div>
