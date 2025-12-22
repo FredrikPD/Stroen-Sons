@@ -17,11 +17,11 @@ export const MAIN_NAV: NavItem[] = [
 export const ACCOUNT_NAV: NavItem[] = [
   { href: "/account", label: "Min Konto", icon: "person" },
   { href: "/my-events", label: "Mine Arrangementer", icon: "event_note" },
-  { href: "/balance", label: "Saldo", icon: "account_balance" },
+  { href: "/balance", label: "Saldo", icon: "account_balance_wallet" },
 ];
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Admin Dashboard", icon: "admin_panel_settings", adminOnly: true },
-  { href: "/admin/finance", label: "Økonomi", icon: "account_balance_wallet", adminOnly: true },
+  { href: "/admin/finance", label: "Økonomi", icon: "account_balance", adminOnly: true },
   { href: "/admin/users", label: "Brukeradministrasjon", icon: "manage_accounts", adminOnly: true },
 ];

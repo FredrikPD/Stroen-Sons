@@ -21,6 +21,27 @@ export async function ensureMember() {
     return existingMember;
   }
 
+  // If not found by Clerk ID, try by Email (Lazy Linking for Invited Users)
+  const existingByEmail = await prisma.member.findUnique({
+    where: { email },
+  });
+
+  if (existingByEmail) {
+    // Link the accounts and activate
+    return await prisma.member.update({
+      where: { id: existingByEmail.id },
+      data: {
+        clerkId: userId,
+        status: "ACTIVE",
+        // Update names if they were missing or placeholder?
+        // Maybe better to keep what they put in Clerk?
+        // Let's keep our DB as authority for now unless empty
+        firstName: existingByEmail.firstName || user.firstName,
+        lastName: existingByEmail.lastName || user.lastName,
+      }
+    });
+  }
+
   // Only write if doesn't exist
   const member = await prisma.member.create({
     data: {
@@ -28,6 +49,7 @@ export async function ensureMember() {
       email,
       firstName: user.firstName,
       lastName: user.lastName,
+      status: "ACTIVE", // Self-sign up = Active
     },
   });
 

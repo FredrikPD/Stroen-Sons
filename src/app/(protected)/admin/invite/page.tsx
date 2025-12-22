@@ -73,21 +73,7 @@ export default function InviteMemberPage() {
                             {state.fieldErrors?.email && <p className="text-red-500 text-xs">{state.fieldErrors.email}</p>}
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Midlertidig Passord</label>
-                            <div className="relative">
-                                <input
-                                    name="password"
-                                    type="text"
-                                    required
-                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium pr-10"
-                                    placeholder="••••••••"
-                                    minLength={8}
-                                />
-                                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">key</span>
-                            </div>
-                            {state.fieldErrors?.password && <p className="text-red-500 text-xs">{state.fieldErrors.password}</p>}
-                        </div>
+
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">

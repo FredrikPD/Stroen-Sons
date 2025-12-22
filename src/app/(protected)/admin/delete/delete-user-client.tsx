@@ -11,7 +11,7 @@ type Member = {
     lastName: string | null;
     email: string;
     role: Role;
-    clerkId: string;
+    clerkId: string | null;
     createdAt: Date;
     phoneNumber: string | null;
     balance: number;
@@ -121,7 +121,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
 
                                 <div className="flex-1 w-full text-center md:text-left">
                                     <h3 className="text-3xl font-bold text-gray-900">{selectedMember.firstName} {selectedMember.lastName}</h3>
-                                    <p className="text-gray-500 font-mono text-sm mt-1">Medlemsnummer: #{selectedMember.clerkId.slice(-6).toUpperCase()}</p>
+                                    <p className="text-gray-500 font-mono text-sm mt-1">Medlemsnummer: #{selectedMember.clerkId?.slice(-6).toUpperCase() ?? "N/A"}</p>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 text-left">
                                         <div>
@@ -245,10 +245,19 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
 
             {/* Error Message */}
             {state.error && (
-                <div className="fixed bottom-8 right-8 p-4 bg-red-600 text-white rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+                <div className="fixed bottom-8 right-8 p-4 bg-red-600 text-white rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 z-50">
                     <span className="material-symbols-outlined">error</span>
                     {state.error}
                     <button onClick={() => state.error = undefined} className="ml-2 opacity-50 hover:opacity-100"><span className="material-symbols-outlined">close</span></button>
+                </div>
+            )}
+
+            {/* Success Message */}
+            {state.message && (
+                <div className="fixed bottom-8 right-8 p-4 bg-emerald-600 text-white rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 z-50">
+                    <span className="material-symbols-outlined">check_circle</span>
+                    {state.message}
+                    <button onClick={() => state.message = undefined} className="ml-2 opacity-50 hover:opacity-100"><span className="material-symbols-outlined">close</span></button>
                 </div>
             )}
         </div>

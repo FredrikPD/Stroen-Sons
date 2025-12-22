@@ -122,7 +122,6 @@ export default function UserManagementClient({ members }: { members: Member[] })
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold text-gray-900">Nylig Aktive Brukere</h2>
-                    <button className="text-[#1A56DB] text-sm font-bold hover:underline">Se alle brukere</button>
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -132,9 +131,10 @@ export default function UserManagementClient({ members }: { members: Member[] })
                                 <tr className="border-b border-gray-100">
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Bruker</th>
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Rolle</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Sist Aktiv</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Handling</th>
+
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -154,30 +154,38 @@ export default function UserManagementClient({ members }: { members: Member[] })
                                         </td>
                                         <td className="py-4 px-6">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold gap-1.5 ${member.role === 'ADMIN' ? 'bg-purple-50 text-purple-700' :
-                                                    member.membershipType === 'STUDENT' ? 'bg-orange-50 text-orange-700' :
-                                                        'bg-blue-50 text-blue-700'
+                                                member.membershipType === 'STUDENT' ? 'bg-orange-50 text-orange-700' :
+                                                    'bg-blue-50 text-blue-700'
                                                 }`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${member.role === 'ADMIN' ? 'bg-purple-500' :
-                                                        member.membershipType === 'STUDENT' ? 'bg-orange-500' :
-                                                            'bg-blue-500'
+                                                    member.membershipType === 'STUDENT' ? 'bg-orange-500' :
+                                                        'bg-blue-500'
                                                     }`}></span>
                                                 {member.role === 'ADMIN' ? 'Administrator' :
                                                     member.membershipType === 'STUDENT' ? 'Student' : 'Medlem'}
                                             </span>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <span className="inline-flex items-center px-2 py-1 rounded bg-green-50 text-green-700 text-xs font-bold">
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {member.membershipType === 'STANDARD' ? 'Standard' :
+                                                    member.membershipType === 'HONORARY' ? 'Æresmedlem' :
+                                                        member.membershipType === 'TRIAL' ? 'Prøvemedlem' :
+                                                            member.membershipType === 'SUPPORT' ? 'Støttemedlem' :
+                                                                member.membershipType}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${member.status === 'Aktiv' ? 'bg-green-50 text-green-700' :
+                                                    member.status === 'Ventende' ? 'bg-amber-50 text-amber-700' :
+                                                        'bg-gray-50 text-gray-700'
+                                                }`}>
                                                 {member.status}
                                             </span>
                                         </td>
                                         <td className="py-4 px-6 text-sm text-gray-500">
                                             {member.lastActive}
                                         </td>
-                                        <td className="py-4 px-6 text-right">
-                                            <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                                                <span className="material-symbols-outlined text-xl">more_vert</span>
-                                            </button>
-                                        </td>
+
                                     </tr>
                                 ))}
                                 {paginatedMembers.length === 0 && (

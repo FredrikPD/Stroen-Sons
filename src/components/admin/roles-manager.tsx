@@ -12,7 +12,7 @@ interface Member {
     email: string;
     role: Role;
     membershipType: string;
-    clerkId: string;
+    clerkId: string | null;
 }
 
 export default function RolesManager() {

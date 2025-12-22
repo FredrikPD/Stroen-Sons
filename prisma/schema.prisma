@@ -7,20 +7,21 @@ datasource db {
 }
 
 model Member {
-  id             String   @id @default(cuid())
-  clerkId        String   @unique
-  email          String   @unique
+  id             String       @id @default(cuid())
+  clerkId        String?      @unique
+  email          String       @unique
   firstName      String?
   lastName       String?
   phoneNumber    String?
   address        String?
   zipCode        String?
   city           String?
-  membershipType String   @default("STANDARD")
-  role           Role     @default(MEMBER)
-  balance        Decimal  @default(0.0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  membershipType String       @default("STANDARD")
+  role           Role         @default(MEMBER)
+  status         MemberStatus @default(ACTIVE)
+  balance        Decimal      @default(0.0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   payments        Payment[]
   eventsCreated   Event[]          @relation("EventCreatedBy")
@@ -143,6 +144,12 @@ enum PostCategory {
   NYHET
   REFERAT
   SOSIALT
+}
+
+enum MemberStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
 }
 
 enum RequestStatus {

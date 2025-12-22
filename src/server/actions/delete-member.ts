@@ -30,22 +30,70 @@ export async function deleteMember(
         }
 
         // 2. Delete from Clerk
-        const client = await clerkClient();
-        try {
-            await client.users.deleteUser(member.clerkId);
-        } catch (clerkError: any) {
-            console.error("Failed to delete Clerk user:", clerkError);
-            // If user not found in Clerk (404), we can proceed to delete from DB
-            // Otherwise, we might want to stop? For now, we proceed to clean up our DB
-            // assuming admin wants them gone.
-            const isNotFound = clerkError?.errors?.[0]?.code === "resource_not_found";
-            if (!isNotFound) {
-                // return { error: "Kunne ikke slette bruker fra Clerk. Prøv igjen manuelt i Clerk dashboard." };
-                // Actually, let's proceed but warn? No, let's just log and proceed for "force delete" feel
+        if (member.clerkId) {
+            const client = await clerkClient();
+            try {
+                await client.users.deleteUser(member.clerkId);
+            } catch (clerkError: any) {
+                const isNotFound =
+                    clerkError?.status === 404 ||
+                    clerkError?.errors?.[0]?.code === "resource_not_found";
+
+                if (isNotFound) {
+                    console.log("Member not found in Clerk (already deleted?), continuing to delete from database.");
+                } else {
+                    console.error("Failed to delete Clerk user:", clerkError);
+                }
             }
         }
 
-        // 3. Delete from Prisma
+        // 3. Clean up related records (Prisma doesn't cascade all of these)
+
+        // Financial records
+        await db.paymentRequest.deleteMany({ where: { memberId } });
+        await db.payment.deleteMany({ where: { memberId } });
+
+        // Keep transactions for accounting, but unlink the member
+        await db.transaction.updateMany({
+            where: { memberId },
+            data: { memberId: null },
+        });
+
+        // Social content
+        // Note: Deleting posts will cascade delete comments on those posts
+        await db.post.deleteMany({ where: { authorId: memberId } });
+        // Delete comments made by this user on other posts
+        await db.comment.deleteMany({ where: { authorId: memberId } });
+
+        // Handle events created by this user
+        const eventsCount = await db.event.count({
+            where: { createdById: memberId },
+        });
+
+        if (eventsCount > 0) {
+            // Find another admin to inherit the events
+            const otherAdmin = await db.member.findFirst({
+                where: {
+                    role: "ADMIN",
+                    id: { not: memberId },
+                },
+            });
+
+            if (otherAdmin) {
+                await db.event.updateMany({
+                    where: { createdById: memberId },
+                    data: { createdById: otherAdmin.id },
+                });
+            } else {
+                // If no other admin (edge case), delete the events
+                // Note: This might still fail if events have unrelated constraints, but it's the best attempt
+                await db.event.deleteMany({
+                    where: { createdById: memberId },
+                });
+            }
+        }
+
+        // 4. Delete from Prisma
         await db.member.delete({
             where: { id: memberId },
         });

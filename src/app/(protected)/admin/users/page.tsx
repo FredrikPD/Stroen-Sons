@@ -14,7 +14,7 @@ export default async function UserManagementPage() {
         db.member.count(),
         db.member.count({ where: { role: "ADMIN" } }),
         db.member.count({ where: { membershipType: "STUDENT" } }), // Assuming STUDENT is a valid membershipType or just placeholder logic
-        db.member.count({ where: { membershipType: "TRIAL" } }), // Using TRIAL as pending/applications proxy
+        db.member.count({ where: { status: "PENDING" } }),
         db.member.findMany({
             orderBy: { createdAt: 'desc' },
             select: {
@@ -24,6 +24,7 @@ export default async function UserManagementPage() {
                 email: true,
                 role: true,
                 membershipType: true,
+                status: true,
                 createdAt: true, // Used to calc approximate "last active" if not tracking activity
                 updatedAt: true,
             }
@@ -47,7 +48,7 @@ export default async function UserManagementPage() {
             email: m.email,
             role: m.role,
             membershipType: m.membershipType,
-            status: "Aktiv", // Defaulting to active as per plan
+            status: m.status === 'ACTIVE' ? "Aktiv" : m.status === 'PENDING' ? "Ventende" : "Inaktiv",
             lastActive: lastActive,
             avatarInitial: (m.firstName?.[0] || m.email[0]).toUpperCase()
         };
@@ -58,23 +59,23 @@ export default async function UserManagementPage() {
             title: "Totalt Medlemmer",
             value: totalMembers,
             icon: "groups",
-            colorClass: "text-blue-500 bg-blue-50",
-            iconColor: "text-blue-500"
+            colorName: "indigo-500", // For text-indigo-500 and from-indigo-500
+            gradientFrom: "from-indigo-500/5"
         },
         {
             title: "Administratorer",
             value: adminCount,
-            icon: "admin_panel_settings", // verifiedish
-            colorClass: "text-purple-500 bg-purple-50",
-            iconColor: "text-purple-500"
+            icon: "admin_panel_settings",
+            colorName: "purple-500",
+            gradientFrom: "from-purple-500/5"
         },
         {
             title: "Ventende",
             value: pendingCount,
-            suffix: "søknader",
+            suffix: "invitasjoner",
             icon: "hourglass_top",
-            colorClass: "text-yellow-500 bg-yellow-50",
-            iconColor: "text-yellow-500"
+            colorName: "amber-500",
+            gradientFrom: "from-amber-500/5"
         },
     ];
 
@@ -89,19 +90,18 @@ export default async function UserManagementPage() {
             {/* Stats Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col justify-between h-[120px] shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <span className="material-symbols-outlined text-6xl">{stat.icon}</span>
-                        </div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className={`p-2 rounded-lg ${stat.colorClass} bg-opacity-50`}>
-                                <span className={`material-symbols-outlined text-lg ${stat.iconColor}`}>{stat.icon}</span>
-                            </div>
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{stat.title}</span>
+                    <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between h-[120px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradientFrom} to-transparent pointer-events-none`} />
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className={`material-symbols-outlined text-${stat.colorName} text-lg`}>{stat.icon}</span>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{stat.title}</span>
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
                             {stat.suffix && <span className="text-xs text-gray-500 font-medium">{stat.suffix}</span>}
+                        </div>
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
+                            <span className={`material-symbols-outlined text-7xl text-${stat.colorName}`}>{stat.icon}</span>
                         </div>
                     </div>
                 ))}
