@@ -5,8 +5,25 @@ const isPublicRoute = createRouteMatcher([
   "/api/uploadthing(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
+export default clerkMiddleware(async (auth, req) => {
+  if (isAdminRoute(req)) {
+    await auth.protect();
+
+    // Check custom role in metadata if not using Clerk Orgs
+    const { sessionClaims } = await auth();
+
+    // Clerk passes publicMetadata as public_metadata in the JWT
+    // @ts-ignore
+    const role = sessionClaims?.public_metadata?.role;
+
+    // NOTE: This assumes you have configured the session token to include public_metadata
+    if (role !== "ADMIN") {
+      const url = new URL("/dashboard", req.url);
+      return Response.redirect(url);
+    }
+  }
 
   if (!isPublicRoute(req)) {
     await auth.protect();
