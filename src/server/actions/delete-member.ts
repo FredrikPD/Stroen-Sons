@@ -59,6 +59,26 @@ export async function deleteMember(
             data: { memberId: null },
         });
 
+        // Handle balance payout if positive
+        // We do this BEFORE unlinking the member from transactions (above is updateMany, but we want to create a new one)
+        // Actually, the above unlinks OLD transactions. We want to add a FINAL transaction.
+        // Prisma Decimal to number conversion
+        const balance = Number(member.balance);
+        if (balance > 0) {
+            await db.transaction.create({
+                data: {
+                    amount: -balance, // Negative to reduce treasury
+                    description: `Utbetaling av saldo ved utmelding: ${member.firstName} ${member.lastName}`,
+                    category: "MEMBER_EXIT",
+                    date: new Date(),
+                    memberId: null, // User is being deleted, so we don't link it (or link it then it gets unlinked? easier to just set null or store name in description)
+                    // If we link it to memberId, we must ensure it's not deleted by cascade (transactions usually aren't).
+                    // But we are about to delete the member.
+                    // The best approach: Create transaction with memberId = null immediately, but description contains the name.
+                },
+            });
+        }
+
         // Social content
         // Note: Deleting posts will cascade delete comments on those posts
         await db.post.deleteMany({ where: { authorId: memberId } });

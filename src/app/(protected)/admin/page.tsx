@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                     {/* New Event */}
-                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                    <Link href="/admin/events/new" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
                         <div className="mb-4">
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">calendar_add_on</span>
@@ -104,11 +104,11 @@ export default function AdminDashboardPage() {
                             <h3 className="text-base font-bold text-gray-900 mb-1">Nytt Arrangement</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Opprett et nytt arrangement for klubben.</p>
                         </div>
-                        <button className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                        <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
                             <span className="material-symbols-outlined text-base">add</span>
                             Opprett Arrangement
-                        </button>
-                    </div>
+                        </div>
+                    </Link>
 
                     {/* New Post */}
                     <Link href="/admin/posts/new" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">

@@ -51,6 +51,18 @@ export const ourFileRouter = {
             // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
             return { uploadedBy: metadata.userId, url: file.ufsUrl };
         }),
+
+    coverImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+        .middleware(async () => {
+            const user = await currentUser();
+            if (!user) throw new UploadThingError("Unauthorized");
+            const member = await db.member.findUnique({ where: { clerkId: user.id } });
+            if (!member || member.role !== "ADMIN") throw new UploadThingError("Admin access required");
+            return { userId: user.id };
+        })
+        .onUploadComplete(async ({ file }) => {
+            return { url: file.ufsUrl };
+        }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
