@@ -79,26 +79,48 @@ export async function deleteMember(
             });
         }
 
-        // Social content
-        // Note: Deleting posts will cascade delete comments on those posts
-        await db.post.deleteMany({ where: { authorId: memberId } });
-        // Delete comments made by this user on other posts
+        // Social content & Events
+        // We attempt to transfer ownership of Posts and Events to another admin to preserve history.
+
+        // Find another admin to inherit content
+        const otherAdmin = await db.member.findFirst({
+            where: {
+                role: "ADMIN",
+                id: { not: memberId },
+            },
+        });
+
+        // 1. Handle Posts
+        const postsCount = await db.post.count({
+            where: { authorId: memberId },
+        });
+
+        if (postsCount > 0) {
+            if (otherAdmin) {
+                // Transfer posts to the other admin
+                await db.post.updateMany({
+                    where: { authorId: memberId },
+                    data: { authorId: otherAdmin.id },
+                });
+            } else {
+                // Fallback: Delete posts if no other admin exists
+                await db.post.deleteMany({
+                    where: { authorId: memberId },
+                });
+            }
+        }
+
+        // 2. Handle Comments
+        // We always delete comments authored by the user, as attributing personal comments
+        // to another admin would be confusing/impersonation.
         await db.comment.deleteMany({ where: { authorId: memberId } });
 
-        // Handle events created by this user
+        // 3. Handle Events
         const eventsCount = await db.event.count({
             where: { createdById: memberId },
         });
 
         if (eventsCount > 0) {
-            // Find another admin to inherit the events
-            const otherAdmin = await db.member.findFirst({
-                where: {
-                    role: "ADMIN",
-                    id: { not: memberId },
-                },
-            });
-
             if (otherAdmin) {
                 await db.event.updateMany({
                     where: { createdById: memberId },
@@ -106,7 +128,6 @@ export async function deleteMember(
                 });
             } else {
                 // If no other admin (edge case), delete the events
-                // Note: This might still fail if events have unrelated constraints, but it's the best attempt
                 await db.event.deleteMany({
                     where: { createdById: memberId },
                 });
