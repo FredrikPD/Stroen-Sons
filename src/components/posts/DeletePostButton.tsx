@@ -3,15 +3,23 @@
 import { deletePost } from "@/server/actions/posts";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useModal } from "@/components/providers/ModalContext";
 
 export default function DeletePostButton({ postId }: { postId: string }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { openConfirm, openAlert } = useModal();
 
     const handleDelete = async () => {
-        if (!confirm("Er du sikker på at du vil slette dette innlegget? Det kan ikke angres.")) {
-            return;
-        }
+        const confirmed = await openConfirm({
+            title: "Slett innlegg",
+            message: "Er du sikker på at du vil slette dette innlegget? Det kan ikke angres.",
+            type: "error",
+            confirmText: "Slett",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
 
         setLoading(true);
         const res = await deletePost(postId);
@@ -20,7 +28,11 @@ export default function DeletePostButton({ postId }: { postId: string }) {
             router.push("/posts");
             router.refresh();
         } else {
-            alert(res.error || "Noe gikk galt");
+            await openAlert({
+                title: "Feil",
+                message: res.error || "Noe gikk galt",
+                type: "error"
+            });
             setLoading(false);
         }
     };

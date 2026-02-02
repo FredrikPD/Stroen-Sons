@@ -5,17 +5,8 @@ export default function AboutPage() {
         <div className="flex flex-col pb-12">
 
             {/* Hero Section */}
-            <div className="relative w-full h-[500px] overflow-hidden">
-                <Image
-                    src="/about-cover.png"
-                    alt="Om Klubben Cover"
-                    fill
-                    className="object-cover"
-                    priority
-                    unoptimized
-                />
-                <div className="absolute inset-0 bg-black/60" />
-                <div className="absolute inset-0 flex flex-col items-center justify-end text-center text-white p-8 pb-16">
+            <div className="relative w-full h-[350px] overflow-hidden bg-black">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-8">
                     <span className="text-[#FBBF24] font-bold tracking-widest text-xs mb-2 uppercase">Siden 2025</span>
                     <h1 className="text-5xl font-bold mb-6">OM KLUBBEN</h1>
                     <div className="w-16 h-1 bg-[#FBBF24] mb-6 rounded-full" />
@@ -58,10 +49,10 @@ export default function AboutPage() {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {[
-                            { name: "Christian Berg", role: "PRESIDENT", image: "/cover.png" }, // Placeholder image
-                            { name: "Alexander Moe", role: "VISEPRESIDENT", image: "/cover.png" },
-                            { name: "Fredrik Hagen", role: "ØKONOMIANSVARLIG", color: "text-[#D97706]", image: "/cover.png" },
-                            { name: "Navn Navnesen", role: "STYREMEDLEM", image: "/cover.png" }
+                            { name: "Jan August B. Kristiansen", role: "STYREMEDLEM", image: "/images/logo_cover.png" }, // Placeholder image
+                            { name: "Trym Ekra-Reistad", role: "STYREMEDLEM", image: "/images/logo_cover.png" },
+                            { name: "Georg Samuelsen", role: "STYREMEDLEM", image: "/images/logo_cover.png" },
+                            { name: "Fredrik Preus Dovland", role: "STYREMEDLEM", image: "/images/logo_cover.png" }
                         ].map((member, i) => (
                             <div key={i} className="flex flex-col gap-3 group">
                                 <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 grayscale group-hover:grayscale-0 transition-all duration-500">
@@ -77,7 +68,7 @@ export default function AboutPage() {
                                     />
                                 </div>
                                 <div>
-                                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${member.color || 'text-gray-500'} `}>{member.role}</p>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 text-gray-500`}>{member.role}</p>
                                     <h3 className="text-sm font-bold text-gray-900">{member.name}</h3>
                                 </div>
                             </div>
@@ -93,9 +84,46 @@ export default function AboutPage() {
 
                     <div className="space-y-4">
                         {[
-                            { title: "§1 Formål", content: "Klubbens formål er å fremme sosialt samvær og nettverksbygging blant medlemmene gjennom regelmessige arrangementer og turer." },
-                            { title: "§2 Medlemskap", content: "Medlemskap er kun etter invitasjon. Nye medlemmer må godkjennes enstemmig av styret og gjennomgå prøvetid." },
-                            { title: "§3 Eksklusjon", content: "Styret kan med 2/3 flertall ekskludere medlemmer som motarbeider klubbens interesser eller bryter dens vedtekter." }
+                            {
+                                title: "§1 Formål",
+                                content: "Gutteklubben har som edel hensikt og formål å fremme og opprettholde godt kameratskap i en aktiv form. Dette vil sikre medlemmene fysisk og psykisk velvære."
+                            },
+                            {
+                                title: "§2 Aktiviteter",
+                                content: "Gutteklubben skal være en spore for medlemmene til å oppnå de festlige og sosiale behov den enkelte har satt seg. Derfor skal det arrangeres årvisse leker i gutteklubbens regi."
+                            },
+                            {
+                                title: "§3 Eksklusivitet",
+                                content: "Gutteklubben skal være eksklusiv og av en viss størrelse. Med dette forstås at medlemstallet ikke skal overstige 25 personer."
+                            },
+                            {
+                                title: "§4 Plikter",
+                                content: "Medlemskap plikter til aktivt arbeid med, og aktiv deltakelse i planlegging og sosiale arrangementer i gutteklubbens regi."
+                            },
+                            {
+                                title: "§5 Generalforsamling og Styre",
+                                content: "Generalforsamlingen skal finne sted hver vår, etter vinterleker og før sommerleker. Nytt styre i gutteklubben konstitueres på den ordinære generalforsamling hvert år, og har virkning fra denne dato. Styret skal bestå av: Formann, økonomisjef, teknisk sjef, referent."
+                            },
+                            {
+                                title: "§6 Styreperiode og Økonomi",
+                                content: "Som styreperiode regnes 1 - ett - år. Økonomisjefen plikter å fremlegge sitt regnskap på den ordinære generalforsamlingen. Vedtektsendringer kan kun vedtas ved generalforsamling. Det kreves ⅔ flertall blant de fremmøtte. Det samme gjelder i saker av økonomisk art."
+                            },
+                            {
+                                title: "§7 Ekstraordinær Generalforsamling",
+                                content: "Ved behov kan det innkalles til ekstraordinær generalforsamling for å ta opp hastesaker."
+                            },
+                            {
+                                title: "§8 Nye Medlemmer",
+                                content: "Nye medlemmer skal enstemmig godkjennes på generalforsamling. Nye medlemmer skal betale en innmeldingsavgift på kr 2 000 - engangsavgift som gjelder følgelig hele livet."
+                            },
+                            {
+                                title: "§9 Kontingent",
+                                content: "Den årlige medlemskontingent fastsettes på den ordinære generalforsamling (Kr 750 er satt som månedlig beløp ved oppstart av klubben). Månedskontingenten skal betales gjennom fast månedlig trekk i egen nettbank, innen siste dag i måneden. Øvrige innbetalinger etter påkrav skal skje innen 14 dager."
+                            },
+                            {
+                                title: "§10 Eksklusjon",
+                                content: "Et medlem kan ekskluderes fra gutteklubben. Eksklusjon må begrunnes i overtredelse av gutteklubbens vedtekter eller sverting av klubbens gode navn og rykte. Eksklusjon må godkjennes enstemmig på generalforsamlingen. Den angjeldende person forstås da naturligvis ikke å ha stemmerett."
+                            }
                         ].map((section, i) => (
                             <details key={i} className="group bg-white border border-gray-200 rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
                                 <summary className="flex cursor-pointer items-center justify-between p-6 text-gray-900">
@@ -116,11 +144,35 @@ export default function AboutPage() {
                         ))}
                     </div>
 
+                    <div className="mt-12 bg-gray-50 rounded-2xl p-8 border border-gray-100">
+                        <h3 className="text-lg font-bold text-gray-900 mb-6">Tilleggsmerknader og Stadfestelser</h3>
+                        <ul className="space-y-4 text-sm text-gray-600 leading-relaxed list-disc pl-5">
+                            <li>Klubben skal sørge for tilretteleggelse av variert aktivitet: reiser, fysiske utfordringer, felles mål, prosjekter og sosialt samvær, med en balanse mellom eventyr, kultur og moro - ikke utelukkende fest og fokus på alkohol.</li>
+                            <li>Det anbefales å tenke seg godt om før man blir med i gutteklubben da medlemskap medfører krav om aktivt engasjement og driv, økonomisk forpliktelse og bidrag til et fellesskap som er større enn en selv.</li>
+                            <li>Ved behov for felles kasse eller spleis til aktiviteter, forplikter alle seg til å betale i tide for å sikre økonomisk ryddighet.</li>
+                            <li>Medlemskap er et privilegium og baseres på tillit og engasjement.</li>
+                            <li>Om noen i broderlig ånd ønsker å trekke seg, skal dette skje med stil. En passende «exit-seremoni» eller annen verdig avskjed vil finne sted. Vi takker for innsatsen, men tar oss retten til å mimre. * Innmeldingsavgift refunderes ikke ved frivillig utmelding. *</li>
+                            <li>Minimum én hovedaktivitet i året (utenlandstur, julebord, sommerfest etc.) er obligatorisk for å beholde aktiv medlemsstatus – unntak gjøres kun etter søknad og gyldig grunn.</li>
+                            <li>For de som av livets omstendigheter ikke lenger kan delta aktivt, men som fortsatt er en del av klubbens ånd, kan æresmedlemskap vurderes. Ingen ekte medlemmer skal glemmes.</li>
+                            <li>Rotasjonsansvar - Alle medlemmer forplikter seg til å påta seg planleggingsansvar (f.eks. for én aktivitet eller tur) etter tur, for å sikre likt engasjement og ansvar.</li>
+                        </ul>
+                        <p className="mt-6 text-sm italic text-gray-500">
+                            Et siste ord. Dette er ikke en tilfeldig gruppe – dette er en klubb for livet. Vi bygger videre på det vi har, én tur, én samtale og én dårlig idé om gangen. I all vår framtidige travelhet, skal denne klubben være vårt ankerpunkt - et bevisst valg om å ikke miste hverandre av syne.
+                        </p>
+                        <p className="mt-4 text-xs text-gray-400">
+                            *En andel av påmeldingsavgiften på kr 2 000 per person vil benyttes til innkjøp av rekvisitter, eventuell merchandise og øvrige effekter i forbindelse med Kick-Off den 09.08.25.*
+                        </p>
+                    </div>
+
                     <div className="mt-12 text-center">
-                        <button className="inline-flex items-center gap-2 text-[#D97706] text-xs font-bold uppercase tracking-widest hover:underline">
+                        <a
+                            href="/documents/vedtekter.pdf"
+                            download="Stroen_Sons_Vedtekter.pdf"
+                            className="inline-flex items-center gap-2 text-[#D97706] text-xs font-bold uppercase tracking-widest hover:underline"
+                        >
                             <span className="material-symbols-outlined text-sm">download</span>
                             Last ned fulle vedtekter (PDF)
-                        </button>
+                        </a>
                     </div>
                 </section>
             </div>

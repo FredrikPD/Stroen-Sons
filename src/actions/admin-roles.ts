@@ -33,7 +33,7 @@ export async function updateMemberRole(memberId: string, newRole: Role) {
             where: { id: memberId },
             data: { role: newRole },
         });
-        revalidatePath('/admin/roles');
+        revalidatePath('/admin/users/roles');
         return { success: true };
     } catch (error) {
         console.error("Error updating member role:", error);
@@ -47,7 +47,7 @@ export async function updateMemberType(memberId: string, newType: string) {
             where: { id: memberId },
             data: { membershipType: newType },
         });
-        revalidatePath('/admin/roles');
+        revalidatePath('/admin/users/roles');
         return { success: true };
     } catch (error) {
         console.error("Error updating member type:", error);

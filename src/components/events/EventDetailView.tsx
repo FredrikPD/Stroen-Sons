@@ -1,9 +1,10 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { joinEvent, leaveEvent } from "@/app/(protected)/events/[id]/actions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 // Types
 type Attendee = {
@@ -11,6 +12,12 @@ type Attendee = {
     firstName: string | null;
     lastName: string | null;
     email: string;
+};
+
+type Photo = {
+    id: string;
+    url: string;
+    caption: string | null;
 };
 
 type PlanItem = {
@@ -40,12 +47,16 @@ type EventDetailViewProps = {
     event: EventDetail;
     attendees: Attendee[];
     currentUserIsAttending: boolean;
+
     attendeeCount: number;
+    photos: Photo[];
+    totalPhotoCount: number;
 };
 
-export default function EventDetailView({ event, attendees, currentUserIsAttending, attendeeCount }: EventDetailViewProps) {
+export default function EventDetailView({ event, attendees, currentUserIsAttending, attendeeCount, photos, totalPhotoCount }: EventDetailViewProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [showAttendees, setShowAttendees] = useState(false);
 
     const startDate = new Date(event.startAt);
     const dateStr = startDate.toLocaleDateString("no-NO", { day: "numeric", month: "long", year: "numeric" });
@@ -65,19 +76,10 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
     return (
         <div className="w-full flex-1 bg-white min-h-screen pb-20">
-            {/* Back Button */}
-            <div className="mb-6">
-                <Link
-                    href="/events"
-                    className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm"
-                >
-                    <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                    Tilbake til arrangementer
-                </Link>
-            </div>
+
 
             {/* HERO SECTION */}
-            <div className="relative h-[400px] w-full bg-black rounded-3xl overflow-hidden">
+            <div className="relative h-[320px] w-full bg-black rounded-3xl overflow-hidden">
                 {event.coverImage ? (
                     <img
                         src={event.coverImage}
@@ -86,35 +88,35 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-white/20">
-                        <span className="material-symbols-outlined text-6xl">image</span>
+                        <span className="material-symbols-outlined text-5xl">image</span>
                     </div>
                 )}
 
                 {/* Overlay Content */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
-                    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 md:p-10">
+                    <div className="max-w-7xl mx-auto w-full flex flex-col gap-4">
                         {/* Badges */}
                         <div className="flex items-center gap-2">
                             {event.hasPassed ? (
-                                <span className="bg-[#3A3A3A] text-[#C5A66B] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-[#C5A66B]/20">
+                                <span className="bg-black/60 text-white px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-white/20 backdrop-blur-md">
                                     • Gjennomført
                                 </span>
                             ) : (
-                                <span className="bg-[#E8DCC5] text-[#8C7648] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                                <span className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
                                     Påmelding åpen
                                 </span>
                             )}
                         </div>
 
                         {/* Title & Loc */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                            <div className="flex flex-col gap-1.5">
+                                <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
                                     {event.title}
                                 </h1>
                                 {event.location && (
-                                    <div className="flex items-center gap-2 text-white/60 text-sm font-medium">
-                                        <span className="material-symbols-outlined text-[1.1rem]">location_on</span>
+                                    <div className="flex items-center gap-1.5 text-white/70 text-sm font-medium">
+                                        <span className="material-symbols-outlined text-base">location_on</span>
                                         <span>{event.location}</span>
                                     </div>
                                 )}
@@ -124,9 +126,9 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             <div className="flex items-center gap-3">
                                 <Link
                                     href={`/gallery/${event.id}`}
-                                    className="h-10 px-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-2 text-white text-xs font-bold transition-all"
+                                    className="h-9 px-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-1.5 text-white text-xs font-bold transition-all"
                                 >
-                                    <span className="material-symbols-outlined text-[1.1rem]">photo_library</span>
+                                    <span className="material-symbols-outlined text-sm">photo_library</span>
                                     <span>Se alle bilder</span>
                                 </Link>
                             </div>
@@ -136,16 +138,20 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
             </div>
 
             {/* CONTENT GRID */}
-            <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* LEFT COLUMN (Main Content) */}
-                <div className="lg:col-span-2 flex flex-col gap-12">
+                <div className="lg:col-span-2 flex flex-col gap-8">
 
                     {/* About Section */}
-                    <div className="flex flex-col gap-4">
-                        <h2 className="text-xl font-bold text-gray-900">Om kvelden</h2>
+                    <div className="flex flex-col gap-3">
+                        <h2 className="text-lg font-bold text-gray-900">Om kvelden</h2>
                         <div className="prose prose-sm text-gray-500 leading-relaxed max-w-none">
-                            <p>{event.description || "Ingen beskrivelse tilgjengelig."}</p>
+                            {event.description ? (
+                                <ReactMarkdown>{event.description}</ReactMarkdown>
+                            ) : (
+                                "Ingen beskrivelse tilgjengelig."
+                            )}
                             {/* Placeholder text if description is short to match design vibe */}
                             {!event.description && (
                                 <>
@@ -158,22 +164,22 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     </div>
 
                     {/* Program Section */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#C5A66B]">schedule</span>
-                            <h2 className="text-xl font-bold text-gray-900">Program for kvelden</h2>
+                            <span className="material-symbols-outlined text-[#4F46E5] text-lg">schedule</span>
+                            <h2 className="text-lg font-bold text-gray-900">Program for kvelden</h2>
                         </div>
 
-                        <div className="relative pl-2 border-l border-gray-200 flex flex-col gap-8 ml-2">
+                        <div className="relative pl-2 border-l border-gray-200 flex flex-col gap-6 ml-1.5">
                             {event.program && event.program.length > 0 ? (
                                 event.program.map((item) => (
-                                    <div key={item.id} className="relative pl-6">
-                                        <div className="absolute -left-[13px] top-1.5 w-3 h-3 rounded-full border-2 border-[#C5A66B] bg-[#F9F9F7]"></div>
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-baseline gap-3">
+                                    <div key={item.id} className="relative pl-5">
+                                        <div className="absolute -left-[11px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#4F46E5] bg-[#F9F9F7]"></div>
+                                        <div className="flex flex-col gap-0.5">
+                                            <div className="flex items-baseline gap-2.5">
                                                 <span className="text-sm font-bold text-gray-900">{item.time}</span>
-                                                <span className="text-base font-bold text-gray-900">-</span>
-                                                <span className="text-base font-bold text-gray-900">{item.title}</span>
+                                                <span className="text-sm font-bold text-gray-900">-</span>
+                                                <span className="text-sm font-bold text-gray-900">{item.title}</span>
                                             </div>
                                             {item.description && (
                                                 <p className="text-sm text-gray-500 leading-relaxed max-w-md">
@@ -190,51 +196,62 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     </div>
 
                     {/* Gallery Section */}
-                    <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                Bildearkiv
-                                <span className="material-symbols-outlined text-gray-400 text-sm">lock</span>
-                            </h2>
-                            <Link href={`/gallery/${event.id}`} className="text-[#C5A66B] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
-                                <span>Se alle bilder</span>
-                                <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
-                            </Link>
-                        </div>
+                    {photos && photos.length > 0 && (
+                        <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    Bildearkiv
+                                    <span className="material-symbols-outlined text-gray-400 text-sm">lock</span>
+                                </h2>
+                                <Link href={`/gallery/${event.id}`} className="text-[#4F46E5] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                                    <span>Se alle bilder</span>
+                                    <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
+                                </Link>
+                            </div>
 
-                        <div className="grid grid-cols-3 gap-4">
-                            {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="aspect-square bg-gray-200 rounded-lg overflow-hidden relative group">
-                                    {/* Placeholder images */}
-                                    <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400 group-hover:scale-105 transition-transform duration-500">
-                                        {i === 6 ? (
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-xl font-bold text-white">+137</span>
+                            <div className="grid grid-cols-3 gap-4">
+                                {photos.slice(0, 6).map((photo, i) => (
+                                    <Link
+                                        href={`/gallery/${event.id}`}
+                                        key={photo.id}
+                                        className="aspect-square bg-gray-200 rounded-lg overflow-hidden relative group cursor-pointer"
+                                    >
+                                        <img
+                                            src={photo.url}
+                                            alt={photo.caption || ""}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+
+                                        {/* Overlay for last item if there are more photos */}
+                                        {i === 5 && totalPhotoCount > 6 && (
+                                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-[2px] hover:backdrop-blur-[1px] transition-all">
+                                                <span className="text-xl font-bold text-white">+{totalPhotoCount - 5}</span>
                                                 <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest">Bilder</span>
                                             </div>
-                                        ) : (
-                                            <span className="material-symbols-outlined">image</span>
                                         )}
-                                    </div>
-                                    {/* Overlay for last item */}
-                                    {i === 6 && <div className="absolute inset-0 bg-black/40"></div>}
-                                </div>
-                            ))}
+
+                                        {/* Hover overlay for other items */}
+                                        {!(i === 5 && totalPhotoCount > 6) && (
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* RIGHT COLUMN (Sidebar) */}
                 <div className="flex flex-col gap-6">
 
                     {/* Details Card */}
-                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-6">
-                        <h3 className="text-lg font-bold text-gray-900">Detaljer</h3>
+                    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
+                        <h3 className="text-base font-bold text-gray-900">Detaljer</h3>
 
-                        <div className="flex flex-col gap-5">
+                        <div className="flex flex-col gap-4">
                             {/* Date */}
                             <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#C5A66B]">
+                                <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
                                     <span className="material-symbols-outlined">calendar_month</span>
                                 </div>
                                 <div className="flex flex-col">
@@ -245,7 +262,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                             {/* Time */}
                             <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#C5A66B]">
+                                <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
                                     <span className="material-symbols-outlined">schedule</span>
                                 </div>
                                 <div className="flex flex-col">
@@ -256,7 +273,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                             {/* Location */}
                             <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#C5A66B]">
+                                <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
                                     <span className="material-symbols-outlined">domain</span>
                                 </div>
                                 <div className="flex flex-col">
@@ -292,12 +309,12 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                     {/* Economy Card */}
                     {event.totalCost && (
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-6">
-                            <h3 className="text-lg font-bold text-gray-900">Kostnad</h3>
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
+                            <h3 className="text-base font-bold text-gray-900">Kostnad (per pers.)</h3>
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#9A8568]">
+                                        <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
                                             <span className="material-symbols-outlined">receipt_long</span>
                                         </div>
                                         <span className="text-sm font-medium text-gray-600">Total kostnad</span>
@@ -308,7 +325,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 {event.clubSubsidy && (
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-[#F5F2EA] flex items-center justify-center text-[#2A9D8F]">
+                                            <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#2A9D8F]">
                                                 <span className="material-symbols-outlined">loyalty</span>
                                             </div>
                                             <span className="text-sm font-medium text-gray-600">Klubben dekker</span>
@@ -321,7 +338,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             <div className="border-t border-gray-100 pt-4">
                                 <div className="flex items-center justify-between mb-4">
                                     <span className="text-base font-bold text-gray-900">Din andel</span>
-                                    <span className="text-xl font-bold text-[#C5A66B]">
+                                    <span className="text-xl font-bold text-[#4F46E5]">
                                         {((event.totalCost || 0) - (event.clubSubsidy || 0)).toLocaleString("nb-NO")},-
                                     </span>
                                 </div>
@@ -330,10 +347,10 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     )}
 
                     {/* Attendees Card */}
-                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-6">
+                    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-gray-900">Deltakere</h3>
-                            <span className="px-2 py-0.5 bg-[#F5F2EA] text-[#C5A66B] rounded text-[10px] font-bold">{attendeeCount}</span>
+                            <h3 className="text-base font-bold text-gray-900">Deltakere</h3>
+                            <span className="px-1.5 py-0.5 bg-[#EEF2FF] text-[#4F46E5] rounded text-[10px] font-bold">{attendeeCount}</span>
                         </div>
 
                         {attendees.length > 0 ? (
@@ -357,15 +374,18 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             <p className="text-xs text-gray-400">Ingen deltakere enda.</p>
                         )}
 
-                        <button className="w-full py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+                        <button
+                            onClick={() => setShowAttendees(true)}
+                            className="w-full py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                        >
                             Se deltakerliste
                         </button>
                     </div>
 
                     {/* Action Card (Join/Leave) */}
                     {!event.hasPassed && (
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-4">
-                            <h3 className="text-lg font-bold text-gray-900">Påmelding</h3>
+                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-4">
+                            <h3 className="text-base font-bold text-gray-900">Påmelding</h3>
                             <p className="text-xs text-gray-500">
                                 {currentUserIsAttending
                                     ? "Du er påmeldt dette arrangementet."
@@ -396,7 +416,56 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                 </div>
 
-            </div>
-        </div>
+            </div >
+            {/* ATTENDEE MODAL */}
+            {showAttendees && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => setShowAttendees(false)}
+                    />
+
+                    {/* Modal Content */}
+                    <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Modal Header */}
+                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10">
+                            <h3 className="text-sm font-bold text-gray-900">Deltakere ({attendees.length})</h3>
+                            <button
+                                onClick={() => setShowAttendees(false)}
+                                className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                            >
+                                <span className="material-symbols-outlined text-xl">close</span>
+                            </button>
+                        </div>
+
+                        {/* Modal Body (List) */}
+                        <div className="overflow-y-auto p-2 scrollbar-hide">
+                            {attendees.length > 0 ? (
+                                <div className="flex flex-col gap-1">
+                                    {attendees.map((attendee) => (
+                                        <div key={attendee.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#222] to-[#444] text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                                                {(attendee.firstName || attendee.email).charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-sm font-bold text-gray-900 truncate">
+                                                    {attendee.firstName ? `${attendee.firstName} ${attendee.lastName || ''}` : 'Anonym'}
+                                                </span>
+                                                <span className="text-[10px] text-gray-500 truncate">{attendee.email}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-8 text-center text-gray-400 text-xs">
+                                    Ingen deltakere enda.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div >
     );
 }

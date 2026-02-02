@@ -43,7 +43,11 @@ export default async function EventDetailPage({ params }: Props) {
                 }
             },
             _count: {
-                select: { attendees: true }
+                select: { attendees: true, photos: true }
+            },
+            photos: {
+                take: 6,
+                orderBy: { createdAt: 'desc' }
             }
         }
     }) as any;
@@ -67,6 +71,7 @@ export default async function EventDetailPage({ params }: Props) {
         coverImage: event.coverImage,
         program: event.program,
         hasPassed,
+        photos: event.photos,
     };
 
     return (
@@ -77,6 +82,8 @@ export default async function EventDetailPage({ params }: Props) {
                 attendees={event.attendees}
                 currentUserIsAttending={isAttending}
                 attendeeCount={event._count.attendees}
+                photos={event.photos}
+                totalPhotoCount={event._count.photos}
             />
         </>
     );

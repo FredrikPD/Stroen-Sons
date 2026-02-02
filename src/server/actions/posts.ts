@@ -3,7 +3,6 @@
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import type { PostWithDetails } from "@/components/posts/PostItem";
-import { unstable_cache } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { PostCategory } from "@prisma/client";
 import { broadcastNotification } from "@/server/actions/notifications";
@@ -16,19 +15,18 @@ export type GetPostsParams = {
     category?: string;
 };
 
-export async function createPost(data: {
-    title: string;
-    content: string;
-    category: PostCategory;
-    eventId?: string;
-}) {
+import { postSchema, PostInput } from "@/lib/validators/posts";
+
+export async function createPost(data: PostInput) {
     const member = await ensureMember();
     if (!member || member.role !== "ADMIN") {
         return { success: false, error: "Du har ikke tilgang til å opprette innlegg." };
     }
 
-    if (!data.title || !data.content) {
-        return { success: false, error: "Tittel og innhold er påkrevd." };
+    const validatedFields = postSchema.safeParse(data);
+    if (!validatedFields.success) {
+        console.error("Validation error:", validatedFields.error);
+        return { success: false, error: "Ugyldig data. Vennligst sjekk feltene." };
     }
 
     try {
@@ -79,14 +77,15 @@ export async function deletePost(postId: string) {
     }
 }
 
-export async function updatePost(postId: string, data: {
-    title: string;
-    content: string;
-    category: PostCategory;
-}) {
+export async function updatePost(postId: string, data: PostInput) {
     const member = await ensureMember();
     if (!member || member.role !== "ADMIN") {
         return { success: false, error: "Unauthorized" };
+    }
+
+    const validatedFields = postSchema.safeParse(data);
+    if (!validatedFields.success) {
+        return { success: false, error: "Invalid data" };
     }
 
     try {
@@ -95,13 +94,15 @@ export async function updatePost(postId: string, data: {
             data: {
                 title: data.title,
                 content: data.content,
-                category: data.category
+                category: data.category,
+                eventId: data.eventId ?? null // Use null for optional disconnect usually, but depending on schema optional/nullable
             }
         });
 
         revalidatePath("/posts");
         revalidatePath(`/posts/${postId}`);
         revalidatePath("/admin");
+        revalidatePath("/admin/posts");
         return { success: true };
     } catch (error) {
         console.error("Failed to update post:", error);
@@ -121,65 +122,54 @@ export async function getPosts({
         throw new Error("Unauthorized");
     }
 
-    const getCachedPosts = unstable_cache(
-        async (params: GetPostsParams) => {
-            const { cursor, limit = 10, search = "", sort = "newest", category = "ALL" } = params;
+    const where: any = {};
+    if (search) {
+        where.OR = [
+            { title: { contains: search, mode: "insensitive" } },
+            { content: { contains: search, mode: "insensitive" } },
+        ];
+    }
 
-            const where: any = {};
-            if (search) {
-                where.OR = [
-                    { title: { contains: search, mode: "insensitive" } },
-                    { content: { contains: search, mode: "insensitive" } },
-                ];
-            }
+    if (category && category !== "ALL") {
+        where.category = category;
+    }
 
-            if (category && category !== "ALL") {
-                where.category = category;
-            }
-
-            const posts = await prisma.post.findMany({
-                take: limit + 1,
-                skip: cursor ? 1 : 0,
-                cursor: cursor ? { id: cursor } : undefined,
-                where,
-                orderBy: {
-                    createdAt: sort === "oldest" ? "asc" : "desc",
-                },
-                include: {
-                    author: {
-                        select: {
-                            firstName: true,
-                            lastName: true,
-                            email: true,
-                        },
-                    },
-                    event: {
-                        select: {
-                            title: true,
-                            id: true,
-                        },
-                    },
-                    _count: {
-                        select: { comments: true },
-                    },
-                },
-                cacheStrategy: { ttl: 60, swr: 60 }
-            });
-
-            let nextCursor: string | undefined = undefined;
-            if (posts.length > limit) {
-                const nextItem = posts.pop();
-                nextCursor = nextItem?.id;
-            }
-
-            return {
-                items: posts as unknown as PostWithDetails[],
-                nextCursor,
-            };
+    const posts = await prisma.post.findMany({
+        take: limit + 1,
+        skip: cursor ? 1 : 0,
+        cursor: cursor ? { id: cursor } : undefined,
+        where,
+        orderBy: {
+            createdAt: sort === "oldest" ? "asc" : "desc",
         },
-        ["posts-list-action"],
-        { revalidate: 60, tags: ["posts"] }
-    );
+        include: {
+            author: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                },
+            },
+            event: {
+                select: {
+                    title: true,
+                    id: true,
+                },
+            },
+            _count: {
+                select: { comments: true },
+            },
+        },
+    });
 
-    return getCachedPosts({ cursor, limit, search, sort, category });
+    let nextCursor: string | undefined = undefined;
+    if (posts.length > limit) {
+        const nextItem = posts.pop();
+        nextCursor = nextItem?.id;
+    }
+
+    return {
+        items: posts as unknown as PostWithDetails[],
+        nextCursor,
+    };
 }

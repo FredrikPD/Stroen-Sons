@@ -241,13 +241,6 @@ export default function IncomePage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <Link href="/admin/finance" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
-                    <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                    Tilbake til oversikt
-                </Link>
-            </div>
-
             <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Månedskontingent</h1>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useActionState } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { deleteMember } from "@/server/actions/delete-member";
 import { Role } from "@prisma/client";
+import { useModal } from "@/components/providers/ModalContext";
 
 type Member = {
     id: string;
@@ -23,7 +23,12 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
     const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [confirmationChecked, setConfirmationChecked] = useState(false);
-    const [state, formAction, isPending] = useActionState(deleteMember, {});
+
+    // Replacement for useActionState to allow manual invocation
+    const [state, setState] = useState<{ message?: string; error?: string }>({});
+    const [isPending, startTransition] = useTransition();
+
+    const { openConfirm, openAlert } = useModal();
 
     // Search effect
     useEffect(() => {
@@ -45,8 +50,52 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
             setSelectedMember(null);
             setConfirmationChecked(false);
             setSearch("");
+            // Clear message after 3 seconds
+            const timer = setTimeout(() => setState({}), 3000);
+            return () => clearTimeout(timer);
         }
     }, [state.message]);
+
+    const handleDelete = async () => {
+        if (!selectedMember) return;
+
+        const confirmed = await openConfirm({
+            title: "Slett Bruker",
+            message: `Er du sikker på at du vil slette ${selectedMember.firstName} ${selectedMember.lastName}? Dette sletter all historikk og kan ikke angres.`,
+            type: "error",
+            confirmText: "Slett Bruker",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        startTransition(async () => {
+            const formData = new FormData();
+            formData.append("memberId", selectedMember.id);
+
+            try {
+                // Call server action manually
+                const result = await deleteMember({}, formData);
+                setState(result);
+
+                if (result.error) {
+                    await openAlert({
+                        title: "Feil",
+                        message: result.error,
+                        type: "error"
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                setState({ error: "En uventet feil oppstod." });
+                await openAlert({
+                    title: "Feil",
+                    message: "En uventet feil oppstod.",
+                    type: "error"
+                });
+            }
+        });
+    };
 
     return (
         <div className="w-full max-w-6xl mx-auto space-y-8">
@@ -215,21 +264,18 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                     </span>
                                 </label>
 
-                                <form action={formAction}>
-                                    <input type="hidden" name="memberId" value={selectedMember.id} />
-                                    <button
-                                        type="submit"
-                                        disabled={!confirmationChecked || isPending}
-                                        className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                    >
-                                        {isPending ? (
-                                            <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></span>
-                                        ) : (
-                                            <span className="material-symbols-outlined text-lg">delete_forever</span>
-                                        )}
-                                        Slett Bruker
-                                    </button>
-                                </form>
+                                <button
+                                    onClick={handleDelete}
+                                    disabled={!confirmationChecked || isPending}
+                                    className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isPending ? (
+                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></span>
+                                    ) : (
+                                        <span className="material-symbols-outlined text-lg">delete_forever</span>
+                                    )}
+                                    Slett Bruker
+                                </button>
 
                                 <button
                                     onClick={() => setSelectedMember(null)}
@@ -248,7 +294,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                 <div className="fixed bottom-8 right-8 p-4 bg-red-600 text-white rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 z-50">
                     <span className="material-symbols-outlined">error</span>
                     {state.error}
-                    <button onClick={() => state.error = undefined} className="ml-2 opacity-50 hover:opacity-100"><span className="material-symbols-outlined">close</span></button>
+                    <button onClick={() => setState({})} className="ml-2 opacity-50 hover:opacity-100"><span className="material-symbols-outlined">close</span></button>
                 </div>
             )}
 
@@ -257,7 +303,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                 <div className="fixed bottom-8 right-8 p-4 bg-emerald-600 text-white rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 z-50">
                     <span className="material-symbols-outlined">check_circle</span>
                     {state.message}
-                    <button onClick={() => state.message = undefined} className="ml-2 opacity-50 hover:opacity-100"><span className="material-symbols-outlined">close</span></button>
+                    <button onClick={() => setState({})} className="ml-2 opacity-50 hover:opacity-100"><span className="material-symbols-outlined">close</span></button>
                 </div>
             )}
         </div>

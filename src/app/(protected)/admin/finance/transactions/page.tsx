@@ -99,10 +99,6 @@ export default function AllTransactionsPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <Link href="/admin/finance" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm mb-2">
-                        <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                        Tilbake til oversikt
-                    </Link>
                     <h1 className="text-3xl font-bold text-gray-900">Transaksjonshistorikk</h1>
                     <p className="text-gray-500 text-sm max-w-3xl mt-1">
                         Fullstendig oversikt over alle registrerte transaksjoner.

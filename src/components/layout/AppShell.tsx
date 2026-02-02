@@ -49,7 +49,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className={pathname === '/about'
           ? "flex-1 w-full"
-          : "flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-8 lg:pb-12 max-w-7xl mx-auto w-full"
+          : "flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-8 lg:pb-12 w-full"
         }>
           {children}
         </div>

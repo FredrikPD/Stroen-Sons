@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getInvoiceGroupDetails, updateInvoiceGroup, getInvoiceFormData } from "@/server/actions/invoices";
 import { togglePaymentStatus } from "@/server/actions/finance";
 import { RequestStatus } from "@prisma/client";
+import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 
 export default function InvoiceDetailPage() {
     const params = useParams();
@@ -106,10 +107,9 @@ export default function InvoiceDetailPage() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <Link href="/admin/finance/invoices" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
-                    <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                    Tilbake
-                </Link>
+                <div className="flex justify-between items-center">
+                    <PageTitleUpdater title={title} backHref="/admin/finance/invoices" backLabel="Fakturaer" />
+                </div>
             </div>
 
             {isEditing ? (

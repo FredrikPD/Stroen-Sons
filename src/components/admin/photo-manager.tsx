@@ -6,6 +6,7 @@ import { deletePhotos, getRecentEvents, getRecentPhotos, getStorageStats } from 
 import { notifyNewPhotos } from "@/server/actions/notifications";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useModal } from "@/components/providers/ModalContext";
 
 interface PhotoManagerProps {
     initialEvents: Awaited<ReturnType<typeof getRecentEvents>>;
@@ -16,6 +17,7 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
     const router = useRouter();
     const searchParams = useSearchParams();
     const eventIdParam = searchParams.get("eventId");
+    const { openConfirm, openAlert } = useModal();
 
     // State
     const [selectedEventId, setSelectedEventId] = useState<string>(eventIdParam || "");
@@ -39,12 +41,20 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
             }
 
             router.refresh();
-            alert("Bilder lastet opp!");
+            openAlert({
+                title: "Suksess",
+                message: "Bilder lastet opp!",
+                type: "success"
+            });
         },
         onUploadError: (error: Error) => {
             setIsUploading(false);
             setUploadProgress(0);
-            alert(`Feil under opplasting: ${error.message}`);
+            openAlert({
+                title: "Feil",
+                message: `Feil under opplasting: ${error.message}`,
+                type: "error"
+            });
         },
         onUploadBegin: () => {
             // Do not reset progress here as it might fire multiple times for batched uploads
@@ -148,7 +158,16 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
 
     const handleBulkDelete = async () => {
         if (selectedPhotos.size === 0) return;
-        if (!confirm(`Er du sikker på at du vil slette ${selectedPhotos.size} bilder?`)) return;
+
+        const confirmed = await openConfirm({
+            title: "Slett bilder",
+            message: `Er du sikker på at du vil slette ${selectedPhotos.size} bilder?`,
+            type: "error",
+            confirmText: "Slett",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
 
         setIsDeleting(true);
         try {
@@ -156,7 +175,11 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
             // Don't clear selection here; let the effect above handle it when initialPhotos updates
             router.refresh();
         } catch (error) {
-            alert("Feil under sletting");
+            await openAlert({
+                title: "Feil",
+                message: "Feil under sletting",
+                type: "error"
+            });
             console.error(error);
             setIsDeleting(false); // Only stop loading on error (success keeps loading until refresh)
         }

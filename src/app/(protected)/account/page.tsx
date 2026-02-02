@@ -34,22 +34,22 @@ export default async function AccountPage() {
             {/* Top Row: Profile & Role */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Card (Larger) */}
-                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-8">
+                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-4">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-80" />
 
-                    <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-4">
                         {/* Big Avatar */}
-                        <div className="min-w-24 w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-zinc-800 to-black text-white flex items-center justify-center text-3xl lg:text-4xl font-bold shadow-lg ring-4 ring-white">
+                        <div className="min-w-16 w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-zinc-800 to-black text-white flex items-center justify-center text-2xl lg:text-3xl font-bold shadow-lg ring-4 ring-white">
                             {initials}
                         </div>
 
                         <div className="flex-1 text-center md:text-left pt-2">
-                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-1">
                                 {profile.firstName} {profile.lastName}
                             </h1>
-                            <p className="text-gray-500 text-lg mb-4">{profile.email}</p>
+                            <p className="text-gray-500 text-lg mb-2">{profile.email}</p>
 
-                            <div className="flex gap-4 justify-center md:justify-start mb-8">
+                            <div className="flex gap-4 justify-center md:justify-start mb-2">
                                 <div className="flex items-center gap-2 text-xs text-gray-400">
                                     <span className="material-symbols-outlined text-sm">calendar_month</span>
                                     Medlem siden {new Date(profile.createdAt).getFullYear()}
@@ -62,7 +62,7 @@ export default async function AccountPage() {
                 </div>
 
                 {/* Role Card (Smaller) */}
-                <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 text-white rounded-2xl p-8 shadow-md relative overflow-hidden group flex flex-col justify-between min-h-[200px]">
+                <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 text-white rounded-2xl p-4 shadow-md relative overflow-hidden group flex flex-col justify-between min-h-[100px]">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
                     <div className="relative z-10 flex items-center justify-between">
@@ -75,7 +75,7 @@ export default async function AccountPage() {
                         </div>
                     </div>
 
-                    <div className="relative z-10 mt-6 flex items-center gap-2 text-zinc-400 text-sm">
+                    <div className="relative z-10 mt-2 flex items-center gap-2 text-zinc-400 text-sm">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         Kontoen er aktiv
                     </div>

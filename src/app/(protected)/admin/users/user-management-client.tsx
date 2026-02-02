@@ -22,7 +22,7 @@ const QUICK_ACTIONS = [
         title: "Inviter Nye Brukere",
         description: "Send invitasjon via e-post",
         icon: "person_add",
-        href: "/admin/invite",
+        href: "/admin/users/invite",
         colorClass: "text-[#4F46E5] bg-[#4F46E5]/10 group-hover:bg-[#4F46E5] group-hover:text-white",
         hoverBorder: "hover:border-[#4F46E5]/50"
     },
@@ -30,7 +30,7 @@ const QUICK_ACTIONS = [
         title: "Endre Medlemsroller",
         description: "Oppdater tilganger",
         icon: "admin_panel_settings",
-        href: "/admin/roles",
+        href: "/admin/users/roles",
         colorClass: "text-purple-500 bg-purple-500/10 group-hover:bg-purple-500 group-hover:text-white",
         hoverBorder: "hover:border-purple-500/50"
     },
@@ -38,7 +38,7 @@ const QUICK_ACTIONS = [
         title: "Slett Bruker",
         description: "Fjern medlem permanent",
         icon: "person_remove",
-        href: "/admin/delete",
+        href: "/admin/users/delete",
         colorClass: "text-red-500 bg-red-500/10 group-hover:bg-red-500 group-hover:text-white",
         hoverBorder: "hover:border-red-500/50"
     }
@@ -176,8 +176,8 @@ export default function UserManagementClient({ members }: { members: Member[] })
                                         </td>
                                         <td className="py-4 px-6">
                                             <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${member.status === 'Aktiv' ? 'bg-green-50 text-green-700' :
-                                                    member.status === 'Ventende' ? 'bg-amber-50 text-amber-700' :
-                                                        'bg-gray-50 text-gray-700'
+                                                member.status === 'Ventende' ? 'bg-amber-50 text-amber-700' :
+                                                    'bg-gray-50 text-gray-700'
                                                 }`}>
                                                 {member.status}
                                             </span>

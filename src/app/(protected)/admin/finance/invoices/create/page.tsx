@@ -84,11 +84,6 @@ export default function CreateInvoicePage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
-            <Link href="/admin/finance/invoices" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm mb-4">
-                <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                Tilbake til oversikt
-            </Link>
-
             <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-xl shadow-gray-200/50">
                 <div className="mb-8 border-b border-gray-100 pb-6">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Opprett Faktura</h1>
@@ -190,8 +185,8 @@ export default function CreateInvoicePage() {
                                 type="button"
                                 onClick={() => setTargetType('ALL')}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${targetType === 'ALL'
-                                        ? 'border-indigo-600 bg-indigo-50'
-                                        : 'border-gray-100 hover:border-indigo-200'
+                                    ? 'border-indigo-600 bg-indigo-50'
+                                    : 'border-gray-100 hover:border-indigo-200'
                                     }`}
                             >
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'ALL' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
@@ -206,8 +201,8 @@ export default function CreateInvoicePage() {
                                 type="button"
                                 onClick={() => setTargetType('EVENT_ATTENDEES')}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${targetType === 'EVENT_ATTENDEES'
-                                        ? 'border-indigo-600 bg-indigo-50'
-                                        : 'border-gray-100 hover:border-indigo-200'
+                                    ? 'border-indigo-600 bg-indigo-50'
+                                    : 'border-gray-100 hover:border-indigo-200'
                                     }`}
                             >
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'EVENT_ATTENDEES' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
@@ -222,8 +217,8 @@ export default function CreateInvoicePage() {
                                 type="button"
                                 onClick={() => setTargetType('MANUAL')}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${targetType === 'MANUAL'
-                                        ? 'border-indigo-600 bg-indigo-50'
-                                        : 'border-gray-100 hover:border-indigo-200'
+                                    ? 'border-indigo-600 bg-indigo-50'
+                                    : 'border-gray-100 hover:border-indigo-200'
                                     }`}
                             >
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'MANUAL' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
@@ -248,8 +243,8 @@ export default function CreateInvoicePage() {
                                 <div className="max-h-60 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {filteredMembers.map(m => (
                                         <label key={m.id} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${selectedMemberIds.includes(m.id)
-                                                ? 'bg-indigo-50 border-indigo-200'
-                                                : 'bg-white border-gray-100 hover:border-indigo-200'
+                                            ? 'bg-indigo-50 border-indigo-200'
+                                            : 'bg-white border-gray-100 hover:border-indigo-200'
                                             }`}>
                                             <div className="relative flex items-center justify-center">
                                                 <input

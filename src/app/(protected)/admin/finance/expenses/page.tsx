@@ -131,11 +131,6 @@ export default function ExpensesPage() {
 
     return (
         <div className="w-full space-y-4 pb-20">
-            <Link href="/admin/finance" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
-                <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                Tilbake til oversikt
-            </Link>
-
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold text-gray-900">Bokfør Utgifter</h1>

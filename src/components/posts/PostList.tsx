@@ -67,90 +67,46 @@ export default function PostList() {
     }, [search, sort, category]);
 
     return (
-        <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto">
-            {/* Header & Controls */}
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-4xl font-bold text-[#1A1A1A] tracking-tight">Siste Nytt & Oppdateringer</h1>
-                    <p className="text-gray-500 text-lg">Hold deg oppdatert med de siste historiene, referater fra møter og kunngjøringer fra styret.</p>
-                </div>
+        <div className="flex flex-col gap-6 w-full">
+            {/* Header */}
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">Innlegg</h1>
+                <p className="text-gray-500 text-sm">
+                    Siste viktige oppdateringer og diskusjoner fra medlemmene.
+                </p>
+            </div>
 
-                {/* Filter Bar */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                    <div className="relative w-full sm:max-w-md">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                            <span className="material-symbols-outlined text-[1.1rem]">search</span>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Søk i innlegg..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-white text-gray-800 pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 shadow-sm focus:outline-none focus:border-gray-300 focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-400 text-sm"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        {/* Category Dropdown */}
-                        <div className="relative">
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="appearance-none bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2.5 pr-10 rounded-lg border border-gray-200 shadow-sm focus:outline-none transition-colors cursor-pointer"
-                            >
-                                <option value="ALL">Alle kategorier</option>
-                                <option value="EVENT">Event</option>
-                                <option value="NYHET">Nyhet</option>
-                                <option value="REFERAT">Referat</option>
-                                <option value="SOSIALT">Sosialt</option>
-                            </select>
-                            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-[1.1rem]">expand_more</span>
-                        </div>
-
-                        {/* Sort Dropdown */}
-                        <div className="relative">
-                            <select
-                                value={sort}
-                                onChange={(e) => setSort(e.target.value)}
-                                className="appearance-none bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2.5 pr-10 rounded-lg border border-gray-200 shadow-sm focus:outline-none transition-colors cursor-pointer"
-                            >
-                                <option value="newest">Nyeste først</option>
-                                <option value="oldest">Eldste først</option>
-                            </select>
-                            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-[1.1rem]">expand_more</span>
-                        </div>
-                    </div>
-                </div>
+            {/* Tabs */}
+            <div className="flex items-center gap-6 border-b border-gray-100 pb-px">
+                <button
+                    onClick={() => setCategory("ALL")}
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors ${category === "ALL" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                        }`}
+                >
+                    Siste innlegg
+                </button>
+                <button
+                    onClick={() => setCategory("PINNED")} // Mock category
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors ${category === "PINNED" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                        }`}
+                >
+                    Festet
+                </button>
+                <button
+                    onClick={() => setCategory("NYHET")}
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors ${category === "NYHET" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                        }`}
+                >
+                    Kunngjøringer
+                </button>
             </div>
 
             {/* List */}
             <div className="flex flex-col gap-6">
                 {posts.map((post, index) => {
-                    const currentMonth = format(new Date(post.createdAt), "MMMM yyyy", { locale: nb });
-                    const prevMonth = index > 0
-                        ? format(new Date(posts[index - 1].createdAt), "MMMM yyyy", { locale: nb })
-                        : null;
-
-                    const showSeparator = currentMonth !== prevMonth;
-
                     return (
-                        <div key={post.id} className="flex flex-col gap-6">
-                            {showSeparator && (
-                                <div className="flex items-center gap-4 py-2 mt-4 first:mt-0">
-                                    <div className="text-sm font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                        {currentMonth}
-                                    </div>
-                                    <div className="h-px bg-gray-200 w-full" />
-                                </div>
-                            )}
-
-                            {posts.length === index + 1 ? (
-                                <div ref={lastPostElementRef}>
-                                    <PostItem post={post} />
-                                </div>
-                            ) : (
-                                <PostItem post={post} />
-                            )}
+                        <div key={post.id} ref={posts.length === index + 1 ? lastPostElementRef : undefined}>
+                            <PostItem post={post} />
                         </div>
                     );
                 })}
@@ -160,6 +116,20 @@ export default function PostList() {
                 loading && (
                     <div className="flex justify-center p-4">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    </div>
+                )
+            }
+
+            {
+                !loading && posts.length > 0 && hasMore && (
+                    <div className="flex justify-center pt-8 pb-12">
+                        <button
+                            onClick={() => fetchPosts(cursor)}
+                            className="bg-white border border-gray-200 text-gray-900 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-1.5"
+                        >
+                            Last inn eldre innlegg
+                            <span className="material-symbols-outlined text-base">expand_more</span>
+                        </button>
                     </div>
                 )
             }

@@ -92,36 +92,36 @@ export default function AdminDashboardPage() {
 
             {/* Quick Actions Section */}
             <div>
-                <h2 className="text-lg font-bold text-text-main mb-4">Hurtighandlinger</h2>
+                <h2 className="text-lg font-bold text-text-main mb-4">Administrer</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    {/* New Event */}
-                    <Link href="/admin/events/new" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                    {/* All Events */}
+                    <Link href="/admin/events" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
                         <div className="mb-4">
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">calendar_add_on</span>
+                                <span className="material-symbols-outlined text-lg">calendar_month</span>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Nytt Arrangement</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Opprett et nytt arrangement for klubben.</p>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Arrangementer</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Se oversikt og administrer alle arrangementer.</p>
                         </div>
                         <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-                            <span className="material-symbols-outlined text-base">add</span>
-                            Opprett Arrangement
+                            <span className="material-symbols-outlined text-base">list</span>
+                            Se Oversikt
                         </div>
                     </Link>
 
-                    {/* New Post */}
-                    <Link href="/admin/posts/new" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                    {/* Posts */}
+                    <Link href="/admin/posts" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
                         <div className="mb-4">
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">post_add</span>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Nytt Innlegg</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Publiser nyheter eller beskjeder til tavlen.</p>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Innlegg</h3>
+                            <p className="text-gray-500 text-xs leading-relaxed">Administrer nyheter og innlegg.</p>
                         </div>
                         <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-                            <span className="material-symbols-outlined text-base">edit</span>
-                            Skriv Innlegg
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            Gå til innlegg
                         </div>
                     </Link>
 
@@ -131,7 +131,7 @@ export default function AdminDashboardPage() {
                             <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">cloud_upload</span>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Administrer Bilder</h3>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Bilder</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Last opp eller slett bilder fra arkivet.</p>
                         </div>
                         <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
@@ -146,7 +146,7 @@ export default function AdminDashboardPage() {
                             <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center text-[#1A56DB] mb-3 group-hover:bg-[#1A56DB] group-hover:text-white transition-all">
                                 <span className="material-symbols-outlined text-lg">manage_accounts</span>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Brukeradministrasjon</h3>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Brukere</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Inviter, slett eller endre roller.</p>
                         </div>
                         <div className="w-full py-2.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">

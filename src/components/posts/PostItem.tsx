@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
+import { Avatar } from "@/components/Avatar";
 
 export type PostWithDetails = {
     id: string;
@@ -29,86 +33,78 @@ export default function PostItem({ post }: { post: PostWithDetails }) {
         .filter(Boolean)
         .join(" ") || post.author.email;
 
-    const date = new Date(post.createdAt).toLocaleDateString("no-NO", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
+    // function to calculate relative time
+    const getRelativeTime = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    const getCategoryStyle = (category: string) => {
-        switch (category) {
-            case "EVENT":
-                return "bg-purple-50 text-purple-700 border-purple-100";
-            case "REFERAT":
-                return "bg-amber-50 text-amber-700 border-amber-100";
-            case "SOSIALT":
-                return "bg-emerald-50 text-emerald-700 border-emerald-100";
-            case "NYHET":
-            default:
-                return "bg-indigo-50 text-indigo-700 border-indigo-100";
-        }
+        if (diffInSeconds < 60) return "Akkurat nå";
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} timer siden`;
+        if (diffInSeconds < 86400) return "I går";
+        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} dager siden`;
+        return date.toLocaleDateString("no-NO", { month: "long", day: "numeric" });
     };
-
-    const getCategoryLabel = (category: string) => {
-        switch (category) {
-            case "EVENT": return "Arrangement";
-            case "REFERAT": return "Referat";
-            case "SOSIALT": return "Sosialt";
-            case "NYHET": return "Nyhet";
-            default: return category;
-        }
-    };
-
-    // Strip markdown or html from content for preview (simple approach)
-    const previewText = post.content.replace(/[#*`]/g, '');
 
     return (
-        <article className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-indigo-100 transition-all duration-300 relative overflow-hidden">
-            {/* Hover Accent Line */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-            <Link href={`/posts/${post.id}`} className="block p-5 sm:p-6">
-                <div className="flex flex-col gap-3">
-                    {/* Header: Category & Date */}
-                    <div className="flex items-center justify-between">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getCategoryStyle(post.category)}`}>
-                            {getCategoryLabel(post.category)}
-                        </span>
-                        <span className="text-xs font-medium text-gray-400 font-mono">
-                            {date}
-                        </span>
-                    </div>
-
-                    {/* Body: Title & Excerpt */}
-                    <div className="space-y-2">
-                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
-                            {post.title}
-                        </h2>
-                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
-                            {previewText}
-                        </p>
-                    </div>
-
-                    {/* Footer: Author & Stats */}
-                    <div className="pt-3 mt-1 border-t border-gray-50 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-800 to-black text-white flex items-center justify-center text-[9px] font-bold ring-2 ring-white shadow-sm">
-                                {authorName.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-bold text-gray-900">{authorName}</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-gray-400">
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                <span className="material-symbols-outlined text-[1rem]">chat_bubble_outline</span>
-                                <span className="text-[10px] font-bold">{post._count.comments}</span>
-                            </div>
+        <article className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
+            {/* Header Group: Author & Title */}
+            <div className="flex flex-col gap-3 pb-2">
+                {/* Author Row */}
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                        <Avatar
+                            initials={post.author.firstName ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}` : "?"}
+                            size="md"
+                        />
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold text-gray-900">{authorName}</span>
+                            <span className="text-xs text-gray-500">
+                                Publisert {getRelativeTime(post.createdAt)}
+                            </span>
                         </div>
                     </div>
+                    {/* Optional: 3-dots menu placeholder */}
+                    <button className="text-gray-400 hover:text-gray-600">
+                        <span className="material-symbols-outlined text-lg">more_horiz</span>
+                    </button>
                 </div>
-            </Link>
+
+                {/* Title */}
+                <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                    {post.title}
+                </h2>
+            </div>
+
+            {/* Divider (Invisible spacer or visible line, using Spacer for now) */}
+            <div className="h-px w-full bg-gray-100" />
+
+            {/* Content Body */}
+            <div className="py-2">
+                <div className="text-gray-600 text-sm leading-relaxed prose prose-sm prose-zinc max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-indigo-600 prose-li:text-gray-600">
+                    <ReactMarkdown>{post.content}</ReactMarkdown>
+                </div>
+            </div>
+
+            {/* Action Bar / Footer */}
+            <div className="pt-4 mt-2 border-t border-gray-100 flex items-center gap-6">
+
+                {/* Comment Button (Interactive) */}
+                <Link
+                    href={`/posts/${post.id}`}
+                    className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors group"
+                >
+                    <span className="material-symbols-outlined text-xl group-hover:fill-current">chat_bubble</span>
+                    <span className="text-sm font-medium">
+                        {post._count.comments > 0 ? `${post._count.comments} Kommentarer` : "Kommenter"}
+                    </span>
+                </Link>
+
+                {/* Share Button (Placeholder) */}
+                <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors ml-auto">
+                    <span className="material-symbols-outlined text-xl">share</span>
+                </button>
+            </div>
         </article>
     );
 }

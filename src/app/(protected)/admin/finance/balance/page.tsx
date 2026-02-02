@@ -84,10 +84,6 @@ export default function MemberBalancePage() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <Link href="/admin/finance" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors">
-                    <span className="material-symbols-outlined text-lg mr-1">arrow_back</span>
-                    Tilbake til oversikt
-                </Link>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Saldo og Historikk</h1>
                 <p className="text-gray-500 text-sm max-w-3xl">
                     Oversikt over medlemmenes betalingskrav og historikk.

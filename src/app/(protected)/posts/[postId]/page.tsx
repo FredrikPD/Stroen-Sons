@@ -78,16 +78,7 @@ export default async function PostDetailPage({ params }: PageProps) {
     return (
         <div className="max-w-6xl mx-auto w-full pb-12">
             <PageTitleUpdater title={post.title} />
-            {/* Back Button */}
-            <div className="mb-6">
-                <Link
-                    href="/posts"
-                    className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm"
-                >
-                    <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                    Tilbake til feeden
-                </Link>
-            </div>
+
 
             {/* Main Card */}
             <article className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

@@ -37,10 +37,7 @@ export default function InvoicesPage() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <Link href="/admin/finance" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
-                    <span className="material-symbols-outlined mr-1 text-[1.2rem]">arrow_back</span>
-                    Tilbake
-                </Link>
+
                 <Link
                     href="/admin/finance/invoices/create"
                     className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition"

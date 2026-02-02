@@ -40,10 +40,7 @@ export default function AlbumPhotosView({ album }: AlbumPhotosViewProps) {
         <div className="w-full bg-white min-h-full space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-6">
-                <Link href="/gallery" className="flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-sm font-medium w-fit">
-                    <span className="material-symbols-outlined text-[1.1rem]">arrow_back</span>
-                    Tilbake til arkiv
-                </Link>
+
 
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">

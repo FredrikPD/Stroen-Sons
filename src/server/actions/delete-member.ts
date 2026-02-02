@@ -139,8 +139,8 @@ export async function deleteMember(
             where: { id: memberId },
         });
 
-        revalidatePath("/admin/roles"); // Revalidate roles page just in case
-        revalidatePath("/admin/delete");
+        revalidatePath("/admin/users/roles"); // Revalidate roles page just in case
+        revalidatePath("/admin/users/delete");
 
         return { message: "Medlemmet er slettet permanent." };
     } catch (error) {

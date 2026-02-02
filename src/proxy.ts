@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
+  "/forgot-password(.*)",
   "/api/uploadthing(.*)",
 ]);
 
@@ -20,6 +21,15 @@ export default clerkMiddleware(async (auth, req) => {
 
     // NOTE: This assumes you have configured the session token to include public_metadata
     if (role !== "ADMIN") {
+      const url = new URL("/dashboard", req.url);
+      return Response.redirect(url);
+    }
+  }
+
+  if (isPublicRoute(req)) {
+    const { userId } = await auth();
+    // Redirect logged-in users away from sign-in page
+    if (userId && req.url.includes("/sign-in")) {
       const url = new URL("/dashboard", req.url);
       return Response.redirect(url);
     }

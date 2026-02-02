@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV } from "./nav";
 import { useHeader } from "./HeaderContext";
 import NotificationBell from "../notifications/NotificationBell";
@@ -17,7 +17,8 @@ export default function TopHeader({
   onMenuClick: () => void;
 }) {
   const pathname = usePathname();
-  const { title: customTitle } = useHeader();
+  const router = useRouter();
+  const { title: customTitle, backHref, backLabel } = useHeader();
 
   const getPageTitle = () => {
     if (!pathname) return "Hjem";
@@ -49,13 +50,40 @@ export default function TopHeader({
         </button>
 
         {/* Path (Desktop) */}
+        {/* Path (Desktop) */}
         <div className="hidden md:flex items-center gap-2 text-sm text-text-main">
-          <span className={customTitle ? "font-normal text-gray-500" : "font-bold"}>{baseTitle}</span>
-          {customTitle && (
-            <>
-              <span className="text-gray-300">/</span>
-              <span className="font-bold">{customTitle}</span>
-            </>
+          {backHref ? (
+            // Explicit back link from context
+            <div
+              onClick={() => router.push(backHref)}
+              className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
+            >
+              <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
+              <span>{backLabel || "Tilbake"}</span>
+            </div>
+          ) : (
+            // Standard logic
+            (() => {
+              const allNavItems = [...MAIN_NAV, ...ACCOUNT_NAV, ...ADMIN_NAV];
+              const sortedItems = allNavItems.sort((a, b) => b.href.length - a.href.length);
+              // Ignore strict matches (current page) to find parent
+              const parent = sortedItems.find((item) => pathname.startsWith(item.href) && pathname !== item.href && item.href !== "/");
+
+              if (parent) {
+                return (
+                  <div
+                    onClick={() => router.push(parent.href)}
+                    className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
+                    <span>{parent.label}</span>
+                  </div>
+                )
+              }
+
+              // Fallback: Just show current page title (static)
+              return <span className="font-bold">{baseTitle}</span>
+            })()
           )}
         </div>
       </div>
@@ -66,7 +94,10 @@ export default function TopHeader({
 
         <NotificationBell />
 
-        <div className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all">
+        <div
+          onClick={() => router.push("/account")}
+          className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all"
+        >
           {loading || !userName ? (
             <div className="animate-pulse bg-white/20 w-full h-full rounded-full" />
           ) : (
