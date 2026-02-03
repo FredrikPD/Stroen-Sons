@@ -192,7 +192,39 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          <MyInvoices invoices={unpaidInvoices} />
+          {/* Nylige Minner */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-gray-900">Nylige Minner</h3>
+              <Link href="/gallery" className="text-[#4F46E5] text-xs font-bold hover:underline">Arkiv</Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {memories.length > 0 ? (
+                memories.map((event) => (
+                  <Link key={event.id} href={`/gallery/${event.id}`} className="aspect-video bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer border border-gray-200 block">
+                    <Image
+                      src={event.coverImage!}
+                      alt={event.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-10 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-white text-xs font-bold leading-tight line-clamp-2 drop-shadow-sm">
+                        {event.title}
+                      </p>
+                      <p className="text-xs text-white/70 font-medium mt-0.5 uppercase tracking-wider">
+                        {event.startAt.getFullYear()}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
+                  <p className="text-xs text-gray-400 italic">Ingen minner å vise enda.</p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Siste Nytt (News Feed) */}
           <div className="space-y-3">
@@ -228,7 +260,7 @@ export default async function DashboardPage() {
           {/* Status Card & Transactions */}
           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-5">
             <div className="flex items-center justify-between">
-              <h4 className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Medlemsstatus</h4>
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Medlemsstatus</h4>
               <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${paymentStatus === "PAID"
                 ? "bg-emerald-50 border-emerald-100 text-emerald-700"
                 : "bg-red-50 border-red-100 text-red-700"
@@ -246,7 +278,7 @@ export default async function DashboardPage() {
                   payments
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 font-medium mb-0.5">Kontigent {period}</p>
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">Kontigent {period}</p>
                   <p className="text-gray-900 font-bold text-lg">
                     {paymentStatus === "PAID" ? "Betalt" : "Ikke betalt"}
                   </p>
@@ -258,7 +290,7 @@ export default async function DashboardPage() {
                   verified
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 font-medium mb-0.5">Medlem siden</p>
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">Medlem siden</p>
                   <p className="text-gray-900 font-bold text-lg">
                     {member.createdAt.toLocaleDateString("nb-NO", { month: 'short', year: 'numeric' })}
                   </p>
@@ -270,7 +302,7 @@ export default async function DashboardPage() {
 
             {/* Recent Transactions */}
             <div>
-              <h4 className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-3">Siste Transaksjoner</h4>
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Siste Transaksjoner</h4>
               <div className="space-y-2">
                 {transactions.length > 0 ? (
                   transactions.map((tx) => {
@@ -298,44 +330,15 @@ export default async function DashboardPage() {
                     );
                   })
                 ) : (
-                  <p className="text-[10px] text-gray-400 italic">Ingen transaksjoner funnet.</p>
+                  <p className="text-xs text-gray-400 italic">Ingen transaksjoner funnet.</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Nylige Minner */}
+          {/* Kommende Fakturaer */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-gray-900">Nylige Minner</h3>
-              <Link href="/gallery" className="text-[#4F46E5] text-xs font-bold hover:underline">Arkiv</Link>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {memories.length > 0 ? (
-                memories.map((event) => (
-                  <Link key={event.id} href={`/gallery/${event.id}`} className="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer border border-gray-200 block">
-                    <Image
-                      src={event.coverImage!}
-                      alt={event.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-10 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-white text-[10px] font-bold leading-tight line-clamp-2 drop-shadow-sm">
-                        {event.title}
-                      </p>
-                      <p className="text-[9px] text-white/70 font-medium mt-0.5 uppercase tracking-wider">
-                        {event.startAt.getFullYear()}
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-6 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
-                  <p className="text-xs text-gray-400 italic">Ingen minner å vise enda.</p>
-                </div>
-              )}
-            </div>
+            <MyInvoices invoices={unpaidInvoices} />
           </div>
 
         </div>

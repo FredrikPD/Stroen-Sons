@@ -37,6 +37,14 @@ export async function createPost(data: PostInput) {
                 category: data.category,
                 authorId: member.id,
                 eventId: data.eventId || undefined,
+                attachments: {
+                    create: data.attachments?.map((att) => ({
+                        url: att.url,
+                        name: att.name,
+                        size: att.size,
+                        type: att.type || "unknown",
+                    }))
+                }
             },
         });
 
@@ -89,13 +97,27 @@ export async function updatePost(postId: string, data: PostInput) {
     }
 
     try {
+        // Transaction to handle attachments update safely? 
+        // Or just update. For attachments, simplest is often deleteMany + createMany or create.
+        // Prisma doesn't support createMany inside update nested relations easily for sqlite (if limited) but postgres is fine.
+        // Let's use deleteMany then create.
+
         await prisma.post.update({
             where: { id: postId },
             data: {
                 title: data.title,
                 content: data.content,
                 category: data.category,
-                eventId: data.eventId ?? null // Use null for optional disconnect usually, but depending on schema optional/nullable
+                eventId: data.eventId ?? null,
+                attachments: {
+                    deleteMany: {},
+                    create: data.attachments?.map((att) => ({
+                        url: att.url,
+                        name: att.name,
+                        size: att.size,
+                        type: att.type || "unknown",
+                    }))
+                }
             }
         });
 
@@ -156,9 +178,7 @@ export async function getPosts({
                     id: true,
                 },
             },
-            _count: {
-                select: { comments: true },
-            },
+            attachments: true,
         },
     });
 
@@ -172,4 +192,53 @@ export async function getPosts({
         items: posts as unknown as PostWithDetails[],
         nextCursor,
     };
+}
+
+export async function togglePinPost(postId: string) {
+    const member = await ensureMember();
+    if (!member || member.role !== "ADMIN") {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const post = await prisma.post.findUnique({ where: { id: postId } });
+        if (!post) return { success: false, error: "Post not found" };
+
+        await prisma.post.update({
+            where: { id: postId },
+            data: { isPinned: !post.isPinned },
+        });
+
+        revalidatePath("/posts");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to toggle pin:", error);
+        return { success: false, error: "Failed to toggle pin" };
+    }
+}
+
+export async function getPinnedPosts() {
+    // Public access? Or member? Assuming member
+    const member = await ensureMember();
+    if (!member) return [];
+
+    try {
+        const posts = await prisma.post.findMany({
+            where: { isPinned: true },
+            orderBy: { createdAt: "desc" },
+            include: {
+                author: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                    }
+                }
+            },
+            take: 5 // Limit to 5 pinned posts in sidebar?
+        });
+        return posts;
+    } catch (error) {
+        console.error("Failed to get pinned posts:", error);
+        return [];
+    }
 }

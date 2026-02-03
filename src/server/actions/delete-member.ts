@@ -110,11 +110,6 @@ export async function deleteMember(
             }
         }
 
-        // 2. Handle Comments
-        // We always delete comments authored by the user, as attributing personal comments
-        // to another admin would be confusing/impersonation.
-        await db.comment.deleteMany({ where: { authorId: memberId } });
-
         // 3. Handle Events
         const eventsCount = await db.event.count({
             where: { createdById: memberId },

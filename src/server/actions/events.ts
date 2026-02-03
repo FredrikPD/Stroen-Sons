@@ -156,3 +156,35 @@ export async function deleteEvent(id: string) {
         return { success: false, error: "En feil oppstod under sletting av arrangementet" };
     }
 }
+
+export async function getUpcomingEvents() {
+    const { userId } = await auth();
+
+    if (!userId) {
+        return [];
+    }
+
+    try {
+        const events = await db.event.findMany({
+            where: {
+                startAt: {
+                    gte: new Date(),
+                },
+            },
+            take: 3,
+            orderBy: {
+                startAt: "asc",
+            },
+            include: {
+                _count: {
+                    select: { attendees: true },
+                },
+            },
+        });
+
+        return events;
+    } catch (error) {
+        console.error("Failed to fetch upcoming events:", error);
+        return [];
+    }
+}

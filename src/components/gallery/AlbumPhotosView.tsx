@@ -58,18 +58,13 @@ export default function AlbumPhotosView({ album }: AlbumPhotosViewProps) {
                         </div>
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">{album.title}</h1>
-                    {album.description && (
-                        <p className="text-gray-600 max-w-3xl text-sm md:text-base leading-relaxed">
-                            {album.description}
-                        </p>
-                    )}
                 </div>
             </div>
 
             <div className="w-full border-b border-gray-100"></div>
 
             {/* Photo Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {album.photos.map((photo, index) => (
                     <div
                         key={photo.id}

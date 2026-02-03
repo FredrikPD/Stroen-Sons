@@ -79,7 +79,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
 
             {/* HERO SECTION */}
-            <div className="relative h-[320px] w-full bg-black rounded-3xl overflow-hidden">
+            <div className="relative h-[400px] w-full bg-black rounded-3xl overflow-hidden">
                 {event.coverImage ? (
                     <img
                         src={event.coverImage}
@@ -98,8 +98,8 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         {/* Badges */}
                         <div className="flex items-center gap-2">
                             {event.hasPassed ? (
-                                <span className="bg-black/60 text-white px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-white/20 backdrop-blur-md">
-                                    • Gjennomført
+                                <span className="bg-emerald-500/90 text-white px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
+                                    ✓ Gjennomført
                                 </span>
                             ) : (
                                 <span className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider">

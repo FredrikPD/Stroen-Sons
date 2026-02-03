@@ -1,13 +1,9 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { prisma } from "@/server/db";
-import CommentSection from "@/components/posts/CommentSection";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
-
+import { Avatar } from "@/components/Avatar";
 import ReactMarkdown from "react-markdown";
-
-import DeletePostButton from "@/components/posts/DeletePostButton";
 import { ensureMember } from "@/server/auth/ensureMember";
 
 // Force dynamic rendering since we are fetching specific post
@@ -41,9 +37,7 @@ export default async function PostDetailPage({ params }: PageProps) {
         where: { id: postId },
         include: {
             author: true,
-            _count: {
-                select: { comments: true },
-            },
+            attachments: true,
         },
     });
 
@@ -83,57 +77,65 @@ export default async function PostDetailPage({ params }: PageProps) {
             {/* Main Card */}
             <article className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 md:p-8">
-                    {/* Header Top Row: Category + Date */}
-                    <div className="flex flex-wrap justify-between items-start gap-4 mb-5">
+                    {/* Header Row: Author & Category */}
+                    <div className="flex justify-between items-start mb-8">
                         <div className="flex items-center gap-3">
-                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
-                                {post.category}
-                            </span>
-                            {currentUser?.role === "ADMIN" && (
-                                <div className="flex items-center gap-2">
-                                    <Link href={`/admin/posts/${post.id}/edit`} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100">
-                                        <span className="material-symbols-outlined text-[1.1rem]">edit</span>
-                                        Rediger
-                                    </Link>
-                                    <DeletePostButton postId={post.id} />
+                            <Avatar
+                                initials={post.author.firstName ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}` : "?"}
+                                size="md"
+                            />
+                            <div className="flex flex-col">
+                                <span className="font-bold text-gray-900 text-sm">{authorName}</span>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-blue-50 text-blue-600 border-blue-100 w-fit">{authorRole}</span>
+                                    <span className="text-gray-500 text-[10px]">•</span>
+                                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                                        {date}
+                                    </span>
                                 </div>
-                            )}
+                            </div>
                         </div>
-                        <div className="flex items-center text-gray-400 text-xs font-medium">
-                            <span className="material-symbols-outlined mr-1.5 text-[1rem]">calendar_today</span>
-                            Publisert {date}
-                        </div>
+                        <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
+                            {post.category}
+                        </span>
                     </div>
-
                     {/* Title */}
                     <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-6 leading-tight tracking-tight">
                         {post.title}
                     </h1>
 
-                    {/* Author */}
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#222] to-[#444] flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                            {authorName.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-gray-900 text-sm">{authorName}</span>
-                            <span className="text-xs text-gray-500">{authorRole}</span>
-                        </div>
-                    </div>
-
                     {/* Divider */}
                     <div className="w-full h-px bg-gray-100 mb-8" />
 
                     {/* Content */}
-                    <div className="prose prose-zinc max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-indigo-600 prose-li:text-gray-600">
+                    <div className="prose prose-sm prose-zinc max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-indigo-600 prose-li:text-gray-600">
                         <ReactMarkdown>{post.content}</ReactMarkdown>
                     </div>
-                </div>
 
-                {/* Comments Section */}
-                <div className="bg-gray-50 border-t border-gray-100 p-6 md:p-8">
-                    <h3 className="text-lg font-bold text-gray-900 mb-5">Kommentarer</h3>
-                    <CommentSection postId={post.id} />
+                    {/* Attachments */}
+                    {post.attachments && post.attachments.length > 0 && (
+                        <div className="space-y-2 mt-8 border-t border-gray-100 pt-8">
+                            <h3 className="text-sm font-bold text-gray-900 mb-4">Vedlegg</h3>
+                            {post.attachments.map((file) => (
+                                <a
+                                    key={file.id}
+                                    href={file.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors group"
+                                >
+                                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200 text-indigo-600 group-hover:border-indigo-200 transition-colors">
+                                        <span className="material-symbols-outlined">description</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{file.name}</span>
+                                        <span className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB • {file.type.split("/")[1]?.toUpperCase() || "FIL"}</span>
+                                    </div>
+                                    <span className="material-symbols-outlined text-gray-400 ml-auto group-hover:text-indigo-600">download</span>
+                                </a>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </article>
         </div>

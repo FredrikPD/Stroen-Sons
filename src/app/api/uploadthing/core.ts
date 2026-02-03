@@ -63,6 +63,29 @@ export const ourFileRouter = {
         .onUploadComplete(async ({ file }) => {
             return { url: file.ufsUrl };
         }),
+
+    postAttachment: f({
+        image: { maxFileSize: "16MB", maxFileCount: 5 },
+        pdf: { maxFileSize: "16MB", maxFileCount: 5 }
+    })
+        .middleware(async () => {
+            const user = await currentUser();
+            if (!user) throw new UploadThingError("Unauthorized");
+            // Assuming simplified auth for now as established in previous endpoints
+            // but ideally checks for admin/member role.
+            // Re-using the same check as coverImage for consistency if needed, 
+            // or allowing all members if it's for general posts? 
+            // The prompt implies "posts list" which might be open to members? 
+            // But existing 'createPost' action checks 'ensureAdmin' usually? 
+            // Actually 'createPost' in 'server/actions/posts.ts' - we should check that.
+            // For now, let's use the same admin check as coverImage to be safe.
+            const member = await db.member.findUnique({ where: { clerkId: user.id } });
+            if (!member || member.role !== "ADMIN") throw new UploadThingError("Admin access required");
+            return { userId: user.id };
+        })
+        .onUploadComplete(async ({ file }) => {
+            return { url: file.ufsUrl, name: file.name, size: file.size, type: file.type };
+        }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

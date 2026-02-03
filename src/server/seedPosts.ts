@@ -78,33 +78,6 @@ async function main() {
         }
     });
 
-    // Add comments
-    await prisma.comment.create({
-        data: {
-            content: "Veldig bra initiativ! Dette trengte vi.",
-            postId: post1.id,
-            authorId: author.id,
-        },
-    });
-
-    const c2 = await prisma.comment.create({
-        data: {
-            content: "Sjekk arrangementer-siden, det skal ligge der nå.",
-            postId: post2.id,
-            authorId: author.id,
-        },
-    });
-
-    // Reply
-    await prisma.comment.create({
-        data: {
-            content: "Fant det! Takk for tipset.",
-            postId: post2.id,
-            authorId: author.id,
-            parentId: c2.id,
-        },
-    });
-
     console.log("Seeding complete.");
 }
 

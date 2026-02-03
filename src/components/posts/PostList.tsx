@@ -3,10 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import PostItem, { PostWithDetails } from "./PostItem";
 import { getPosts } from "@/server/actions/posts";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
 
-export default function PostList() {
+export default function PostList({ isAdmin }: { isAdmin: boolean }) {
     const [posts, setPosts] = useState<PostWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -34,7 +32,6 @@ export default function PostList() {
         try {
             setLoading(true);
 
-            console.log("Fetching posts...", { nextCursor, search, sort, category });
             // Call Server Action
             const data = await getPosts({
                 cursor: nextCursor,
@@ -43,10 +40,7 @@ export default function PostList() {
                 sort: sort as "newest" | "oldest",
                 category,
             });
-            console.log("Fetched posts:", data);
 
-            // Server actions return Date objects, JSON returns strings. PostWithDetails interface needs to handle Date.
-            // Or we check PostItem. Assuming PostItem handles it (uses new Date()).
             setPosts((prev) => (nextCursor ? [...prev, ...data.items] : data.items));
             setCursor(data.nextCursor);
             setHasMore(!!data.nextCursor);
@@ -66,6 +60,10 @@ export default function PostList() {
         return () => clearTimeout(timer);
     }, [search, sort, category]);
 
+    const handleDeletePost = (postId: string) => {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+    };
+
     return (
         <div className="flex flex-col gap-6 w-full">
             {/* Header */}
@@ -77,27 +75,41 @@ export default function PostList() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-6 border-b border-gray-100 pb-px">
+            <div className="flex items-center gap-6 border-b border-gray-100 pb-px overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setCategory("ALL")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors ${category === "ALL" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "ALL" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
                         }`}
                 >
                     Siste innlegg
                 </button>
                 <button
-                    onClick={() => setCategory("PINNED")} // Mock category
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors ${category === "PINNED" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                    onClick={() => setCategory("NYHET")}
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "NYHET" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
                         }`}
                 >
-                    Festet
+                    Nyheter
                 </button>
                 <button
-                    onClick={() => setCategory("NYHET")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors ${category === "NYHET" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                    onClick={() => setCategory("EVENT")}
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "EVENT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
                         }`}
                 >
-                    Kunngjøringer
+                    Arrangementer
+                </button>
+                <button
+                    onClick={() => setCategory("REFERAT")}
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "REFERAT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                        }`}
+                >
+                    Referater
+                </button>
+                <button
+                    onClick={() => setCategory("SOSIALT")}
+                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "SOSIALT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                        }`}
+                >
+                    Sosialt
                 </button>
             </div>
 
@@ -106,7 +118,7 @@ export default function PostList() {
                 {posts.map((post, index) => {
                     return (
                         <div key={post.id} ref={posts.length === index + 1 ? lastPostElementRef : undefined}>
-                            <PostItem post={post} />
+                            <PostItem post={post} isAdmin={isAdmin} onDelete={handleDeletePost} />
                         </div>
                     );
                 })}

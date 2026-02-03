@@ -27,7 +27,6 @@ model Member {
   eventsCreated   Event[]          @relation("EventCreatedBy")
   eventsAttending Event[]          @relation("EventAttendees")
   posts           Post[]
-  comments        Comment[]
   transactions    Transaction[]
   paymentRequests PaymentRequest[]
   notifications   Notification[]
@@ -80,6 +79,7 @@ model Post {
   title    String
   content  String
   category PostCategory @default(NYHET)
+  isPinned Boolean      @default(false)
 
   authorId String
   author   Member @relation(fields: [authorId], references: [id])
@@ -87,30 +87,25 @@ model Post {
   eventId String?
   event   Event?  @relation(fields: [eventId], references: [id])
 
-  comments Comment[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  attachments PostAttachment[]
 
   @@index([createdAt])
 }
 
-model Comment {
-  id      String @id @default(cuid())
-  content String
-
-  authorId String
-  author   Member @relation(fields: [authorId], references: [id])
+model PostAttachment {
+  id   String @id @default(cuid())
+  url  String
+  name String
+  size Int
+  type String // MIME type or simple type
 
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  parentId String?
-  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  children Comment[] @relation("CommentReplies")
-
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Payment {

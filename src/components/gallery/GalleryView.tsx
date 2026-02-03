@@ -58,27 +58,18 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-
-                <div className="flex items-center gap-1.5 p-1 overflow-x-auto w-full md:w-auto">
-                    <button
-                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${selectedYear === 'ALL' ? 'bg-[#4F46E5] text-white' : 'hover:bg-gray-50 text-gray-600'}`}
-                        onClick={() => setSelectedYear('ALL')}
-                    >
-                        Alle
-                    </button>
-                    {/* Mock Category Filters for Visual Match - functionality could be added later if category exists in DB */}
-                    {['Årsfester', 'Middager', 'Reiser', 'Julebord'].map(cat => (
-                        <button key={cat} className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-md text-xs font-medium transition-all whitespace-nowrap">
-                            {cat}
-                        </button>
-                    ))}
-                </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Left Sidebar - Year Navigation */}
                 <div className="w-full md:w-32 flex-shrink-0 hidden md:block">
                     <div className="sticky top-8 flex flex-col gap-0.5">
+                        <button
+                            className={`text-left px-3 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${selectedYear === 'ALL' ? 'bg-[#4F46E5] text-white' : 'hover:bg-gray-50 text-gray-600'}`}
+                            onClick={() => setSelectedYear('ALL')}
+                        >
+                            Alle år
+                        </button>
                         {years.map(year => (
                             <button
                                 key={year}

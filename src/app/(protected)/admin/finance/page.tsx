@@ -181,8 +181,8 @@ export default function FinancePortalPage() {
             {/* Quick Actions Section */}
             <div>
                 <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Hurtighandlinger</h2>
-                    <p className="text-gray-500 text-sm">Direkte tilgang til de mest brukte funksjonene for økonomistyring.</p>
+                    <h2 className="text-xl font-bold text-gray-900">Handlinger</h2>
+                    <p className="text-gray-500 text-sm">Registrer nye inntekter og utgifter.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -196,7 +196,7 @@ export default function FinancePortalPage() {
                             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                                 <span className="material-symbols-outlined text-lg">add_circle</span>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Medlemskontigent</h3>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Inntekter</h3>
                             <p className="text-gray-500 text-xs leading-relaxed">Registrer innbetalte medlemskontigenter</p>
                         </div>
                         <div className="w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 relative z-10">

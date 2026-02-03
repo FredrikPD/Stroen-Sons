@@ -1,3 +1,4 @@
+// import "@uploadthing/react/styles.css";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
