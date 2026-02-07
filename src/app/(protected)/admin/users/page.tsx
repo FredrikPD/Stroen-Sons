@@ -6,7 +6,6 @@ import { ensureRole } from "@/server/auth/ensureRole";
 export default async function UserManagementPage() {
     await ensureRole([Role.ADMIN]);
 
-    // Parallel data fetching for stats and members
     const [
         totalMembers,
         adminCount,
@@ -16,8 +15,7 @@ export default async function UserManagementPage() {
     ] = await Promise.all([
         db.member.count(),
         db.member.count({ where: { role: "ADMIN" } }),
-        db.member.count({ where: { membershipType: "STUDENT" } }), // Assuming STUDENT is a valid membershipType or just placeholder logic
-        db.member.count({ where: { status: "PENDING" } }),
+        db.member.count({ where: { membershipType: "STUDENT" } }), db.member.count({ where: { status: "PENDING" } }),
         db.member.findMany({
             orderBy: { createdAt: 'desc' },
             select: {
@@ -37,7 +35,7 @@ export default async function UserManagementPage() {
 
     // Format members for the client component
     const formattedMembers = allMembers.map(m => {
-        // Simple heuristic for "Last Active" - using lastActiveAt (fallback to updatedAt)
+        // Calculate "Last Active"
         const lastActiveDate = m.lastActiveAt || m.updatedAt;
         const diffInSeconds = Math.floor((new Date().getTime() - new Date(lastActiveDate).getTime()) / 1000);
         let lastActive = "Nylig";

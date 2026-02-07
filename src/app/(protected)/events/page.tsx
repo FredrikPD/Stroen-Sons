@@ -45,11 +45,6 @@ export default async function EventsPage() {
 
     const events = await getEvents() as any;
 
-    // Transform to match generic expected type if needed, but Prisma type matches approximate shape.
-    // We need to ensure dates are serialized properly if passing to client component from server component?
-    // Next.js handles Date objects in props since recent versions (or warns). 
-    // Best practice: Serialize to ISO string to be safe.
-
     const serializedEvents = events.map((event: any) => ({
         ...event,
         startAt: new Date(event.startAt).toISOString(),

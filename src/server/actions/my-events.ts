@@ -62,14 +62,7 @@ export async function getMyEvents() {
                         status = 'PENDING_PAYMENT';
                     }
                 } else {
-                    // Paid event but no request yet? Treat as pending or confirmed depending on business logic. 
-                    // Assuming if no request, maybe it's paid on arrival or invoice not sent.
-                    // For safety, if cost > 0, maybe check if user is host?
-                    // Let's default to 'FREE' or 'CONFIRMED' if no request found, or maybe 'PENDING' if we want to be strict.
-                    // The user image shows "Venter betaling" and "Gratis" and "Bekreftet".
-                    // If we assume manual invoice generation, maybe missing request means 'CONFIRMED' (or 'REGISTERED').
-                    // Let's use 'PENDING_PAYMENT' if cost > 0 and no paid request? No, better key off request existence.
-                    status = 'PENDING_PAYMENT'; // "Venter betaling" generic fallback for paid events
+                    status = 'PENDING_PAYMENT';
                 }
             } else {
                 status = 'FREE';
@@ -110,8 +103,7 @@ export async function getMyEvents() {
                 events: sortedEvents,
                 stats: {
                     upcomingCount: upcoming.length,
-                    nextEvent: upcoming[0] || null, // First one since we sorted asc in query (wait, query sort applies to list, but we reconstructed. filter keeps order? yes key order is asc from db)
-                    unpaidCount,
+                    nextEvent: upcoming[0] || null, unpaidCount,
                     totalThisYear
                 }
             }

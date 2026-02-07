@@ -38,7 +38,6 @@ function MemberCard({ member }: { member: any }) {
     return (
         <div className="group relative break-inside-avoid">
             <div className="relative flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 h-full overflow-hidden">
-                {/* Subtle Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br pointer-events-none opacity-40 ${isAdmin
                     ? "from-amber-500/5 via-transparent to-transparent"
                     : "from-indigo-500/5 via-transparent to-transparent"
@@ -56,7 +55,6 @@ function MemberCard({ member }: { member: any }) {
                     <p className="text-sm text-gray-500">{member.email}</p>
                 </div>
 
-                {/* Decorative Icon (like Admin Dashboard) */}
                 <div className={`absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none`}>
                     <span className="material-symbols-outlined text-7xl text-gray-900">
                         {isAdmin ? "shield_person" : "person"}

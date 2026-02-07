@@ -408,8 +408,6 @@ export async function togglePaymentStatus(requestId: string) {
 }
 
 
-// Start: Legacy / Other Helpers (kept for compatibility or expense logic) ----------------
-
 export async function getMembersAndEvents() {
     try {
         const member = await ensureMember();
