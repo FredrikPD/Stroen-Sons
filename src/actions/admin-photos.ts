@@ -3,22 +3,24 @@
 import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
 import { UTApi } from "uploadthing/server";
-import { Event, Photo } from "@prisma/client";
+// Initialize UTApi lazily to avoid build-time env checks
+const getUtapi = () => new UTApi();
 
-export type EventWithCount = Event & {
+// Use inferred types from the db client instead of direct imports to avoid export issues
+type DbEvent = NonNullable<Awaited<ReturnType<typeof db.event.findFirst>>>;
+type DbPhoto = NonNullable<Awaited<ReturnType<typeof db.photo.findFirst>>>;
+
+export type EventWithCount = DbEvent & {
     _count: {
         photos: number;
     }
 };
 
-export type PhotoWithEvent = Photo & {
+export type PhotoWithEvent = DbPhoto & {
     event: {
         title: string;
     }
 };
-
-// Initialize UTApi lazily to avoid build-time env checks
-const getUtapi = () => new UTApi();
 
 /**
  * Fetch recent events for the upload dropdown.
