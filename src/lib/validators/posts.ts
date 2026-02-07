@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { PostCategory } from "@prisma/client";
+
+export const PostCategory = {
+    EVENT: "EVENT",
+    NYHET: "NYHET",
+    REFERAT: "REFERAT",
+    SOSIALT: "SOSIALT",
+} as const;
 
 export const postSchema = z.object({
     title: z.string().min(1, "Tittel er påkrevd"),
