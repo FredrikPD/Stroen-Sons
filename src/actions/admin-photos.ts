@@ -3,29 +3,22 @@
 import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
 import { UTApi } from "uploadthing/server";
-import { Prisma } from "@prisma/client";
+import { Event, Photo } from "@prisma/client";
+
+export type EventWithCount = Event & {
+    _count: {
+        photos: number;
+    }
+};
+
+export type PhotoWithEvent = Photo & {
+    event: {
+        title: string;
+    }
+};
 
 // Initialize UTApi lazily to avoid build-time env checks
 const getUtapi = () => new UTApi();
-
-export type EventWithCount = Prisma.EventGetPayload<{
-    select: {
-        id: true;
-        title: true;
-        startAt: true;
-        _count: {
-            select: { photos: true }
-        }
-    }
-}>;
-
-export type PhotoWithEvent = Prisma.PhotoGetPayload<{
-    include: {
-        event: {
-            select: { title: true };
-        };
-    };
-}>;
 
 /**
  * Fetch recent events for the upload dropdown.
