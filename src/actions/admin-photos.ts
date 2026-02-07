@@ -7,16 +7,19 @@ import { UTApi } from "uploadthing/server";
 const getUtapi = () => new UTApi();
 
 // Use inferred types from the db client instead of direct imports to avoid export issues
-type DbEvent = NonNullable<Awaited<ReturnType<typeof db.event.findFirst>>>;
-type DbPhoto = NonNullable<Awaited<ReturnType<typeof db.photo.findFirst>>>;
-
-export type EventWithCount = DbEvent & {
+export type EventWithCount = {
+    id: string;
+    title: string;
+    startAt: Date;
     _count: {
         photos: number;
     }
 };
 
-export type PhotoWithEvent = DbPhoto & {
+export type PhotoWithEvent = {
+    id: string;
+    url: string;
+    createdAt: Date;
     event: {
         title: string;
     }
