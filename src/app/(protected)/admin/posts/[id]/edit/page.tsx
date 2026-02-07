@@ -11,7 +11,11 @@ interface EditPostPageProps {
     }>;
 }
 
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+
 export default async function EditPostPage({ params }: EditPostPageProps) {
+    await ensureRole([Role.ADMIN, Role.MODERATOR]);
     const { id } = await params;
     const post = await prisma.post.findUnique({
         where: { id },
@@ -24,11 +28,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     const handleSubmit = async (data: PostInput) => {
         "use server";
-        const result = await updatePost(id, data);
-        if (result.success) {
-            redirect("/admin/posts");
-        }
-        return result;
+        return await updatePost(id, data);
     };
 
     // Prepare initial data
@@ -54,6 +54,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 isEditMode
                 pageTitle="Rediger Innlegg"
                 pageDescription="Endre informasjonen for dette innlegget."
+                redirectOnSuccess="/admin/posts"
             />
         </div>
     );

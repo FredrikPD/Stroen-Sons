@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/server/db";
 import { clerkClient } from "@clerk/nextjs/server";
 import { Role } from "@prisma/client";
+import { ensureMember } from "@/server/auth/ensureMember";
 const InviteMemberSchema = z.object({
     firstName: z.string().min(1, "Fornavn er påkrevd"),
     lastName: z.string().min(1, "Etternavn er påkrevd"),
@@ -21,6 +22,9 @@ export type InviteMemberState = {
 };
 
 export async function inviteMember(prevState: InviteMemberState, formData: FormData): Promise<InviteMemberState> {
+    const member = await ensureMember();
+    if (member.role !== "ADMIN") return { error: "Du har ikke tilgang til å invitere nye medlemmer." };
+
     const validatedFields = InviteMemberSchema.safeParse({
         firstName: formData.get("firstName"),
         lastName: formData.get("lastName"),

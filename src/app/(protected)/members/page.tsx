@@ -77,7 +77,16 @@ function MemberCard({ member }: { member: any }) {
     );
 }
 
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
+
 export default async function MembersPage() {
+    try {
+        await ensureMember();
+    } catch (e) {
+        redirect("/sign-in");
+    }
+
     const { data: members, success } = await getMembers();
 
     if (!success || !members) {

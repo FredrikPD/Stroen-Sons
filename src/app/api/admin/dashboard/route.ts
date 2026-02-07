@@ -13,7 +13,7 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (member.role !== "ADMIN") {
+    if (member.role !== "ADMIN" && member.role !== "MODERATOR") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -42,6 +42,7 @@ export async function GET() {
 
     return NextResponse.json({
         firstName: member.firstName,
+        role: member.role,
         memberCount,
         unpaidCount,
         treasuryBalance: treasurySum._sum.amount?.toNumber() ?? 0,

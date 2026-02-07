@@ -1,6 +1,15 @@
 import Image from "next/image";
 
-export default function AboutPage() {
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
+
+export default async function AboutPage() {
+    try {
+        await ensureMember();
+    } catch (e) {
+        redirect("/sign-in");
+    }
+
     return (
         <div className="flex flex-col pb-12">
 
@@ -11,7 +20,8 @@ export default function AboutPage() {
                     <h1 className="text-5xl font-bold mb-6">OM KLUBBEN</h1>
                     <div className="w-16 h-1 bg-[#FBBF24] mb-6 rounded-full" />
                     <p className="max-w-xl text-gray-200 text-sm leading-relaxed">
-                        En eksklusiv arena for lojalitet, brorskap og tradisjon. Vi bygger varige relasjoner gjennom felles opplevelser.
+                        Strøen Søns er en gutteklubb etablert i 2025 bestående av 18 barndomsvenner fra Snarøya og Strand (og én fra Jar).
+                        Klubben ble etablert av Trym, Georg, Fredrik og Jan August som dannet det første styret.
                     </p>
                 </div>
             </div>
@@ -21,22 +31,41 @@ export default function AboutPage() {
                 <section className="max-w-4xl mx-auto w-full px-4">
                     <div className="text-center mb-12">
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">Vår Historie</h2>
-                        <p className="text-gray-500 text-sm leading-relaxed max-w-2xl mx-auto">
-                            Det startet en sen kveld i 2025, da en gruppe likesinnede bestemte seg for å skape noe varig.
-                            Klubben er bygget på pilarene av gjensidig respekt og livslangt vennskap.
-                            Fra en ydmyk begynnelse i en kjellerleilighet har vi vokst til å bli en institusjon som verner om de klassiske verdiene i en moderne tid.
-                        </p>
-                    </div>
+                        <div className="mx-auto max-w-4xl px-4">
+                            <div className="space-y-5 text-pretty text-sm leading-6 text-gray-600 sm:text-[15px] sm:leading-7">
+                                <p>
+                                    Alt startet med en enkel tanke: vennskap varer ikke av seg selv – det varer når man prioriterer det.
+                                    Når livet blir fullt av jobb, flytting, forhold og travle perioder, trenger man en struktur og en arena
+                                    som gjør det lett å faktisk møtes.
+                                </p>
 
-                    <div className="relative space-y-12 pl-8 border-l border-gray-200 ml-4">
-                        {/* Timeline Item 1 */}
-                        <div className="relative">
-                            <span className="absolute -left-[41px] top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#FEF3C7] ring-4 ring-white">
-                                <span className="material-symbols-outlined text-[14px] text-[#D97706]">flag</span>
-                            </span>
-                            <h3 className="flex items-center mb-1 text-sm font-bold text-gray-900">Kick Off</h3>
-                            <time className="block mb-2 text-xs font-normal leading-none text-gray-400">2025</time>
-                            <p className="text-sm font-normal text-gray-500">De fem grunnleggerne signerte det første charteret.</p>
+                                <p>
+                                    Formålet vårt var derfor todelt: bevare vennskap ut livet, og samtidig sørge for at vi opplever ting
+                                    sammen som vi sannsynligvis aldri hadde fått til uten en klubb som drar oss i gang.
+                                </p>
+
+                                <p>
+                                    Klubben vår har derfor et fast årshjul som gjentas hvert år: Vinterleker, Sommerleker, Utenlandstur og
+                                    Julebord. Disse fire gjennomføres uansett. I tillegg kan det komme enkeltarrangementer gjennom året,
+                                    planlagt i god tid og merket som klubbregi.
+                                </p>
+
+                                <p>
+                                    Strøen Søns styres av et styre og forankres gjennom generalforsamling og møter gjennom året. For å få
+                                    ting til å skje i praksis jobber vi med ARKOM (arrangementskomiteer) og oppretter nye roller ved behov
+                                    eller ønske. Klubben skal tilrettelegge for variert aktivitet og opplevelser, med balanse mellom
+                                    eventyr, kultur og moro – ikke utelukkende fest.
+                                </p>
+
+                                <p>
+                                    Medlemskap innebærer et månedlig bidrag, men først og fremst at du er med på å bygge dette videre: du
+                                    møter opp når du kan, bidrar når det trengs, og tar vare på fellesskapet.
+                                </p>
+
+                                <p className="pt-1 font-medium text-gray-800">
+                                    Tidene forandres, men vi står støtt.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -49,13 +78,13 @@ export default function AboutPage() {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {[
-                            { name: "Jan August B. Kristiansen", role: "STYREMEDLEM", image: "/images/logo_cover.png" }, // Placeholder image
-                            { name: "Trym Ekra-Reistad", role: "STYREMEDLEM", image: "/images/logo_cover.png" },
-                            { name: "Georg Samuelsen", role: "STYREMEDLEM", image: "/images/logo_cover.png" },
-                            { name: "Fredrik Preus Dovland", role: "STYREMEDLEM", image: "/images/logo_cover.png" }
+                            { name: "Jan August B. Kristiansen", role: "STYREMEDLEM", image: "/images/jan.jpg" },
+                            { name: "Trym Ekra-Reistad", role: "STYREMEDLEM", image: "/images/trym.jpg" },
+                            { name: "Georg Samuelsen", role: "STYREMEDLEM", image: "/images/georg.jpg" },
+                            { name: "Fredrik Preus Dovland", role: "STYREMEDLEM", image: "/images/fredrik.jpg" }
                         ].map((member, i) => (
                             <div key={i} className="flex flex-col gap-3 group">
-                                <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 grayscale group-hover:grayscale-0 transition-all duration-500">
+                                <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 transition-all duration-500">
                                     {/* 
                             NOTE: Using cover.png as placeholder since no specific portraits provided. 
                             In a real scenario we'd use specific images. 
@@ -158,9 +187,6 @@ export default function AboutPage() {
                         </ul>
                         <p className="mt-6 text-sm italic text-gray-500">
                             Et siste ord. Dette er ikke en tilfeldig gruppe – dette er en klubb for livet. Vi bygger videre på det vi har, én tur, én samtale og én dårlig idé om gangen. I all vår framtidige travelhet, skal denne klubben være vårt ankerpunkt - et bevisst valg om å ikke miste hverandre av syne.
-                        </p>
-                        <p className="mt-4 text-xs text-gray-400">
-                            *En andel av påmeldingsavgiften på kr 2 000 per person vil benyttes til innkjøp av rekvisitter, eventuell merchandise og øvrige effekter i forbindelse med Kick-Off den 09.08.25.*
                         </p>
                     </div>
 

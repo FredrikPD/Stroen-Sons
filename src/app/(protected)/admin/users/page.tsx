@@ -1,8 +1,11 @@
 import { db } from "@/server/db";
 import UserManagementClient from "./user-management-client";
 import { Role } from "@prisma/client";
+import { ensureRole } from "@/server/auth/ensureRole";
 
 export default async function UserManagementPage() {
+    await ensureRole([Role.ADMIN]);
+
     // Parallel data fetching for stats and members
     const [
         totalMembers,
@@ -27,14 +30,16 @@ export default async function UserManagementPage() {
                 status: true,
                 createdAt: true, // Used to calc approximate "last active" if not tracking activity
                 updatedAt: true,
+                lastActiveAt: true,
             }
         })
     ]);
 
     // Format members for the client component
     const formattedMembers = allMembers.map(m => {
-        // Simple heuristic for "Last Active" - using updatedAt
-        const diffInSeconds = Math.floor((new Date().getTime() - new Date(m.updatedAt).getTime()) / 1000);
+        // Simple heuristic for "Last Active" - using lastActiveAt (fallback to updatedAt)
+        const lastActiveDate = m.lastActiveAt || m.updatedAt;
+        const diffInSeconds = Math.floor((new Date().getTime() - new Date(lastActiveDate).getTime()) / 1000);
         let lastActive = "Nylig";
         if (diffInSeconds < 60) lastActive = "Akkurat nå";
         else if (diffInSeconds < 3600) lastActive = `${Math.floor(diffInSeconds / 60)} minutter siden`;

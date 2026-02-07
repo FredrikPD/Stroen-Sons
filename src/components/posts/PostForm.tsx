@@ -4,13 +4,12 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { postSchema, PostInput } from "@/lib/validators/posts";
-import { PostCategory } from "@prisma/client";
 import ReactMarkdown from "react-markdown";
-import Link from "next/link";
-// import { UploadDropzone } from "@/lib/uploadthing"; 
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
 import { deleteFile } from "@/server/actions/files";
+import { useModal } from "@/components/providers/ModalContext";
+import { useRouter } from "next/navigation";
 
 interface PostFormProps {
     initialData?: Partial<PostInput> & { id?: string };
@@ -19,13 +18,17 @@ interface PostFormProps {
     isEditMode?: boolean;
     pageTitle?: string;
     pageDescription?: string;
+    onSuccess?: () => void;
+    redirectOnSuccess?: string;
 }
 
-export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode = false, pageTitle, pageDescription }: PostFormProps) {
+export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode = false, pageTitle, pageDescription, onSuccess, redirectOnSuccess }: PostFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"write" | "preview">("write");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const { openAlert } = useModal();
+    const router = useRouter();
 
     const { startUpload, isUploading } = useUploadThing("postAttachment");
 
@@ -86,6 +89,21 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
             const res = await onSubmit(data);
             if (!res.success) {
                 setSubmitError(res.error || "Noe gikk galt.");
+            } else {
+                await openAlert({
+                    title: isEditMode ? "Innlegg oppdatert" : "Innlegg publisert",
+                    message: isEditMode ? "Endringene dine er lagret." : "Innlegget er nå publisert på tavlen.",
+                    type: "success",
+                    confirmText: "OK"
+                });
+
+                if (redirectOnSuccess) {
+                    router.push(redirectOnSuccess);
+                } else if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.refresh();
+                }
             }
         } catch (error) {
             console.error(error);
@@ -159,6 +177,8 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                         </div>
                     </div>
 
+
+
                     {/* Content */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -230,6 +250,30 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
 
                 {/* Right Column: Attachments */}
                 <div className="space-y-6">
+                    {/* Notification Card */}
+                    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 hover:border-orange-200 transition-colors">
+                        <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600 shadow-sm shadow-orange-100">
+                                <span className="material-symbols-outlined text-xl">mark_email_unread</span>
+                            </div>
+                            <div className="flex-1 space-y-1">
+                                <label htmlFor="sendNotification" className="block text-sm font-bold text-gray-900 cursor-pointer select-none">
+                                    Send e-postvarsel
+                                </label>
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                    Send e-post til alle medlemmer om dette innlegget.
+                                </p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                {...register("sendNotification")}
+                                id="sendNotification"
+                                className="w-6 h-6 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600 mt-1"
+                            />
+                        </div>
+                    </div>
+
+
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                             <span className="material-symbols-outlined text-indigo-600">attach_file</span>

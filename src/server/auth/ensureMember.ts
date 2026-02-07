@@ -18,6 +18,15 @@ export async function ensureMember() {
   });
 
   if (existingMember) {
+    // Update last active if > 15 min ago to reduce writes
+    const now = new Date();
+    // Check if lastActiveAt exists (it sits on the type now) and if it's old enough
+    if (!existingMember.lastActiveAt || (now.getTime() - existingMember.lastActiveAt.getTime() > 15 * 60 * 1000)) {
+      await prisma.member.update({
+        where: { id: existingMember.id },
+        data: { lastActiveAt: now }
+      });
+    }
     return existingMember;
   }
 

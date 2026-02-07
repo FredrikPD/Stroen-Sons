@@ -5,7 +5,11 @@ interface PageProps {
     searchParams: Promise<{ eventId?: string }>;
 }
 
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+
 export default async function AdminPhotosPage(props: PageProps) {
+    await ensureRole([Role.ADMIN, Role.MODERATOR]);
     const searchParams = await props.searchParams;
     const eventId = searchParams.eventId;
 

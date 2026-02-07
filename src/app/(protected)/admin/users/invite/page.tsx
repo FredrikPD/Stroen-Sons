@@ -3,8 +3,12 @@
 import { useActionState, useState } from "react";
 import { inviteMember } from "@/server/actions/invite-member";
 import { Role } from "@prisma/client";
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
 
-export default function InviteMemberPage() {
+export default async function InviteMemberPage() {
+    const member = await ensureMember();
+    if (member.role !== "ADMIN") redirect("/admin");
     const [state, formAction, isPending] = useActionState(inviteMember, {});
 
     // Local state for preview
@@ -86,6 +90,7 @@ export default function InviteMemberPage() {
                                         defaultValue="MEMBER"
                                     >
                                         <option value="MEMBER">Medlem</option>
+                                        <option value="MODERATOR">Moderator</option>
                                         <option value="ADMIN">Administrator</option>
                                     </select>
                                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-lg">expand_more</span>
@@ -191,9 +196,9 @@ export default function InviteMemberPage() {
                                         <div>
                                             <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
                                             <div className="flex items-center gap-1.5 mt-1">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${preview.role === 'ADMIN' ? 'bg-indigo-400' : 'bg-emerald-400'} animate-pulse`} />
+                                                <div className={`w-1.5 h-1.5 rounded-full ${preview.role === 'ADMIN' ? 'bg-indigo-400' : preview.role === 'MODERATOR' ? 'bg-fuchsia-400' : 'bg-emerald-400'} animate-pulse`} />
                                                 <span className="text-xs font-semibold tracking-wide">
-                                                    {preview.role === 'ADMIN' ? 'Administrator' : 'Medlem'}
+                                                    {preview.role === 'ADMIN' ? 'Administrator' : preview.role === 'MODERATOR' ? 'Moderator' : 'Medlem'}
                                                 </span>
                                             </div>
                                         </div>

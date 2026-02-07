@@ -28,13 +28,13 @@ export const WelcomeEmail = ({
     return (
         <Html>
             <Head />
-            <Preview>Velkommen til Strøen & Sønner</Preview>
+            <Preview>Velkommen til Strøen Søns</Preview>
             <Tailwind>
                 <Body className="bg-gray-100 my-auto mx-auto font-sans">
                     <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] w-[465px] bg-white">
                         <Section className="mt-[32px]">
                             <Heading className="text-gray-900 text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-                                Velkommen til <strong>Strøen & Sønner</strong>
+                                Velkommen til <strong>Strøen Søns</strong>
                             </Heading>
                         </Section>
 
@@ -42,7 +42,7 @@ export const WelcomeEmail = ({
                             Hei {firstName},
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            Du har blitt invitert til å bli medlem av Strøen & Sønner.
+                            Du har blitt invitert til å bli medlem av Strøen Søns.
                             Her er din innloggingsinformasjon:
                         </Text>
 
@@ -75,7 +75,7 @@ export const WelcomeEmail = ({
                             Vi anbefaler at du endrer passordet ditt ved første innlogging.
                         </Text>
                         <Text className="text-gray-500 text-[12px] leading-[24px] mt-8 text-center border-t border-gray-100 pt-4">
-                            Strøen & Sønner
+                            Strøen Søns
                         </Text>
                     </Container>
                 </Body>

@@ -6,6 +6,7 @@ import type { PostWithDetails } from "@/components/posts/PostItem";
 import { revalidatePath } from "next/cache";
 import { PostCategory } from "@prisma/client";
 import { broadcastNotification } from "@/server/actions/notifications";
+import { sendPostNotification } from "@/server/actions/emails";
 
 export type GetPostsParams = {
     cursor?: string;
@@ -19,7 +20,7 @@ import { postSchema, PostInput } from "@/lib/validators/posts";
 
 export async function createPost(data: PostInput) {
     const member = await ensureMember();
-    if (!member || member.role !== "ADMIN") {
+    if (!member || (member.role !== "ADMIN" && member.role !== "MODERATOR")) {
         return { success: false, error: "Du har ikke tilgang til å opprette innlegg." };
     }
 
@@ -48,6 +49,7 @@ export async function createPost(data: PostInput) {
             },
         });
 
+
         // Notify all members
         await broadcastNotification({
             type: "POST_CREATED",
@@ -55,6 +57,16 @@ export async function createPost(data: PostInput) {
             message: `"${data.title}" har blitt publisert.`,
             link: `/posts/${post.id}`,
         });
+
+        if (data.sendNotification) {
+            await sendPostNotification({
+                postTitle: data.title,
+                postContent: data.content,
+                authorName: `${member.firstName} ${member.lastName}`,
+                postId: post.id,
+                category: data.category
+            });
+        }
 
         revalidatePath("/posts");
         revalidatePath("/admin");
@@ -125,6 +137,17 @@ export async function updatePost(postId: string, data: PostInput) {
         revalidatePath(`/posts/${postId}`);
         revalidatePath("/admin");
         revalidatePath("/admin/posts");
+        revalidatePath("/admin/posts");
+
+        if (data.sendNotification) {
+            await broadcastNotification({
+                type: "POST_UPDATED",
+                title: "Innlegg oppdatert",
+                message: `"${data.title}" har blitt oppdatert.`,
+                link: `/posts/${postId}`,
+            });
+        }
+
         return { success: true };
     } catch (error) {
         console.error("Failed to update post:", error);

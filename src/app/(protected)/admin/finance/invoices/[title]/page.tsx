@@ -3,14 +3,20 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { getInvoiceGroupDetails, updateInvoiceGroup, getInvoiceFormData } from "@/server/actions/invoices";
+
+import { getInvoiceGroupDetails, updateInvoiceGroup, getInvoiceFormData, deleteInvoiceGroup } from "@/server/actions/invoices";
 import { togglePaymentStatus } from "@/server/actions/finance";
+import { deletePaymentRequest } from "@/server/actions/payment-requests";
 import { RequestStatus } from "@prisma/client";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
+import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
+import { Toggle } from "@/components/ui/Toggle";
+import { useModal } from "@/components/providers/ModalContext";
 
 export default function InvoiceDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const { openConfirm, openAlert } = useModal();
     const encodedTitle = params?.title as string;
     const title = decodeURIComponent(encodedTitle);
 
@@ -72,9 +78,39 @@ export default function InvoiceDetailPage() {
             // Reload window to refresh data cleanly or manual update
             window.location.reload();
         } else {
-            alert("Feil: " + res.error);
+            await openAlert({
+                title: "Feil",
+                message: res.error || "Kunne ikke oppdatere gruppen.",
+                type: "error"
+            });
         }
         setUpdatingId(null);
+    };
+
+    const handleDeleteGroup = async () => {
+        const confirmed = await openConfirm({
+            title: "Slett fakturagruppe",
+            message: "Er du sikker på at du vil slette denne fakturagruppen? Dette vil slette alle UBETALTE krav i gruppen.",
+            type: "warning",
+            confirmText: "Slett gruppe",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setUpdatingId('group_delete');
+        const res = await deleteInvoiceGroup(title);
+
+        if (res.success) {
+            router.push("/admin/finance/invoices");
+        } else {
+            await openAlert({
+                title: "Feil",
+                message: res.error || "Kunne ikke slette gruppen.",
+                type: "error"
+            });
+            setUpdatingId(null);
+        }
     };
 
 
@@ -87,7 +123,37 @@ export default function InvoiceDetailPage() {
             const newStatus = req.status === 'PAID' ? 'PENDING' : 'PAID';
             setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: newStatus } : r));
         } else {
-            alert("Feil: " + res.error);
+            await openAlert({
+                title: "Feil",
+                message: res.error || "Kunne ikke endre status.",
+                type: "error"
+            });
+        }
+        setUpdatingId(null);
+    };
+
+    const handleDelete = async (req: any) => {
+        const confirmed = await openConfirm({
+            title: "Slett faktura",
+            message: `Er du sikker på at du vil slette kravet til ${req.member.firstName}?`,
+            type: "error",
+            confirmText: "Slett",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setUpdatingId(req.id);
+        const res = await deletePaymentRequest(req.id);
+
+        if (res.success) {
+            setRequests(prev => prev.filter(r => r.id !== req.id));
+        } else {
+            await openAlert({
+                title: "Feil",
+                message: res.error || "Kunne ikke slette kravet.",
+                type: "error"
+            });
         }
         setUpdatingId(null);
     };
@@ -189,41 +255,74 @@ export default function InvoiceDetailPage() {
                         </p>
                     </div>
 
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-between pt-2">
                         <button
-                            onClick={() => setIsEditing(false)}
-                            className="px-4 py-2 text-gray-600 font-medium text-sm hover:bg-gray-100 rounded-lg transition"
+                            onClick={handleDeleteGroup}
+                            disabled={updatingId === 'group_delete'}
+                            className="px-4 py-2 text-red-600 font-medium text-sm hover:bg-red-50 rounded-lg transition flex items-center gap-2"
                         >
-                            Avbryt
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            disabled={updatingId === 'group'}
-                            className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
-                        >
-                            {updatingId === 'group' ? (
+                            {updatingId === 'group_delete' ? "Sletter..." : (
                                 <>
-                                    <span className="animate-spin text-xs material-symbols-outlined">progress_activity</span>
-                                    Lagrer...
-                                </>
-                            ) : (
-                                <>
-                                    <span className="material-symbols-outlined text-sm">save</span>
-                                    Lagre endringer
+                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                    Slett faktura
                                 </>
                             )}
                         </button>
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-4 py-2 text-gray-600 font-medium text-sm hover:bg-gray-100 rounded-lg transition"
+                            >
+                                Avbryt
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={updatingId === 'group'}
+                                className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+                            >
+                                {updatingId === 'group' ? (
+                                    <>
+                                        <span className="animate-spin text-xs material-symbols-outlined">progress_activity</span>
+                                        Lagrer...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-sm">save</span>
+                                        Lagre endringer
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (
                 <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 relative group">
-                    <button
-                        onClick={() => setIsEditing(true)}
-                        className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all"
-                        title="Rediger gruppe"
-                    >
-                        <span className="material-symbols-outlined">edit</span>
-                    </button>
+                    <div className="absolute top-6 right-6">
+                        <Dropdown
+                            trigger={
+                                <button
+                                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all"
+                                    title="Alternativer"
+                                >
+                                    <span className="material-symbols-outlined">more_vert</span>
+                                </button>
+                            }
+                        >
+                            <DropdownItem onClick={() => setIsEditing(true)}>
+                                <span className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-lg">edit</span>
+                                    Rediger faktura
+                                </span>
+                            </DropdownItem>
+                            <DropdownItem danger onClick={handleDeleteGroup}>
+                                <span className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-lg">delete</span>
+                                    Slett faktura
+                                </span>
+                            </DropdownItem>
+                        </Dropdown>
+                    </div>
 
                     <h1 className="text-2xl font-bold text-gray-900 mb-1">{title}</h1>
                     <p className="text-sm text-gray-500 mb-4">
@@ -246,10 +345,10 @@ export default function InvoiceDetailPage() {
                 <table className="w-full">
                     <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
                         <tr>
-                            <th className="px-6 py-4">Medlem</th>
-                            <th className="px-6 py-4">Beløp</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4 text-right">Handling</th>
+                            <th className="px-6 py-4 text-left">Medlem</th>
+                            <th className="px-6 py-4 w-32 text-left">Beløp</th>
+                            <th className="px-6 py-4 w-32 text-left">Status</th>
+                            <th className="px-6 py-4 w-48 text-right">Handling</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -273,16 +372,21 @@ export default function InvoiceDetailPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button
-                                        onClick={() => handleToggle(req)}
-                                        disabled={updatingId === req.id}
-                                        className={`text-sm font-bold transition-colors ${req.status === 'PAID'
-                                            ? 'text-gray-400 hover:text-red-600'
-                                            : 'text-emerald-600 hover:text-emerald-700'
-                                            }`}
-                                    >
-                                        {updatingId === req.id ? 'Lagrer...' : (req.status === 'PAID' ? 'Merk som ubetalt' : 'Registrer betaling')}
-                                    </button>
+                                    <div className="flex items-center justify-end gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <Toggle
+                                                checked={req.status === 'PAID'}
+                                                onChange={() => handleToggle(req)}
+                                                disabled={updatingId === req.id}
+                                                loading={updatingId === req.id}
+                                            />
+                                            <span className={`text-sm font-medium w-14 text-center inline-block ${req.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'}`}>
+                                                {req.status === 'PAID' ? 'Betalt' : 'Ubetalt'}
+                                            </span>
+                                        </div>
+
+
+                                    </div>
                                 </td>
                             </tr>
                         ))}

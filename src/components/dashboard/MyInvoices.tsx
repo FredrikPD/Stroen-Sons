@@ -83,7 +83,6 @@ export function MyInvoices({ invoices, className = "" }: { invoices: Invoice[], 
 
                     <div className="mt-6 mb-1 text-center pb-2">
                         <p className="font-medium text-gray-600 text-sm">Ingen flere fakturaer</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Du er ajour med alle andre innbetalinger.</p>
                     </div>
                 </div>
             </div>

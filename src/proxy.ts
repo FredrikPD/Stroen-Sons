@@ -20,19 +20,14 @@ export default clerkMiddleware(async (auth, req) => {
     const role = sessionClaims?.public_metadata?.role;
 
     // NOTE: This assumes you have configured the session token to include public_metadata
-    if (role !== "ADMIN") {
+    if (role !== "ADMIN" && role !== "MODERATOR") {
       const url = new URL("/dashboard", req.url);
       return Response.redirect(url);
     }
   }
 
   if (isPublicRoute(req)) {
-    const { userId } = await auth();
-    // Redirect logged-in users away from sign-in page
-    if (userId && req.url.includes("/sign-in")) {
-      const url = new URL("/dashboard", req.url);
-      return Response.redirect(url);
-    }
+    // Let Clerk handle the public route access
   }
 
   if (!isPublicRoute(req)) {

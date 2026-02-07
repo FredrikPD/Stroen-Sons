@@ -13,13 +13,15 @@ type Transaction = {
     category: string;
     type: "INNTEKT" | "UTGIFT";
     amount: number;
+    members?: string[]; // Added members list
 };
 
 export default function AllTransactionsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
-    // State to track which months are collapsed.
-    // We store the keys (Month Year strings) of collapsed sections.
+    const [filter, setFilter] = useState<'ALL' | 'INNTEKT' | 'UTGIFT'>('ALL');
+
+    // State to track which months are collapsed (store Month Year strings)
     const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set());
     const router = useRouter();
 
@@ -27,23 +29,21 @@ export default function AllTransactionsPage() {
         const loadData = async () => {
             const res = await getAllTransactions();
             if (res.success && res.transactions) {
+                // @ts-ignore
                 setTransactions(res.transactions);
 
-                // Initialize Collapsed State
-                // We want the FIRST month (most recent) to be OPEN (not in set).
-                // We want ALL OTHER months to be CLOSED (in set).
-
-                // 1. Get all unique month keys in order
-                const tempMonths = Array.from(new Set(res.transactions.map(tx => {
+                // Initialize Collapsed State (First month OPEN, others CLOSED)
+                const tempMonths = Array.from(new Set(res.transactions.map((tx: any) => {
                     const date = new Date(tx.date);
                     const key = date.toLocaleString('nb-NO', { month: 'long', year: 'numeric' });
-                    // Capitalize first letter
                     return key.charAt(0).toUpperCase() + key.slice(1);
                 })));
 
-                // 2. Add all except the first one to the collapsed set
                 const initialCollapsed = new Set<string>();
-                tempMonths.slice(1).forEach(m => initialCollapsed.add(m));
+                // tempMonths.slice(1).forEach((m: string) => initialCollapsed.add(m)); // OLD: Open first only
+                // NEW: Open ALL initially? Or stick to first? User wants "filter within each month".
+                // Let's keep first open as default.
+                tempMonths.slice(1).forEach((m: unknown) => initialCollapsed.add(m as string));
 
                 setCollapsedMonths(initialCollapsed);
             }
@@ -55,9 +55,9 @@ export default function AllTransactionsPage() {
     const toggleMonth = (month: string) => {
         const newCollapsed = new Set(collapsedMonths);
         if (newCollapsed.has(month)) {
-            newCollapsed.delete(month); // Open it
+            newCollapsed.delete(month); // Open
         } else {
-            newCollapsed.add(month); // Close it
+            newCollapsed.add(month); // Close
         }
         setCollapsedMonths(newCollapsed);
     };
@@ -66,8 +66,14 @@ export default function AllTransactionsPage() {
         return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
     };
 
-    // Group transactions by Month Year
-    const groupedTransactions = transactions.reduce((acc, tx) => {
+    // Filter transactions FIRST
+    const filteredTransactions = transactions.filter(tx => {
+        if (filter === 'ALL') return true;
+        return tx.type === filter;
+    });
+
+    // THEN Group by Month Year
+    const groupedTransactions = filteredTransactions.reduce((acc, tx) => {
         const date = new Date(tx.date);
         const key = date.toLocaleString('nb-NO', { month: 'long', year: 'numeric' });
         const monthYear = key.charAt(0).toUpperCase() + key.slice(1);
@@ -79,8 +85,8 @@ export default function AllTransactionsPage() {
         return acc;
     }, {} as Record<string, Transaction[]>);
 
-    // Get list of months (keys) preserving order from original list
-    const months = Array.from(new Set(transactions.map(tx => {
+    // Get list of months (keys) from the FILTERED list to avoid empty month headers
+    const months = Array.from(new Set(filteredTransactions.map(tx => {
         const date = new Date(tx.date);
         const key = date.toLocaleString('nb-NO', { month: 'long', year: 'numeric' });
         return key.charAt(0).toUpperCase() + key.slice(1);
@@ -96,13 +102,35 @@ export default function AllTransactionsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex justify-between items-center">
+            {/* Header & Filter */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Transaksjonshistorikk</h1>
                     <p className="text-gray-500 text-sm max-w-3xl mt-1">
                         Fullstendig oversikt over alle registrerte transaksjoner.
                     </p>
+                </div>
+
+                {/* Filter Controls */}
+                <div className="bg-gray-100 p-1 rounded-lg flex text-sm font-medium">
+                    <button
+                        onClick={() => setFilter('ALL')}
+                        className={`px-4 py-1.5 rounded-md transition-all ${filter === 'ALL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Alle
+                    </button>
+                    <button
+                        onClick={() => setFilter('INNTEKT')}
+                        className={`px-4 py-1.5 rounded-md transition-all ${filter === 'INNTEKT' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Inntekt
+                    </button>
+                    <button
+                        onClick={() => setFilter('UTGIFT')}
+                        className={`px-4 py-1.5 rounded-md transition-all ${filter === 'UTGIFT' ? 'bg-white text-red-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Utgift
+                    </button>
                 </div>
             </div>
 
@@ -110,8 +138,8 @@ export default function AllTransactionsPage() {
                 {months.map(month => {
                     const isCollapsed = collapsedMonths.has(month);
                     const txs = groupedTransactions[month];
-                    // Calculate net total for the month (Income - Expense)
-                    const totalMonth = txs.reduce((sum, t) => sum + (t.type === 'INNTEKT' ? t.amount : -t.amount), 0);
+                    // Calculate net total for the month (Income - Expense) based on VISIBLE transactions
+                    const totalMonth = txs.reduce((sum, t) => sum + t.amount, 0);
 
                     return (
                         <div key={month} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-all duration-200">
@@ -132,8 +160,15 @@ export default function AllTransactionsPage() {
                                     </span>
                                 </div>
 
-                                {/* Status / Summary in Header (Visible mostly when collapsed, or always?) */}
-                                {/* Let's show a subtle summary always, or just when collapsed? */}
+                                <div className="text-sm font-medium text-gray-500">
+                                    {isCollapsed && (
+                                        <span>
+                                            Sum: <span className={totalMonth >= 0 ? 'text-emerald-600' : 'text-red-500'}>
+                                                {totalMonth > 0 ? '+' : ''}{formatCurrency(totalMonth)}
+                                            </span>
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Collapsible Content */}
@@ -142,16 +177,30 @@ export default function AllTransactionsPage() {
                                     {txs.map(tx => (
                                         <div key={tx.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors group">
                                             {/* Date */}
-                                            <div className="col-span-12 sm:col-span-2">
+                                            <div className="col-span-12 sm:col-span-2 flex items-center gap-2">
                                                 <span className="text-sm text-gray-500">{new Date(tx.date).getDate()}. {new Date(tx.date).toLocaleString('nb-NO', { month: 'short' })}</span>
                                             </div>
 
-                                            {/* Description and Category */}
+                                            {/* Description, Category AND Members */}
                                             <div className="col-span-8 sm:col-span-6">
-                                                <p className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{tx.description}</p>
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 mt-1">
-                                                    {tx.category}
-                                                </span>
+                                                <div className="flex flex-col">
+                                                    <p className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{tx.description}</p>
+                                                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                                            {tx.category}
+                                                        </span>
+                                                        {tx.members && tx.members.length > 0 && (
+                                                            <div className="flex gap-1">
+                                                                {tx.members.map(m => (
+                                                                    <span key={m} className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border border-transparent ${tx.type === 'INNTEKT' ? 'bg-emerald-50 text-emerald-700' : 'bg-orange-50 text-orange-700'}`}>
+                                                                        <span className="material-symbols-outlined text-[10px] mr-1">person</span>
+                                                                        {m}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             {/* Amount */}
@@ -176,8 +225,8 @@ export default function AllTransactionsPage() {
 
                 {months.length === 0 && (
                     <div className="text-center py-20 text-gray-500 bg-white rounded-2xl border border-gray-200">
-                        <span className="material-symbols-outlined text-4xl mb-2 opacity-50">receipt_long</span>
-                        <p>Ingen transaksjoner funnet.</p>
+                        <span className="material-symbols-outlined text-4xl mb-2 opacity-50">filter_list_off</span>
+                        <p>Ingen transaksjoner funnet med valgt filter.</p>
                     </div>
                 )}
             </div>

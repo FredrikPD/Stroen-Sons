@@ -7,7 +7,16 @@ export const metadata: Metadata = {
     description: "Administrer din konto og dine innstillinger",
 };
 
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
+
 export default async function AccountPage() {
+    try {
+        await ensureMember();
+    } catch (e) {
+        redirect("/sign-in");
+    }
+
     const { data: profile, success } = await getProfile();
 
     if (!success || !profile) {

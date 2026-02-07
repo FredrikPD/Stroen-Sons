@@ -3,8 +3,10 @@
 import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { broadcastNotification } from "@/server/actions/notifications";
 
 import { eventSchema, EventInput } from "@/lib/validators/events";
+import { sendEventNotification } from "@/server/actions/emails";
 
 export type CreateEventInput = EventInput;
 
@@ -20,7 +22,7 @@ export async function createEvent(input: CreateEventInput) {
             where: { clerkId: userId },
         });
 
-        if (!member || member.role !== "ADMIN") {
+        if (!member || (member.role !== "ADMIN" && member.role !== "MODERATOR")) {
             return { success: false, error: "Du har ikke tilgang til å opprette arrangementer" };
         }
 
@@ -30,18 +32,36 @@ export async function createEvent(input: CreateEventInput) {
             return { success: false, error: "Ugyldig data", details: validData.error.flatten() };
         }
 
-        const { title, description, startAt, location, address, coverImage, totalCost, clubSubsidy, program } = validData.data;
+        const {
+            title,
+            description,
+            startAt,
+            endAt,
+            registrationDeadline,
+            maxAttendees,
+            location,
+            address,
+            coverImage,
+            totalCost,
+            clubSubsidy,
+            program,
+            isTba
+        } = validData.data;
 
-        await db.event.create({
+        const event = await db.event.create({
             data: {
                 title,
                 description: description || null,
                 startAt,
+                endAt: endAt || null,
+                registrationDeadline: registrationDeadline || null,
+                maxAttendees: maxAttendees || null,
                 location: location || null,
                 address: address || null,
                 coverImage: coverImage || null,
                 totalCost: totalCost || null,
                 clubSubsidy: clubSubsidy || null,
+                isTba: isTba || false,
                 createdById: member.id,
                 program: program ? {
                     createMany: {
@@ -57,6 +77,37 @@ export async function createEvent(input: CreateEventInput) {
         revalidatePath("/admin");
         revalidatePath("/events");
         revalidatePath("/dashboard");
+
+        // Broadcast notification to all members
+        await broadcastNotification({
+            type: "EVENT_CREATED",
+            title: "Nytt arrangement",
+            message: `"${title}" har blitt lagt til i kalenderen.`,
+            link: `/events/${event.id}`,
+        });
+
+        // Send notification if requested
+        if (input.sendNotification) {
+            // Import helper dynamically or at top? Top is better. I will add import via separate edit or assume auto-import if I can, layout tool can't auto import.
+            // I'll add the import first.
+
+            // Format date for email
+            const dateStr = startAt.toLocaleDateString("no-NO", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
+            await sendEventNotification({
+                eventTitle: title,
+                eventDescription: description || "",
+                eventDate: dateStr,
+                eventLocation: location || undefined,
+                eventId: event.id
+            });
+        }
 
         return { success: true };
 
@@ -78,7 +129,7 @@ export async function updateEvent(id: string, input: EventInput) {
             where: { clerkId: userId },
         });
 
-        if (!member || member.role !== "ADMIN") {
+        if (!member || (member.role !== "ADMIN" && member.role !== "MODERATOR")) {
             return { success: false, error: "Du har ikke tilgang til å oppdatere arrangementer" };
         }
 
@@ -88,7 +139,21 @@ export async function updateEvent(id: string, input: EventInput) {
             return { success: false, error: "Ugyldig data", details: validData.error.flatten() };
         }
 
-        const { title, description, startAt, location, address, coverImage, totalCost, clubSubsidy, program } = validData.data;
+        const {
+            title,
+            description,
+            startAt,
+            endAt,
+            registrationDeadline,
+            maxAttendees,
+            location,
+            address,
+            coverImage,
+            totalCost,
+            clubSubsidy,
+            program,
+            isTba
+        } = validData.data;
 
         await db.event.update({
             where: { id },
@@ -96,11 +161,15 @@ export async function updateEvent(id: string, input: EventInput) {
                 title,
                 description: description || null,
                 startAt,
+                endAt: endAt || null,
+                registrationDeadline: registrationDeadline || null,
+                maxAttendees: maxAttendees || null,
                 location: location || null,
                 address: address || null,
                 coverImage: coverImage || null,
                 totalCost: totalCost || null,
                 clubSubsidy: clubSubsidy || null,
+                isTba: isTba || false,
                 program: {
                     deleteMany: {},
                     createMany: program ? {
@@ -117,6 +186,15 @@ export async function updateEvent(id: string, input: EventInput) {
         revalidatePath("/events");
         revalidatePath(`/admin/events/${id}/edit`);
         revalidatePath("/dashboard");
+
+        if (input.sendNotification) {
+            await broadcastNotification({
+                type: "EVENT_UPDATED",
+                title: "Arrangement oppdatert",
+                message: `"${title}" har blitt oppdatert.`,
+                link: `/events/${id}`,
+            });
+        }
 
         return { success: true };
 
@@ -138,7 +216,7 @@ export async function deleteEvent(id: string) {
             where: { clerkId: userId },
         });
 
-        if (!member || member.role !== "ADMIN") {
+        if (!member || (member.role !== "ADMIN" && member.role !== "MODERATOR")) {
             return { success: false, error: "Du har ikke tilgang til å slette arrangementer" };
         }
 

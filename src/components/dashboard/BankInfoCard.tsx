@@ -28,11 +28,11 @@ export function BankInfoCard({ memberId }: { memberId: string }) {
                 <div>
                     <p className="text-[10px] text-white/50 uppercase tracking-wider mb-1">KONTONUMMER</p>
                     <button
-                        onClick={() => handleCopy("1234.56.78903", "account")}
+                        onClick={() => handleCopy("1229.02.11946", "account")}
                         className="flex items-center gap-2 group cursor-pointer active:opacity-70 transition-opacity w-full text-left"
                         title="Klikk for å kopiere"
                     >
-                        <span className="font-mono text-lg tracking-wide font-medium">1234.56.78903</span>
+                        <span className="font-mono text-lg tracking-wide font-medium">1229.02.11946</span>
                         <span className={`material-symbols-outlined text-sm transition-colors ${copiedField === "account" ? "text-green-400" : "text-white/30 group-hover:text-white"
                             }`}>
                             {copiedField === "account" ? "check" : "content_copy"}

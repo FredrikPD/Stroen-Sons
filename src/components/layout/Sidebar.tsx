@@ -47,7 +47,7 @@ export default function Sidebar({ role }: { role?: string }) {
       </div>
 
       {/* Nav */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-8">
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h3 className="px-3 text-[10px] font-bold text-white/60 uppercase tracking-widest">Hovedmeny</h3>
           <nav className="flex flex-col gap-1">
@@ -66,16 +66,20 @@ export default function Sidebar({ role }: { role?: string }) {
           </nav>
         </div>
 
-        {isAdmin && (
+        {(isAdmin || role === "MODERATOR") && (
           <div className="flex flex-col gap-2">
             <h3 className="px-3 text-[10px] font-bold text-white/60 uppercase tracking-widest">Admin</h3>
             <nav className="flex flex-col gap-1">
-              {ADMIN_NAV.map((item) => (
-                <SidebarLink key={item.href} item={item} />
-              ))}
+              {ADMIN_NAV
+                .filter(item => role === "ADMIN" || (role === "MODERATOR" && item.href === "/admin"))
+                .map((item) => (
+                  <SidebarLink key={item.href} item={item} />
+                ))}
             </nav>
           </div>
         )}
+
+
       </div>
 
       {/* Logout */}

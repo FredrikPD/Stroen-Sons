@@ -119,7 +119,7 @@ export async function markRequestAsPaid(requestId: string) {
             const transaction = await tx.transaction.create({
                 data: {
                     amount: request.amount,
-                    description: `Payment for: ${request.title}`,
+                    description: request.title,
                     category: request.category.toString(),
                     date: new Date(),
                     memberId: request.memberId,
@@ -148,6 +148,35 @@ export async function markRequestAsPaid(requestId: string) {
                     }
                 }
             });
+
+            // If this is a membership fee, update the Payment record for status checks
+            if (request.category === 'MEMBERSHIP_FEE') {
+                const date = request.dueDate || new Date();
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const period = `${year}-${month}`;
+
+                await tx.payment.upsert({
+                    where: {
+                        memberId_period: {
+                            memberId: request.memberId,
+                            period: period
+                        }
+                    },
+                    update: {
+                        status: "PAID",
+                        paidAt: new Date(),
+                        amount: request.amount
+                    },
+                    create: {
+                        memberId: request.memberId,
+                        period: period,
+                        status: "PAID",
+                        paidAt: new Date(),
+                        amount: request.amount
+                    }
+                });
+            }
         });
 
         revalidatePath("/admin/finance/income");
@@ -183,4 +212,33 @@ export async function getAllPendingRequests() {
         include: { member: true },
         orderBy: { dueDate: 'asc' } // Oldest due first
     });
+}
+
+/**
+ * Delete a pending payment request
+ */
+export async function deletePaymentRequest(requestId: string) {
+    try {
+        const request = await db.paymentRequest.findUnique({
+            where: { id: requestId }
+        });
+
+        if (!request) {
+            return { success: false, error: "Forespørselen ble ikke funnet." };
+        }
+
+        if (request.status === "PAID") {
+            return { success: false, error: "Du kan ikke slette en betalt forespørsel." };
+        }
+
+        await db.paymentRequest.delete({
+            where: { id: requestId }
+        });
+
+        revalidatePath("/admin/finance/invoices");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete request:", error);
+        return { success: false, error: "Kunne ikke slette forespørselen." };
+    }
 }

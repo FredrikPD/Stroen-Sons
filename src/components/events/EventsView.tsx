@@ -46,9 +46,9 @@ export default function EventsView({ initialEvents }: EventsViewProps) {
             {/* Header Section */}
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col w-full">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Arrangementer</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Arrangementer & Turer</h1>
                     <p className="text-gray-500 text-sm">
-                        Oversikt over kommende og tidligere arrangementer.
+                        Oversikt over kommende og tidligere arrangementer og turer.
                     </p>
                 </div>
 

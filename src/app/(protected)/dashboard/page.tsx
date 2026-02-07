@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
+import { EventCountdown } from "@/components/dashboard/EventCountdown";
 
 function currentPeriod() {
   const d = new Date();
@@ -134,13 +135,8 @@ export default async function DashboardPage() {
                     Neste Samling
                   </span>
 
-                  {/* Mock Countdown Widget */}
-                  <div className="flex gap-2">
-                    <div className="bg-white/10 backdrop-blur-md rounded-lg p-1.5 text-center min-w-[40px]">
-                      <span className="block text-lg font-bold leading-none">14</span>
-                      <span className="text-[8px] uppercase text-white/70">Dager</span>
-                    </div>
-                  </div>
+                  {/* Countdown Widget */}
+                  <EventCountdown targetDate={nextEvent.startAt} />
                 </div>
 
                 <div className="space-y-4">
@@ -208,7 +204,7 @@ export default async function DashboardPage() {
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-10 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-10 flex flex-col justify-end transition-opacity duration-300">
                       <p className="text-white text-xs font-bold leading-tight line-clamp-2 drop-shadow-sm">
                         {event.title}
                       </p>

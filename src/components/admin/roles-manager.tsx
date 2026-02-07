@@ -133,10 +133,13 @@ export default function RolesManager() {
                                             disabled={updatingId === member.id}
                                             className={`block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.role === 'ADMIN'
                                                 ? 'text-red-700 font-medium bg-red-50 border-red-200'
-                                                : 'text-emerald-700 font-medium bg-emerald-50 border-emerald-200'
+                                                : member.role === 'MODERATOR'
+                                                    ? 'text-fuchsia-700 font-medium bg-fuchsia-50 border-fuchsia-200'
+                                                    : 'text-emerald-700 font-medium bg-emerald-50 border-emerald-200'
                                                 }`}
                                         >
                                             <option value="MEMBER">Medlem</option>
+                                            <option value="MODERATOR">Moderator</option>
                                             <option value="ADMIN">Administrator</option>
                                         </select>
                                     </td>

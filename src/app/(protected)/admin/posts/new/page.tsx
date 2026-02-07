@@ -1,35 +1,9 @@
-"use client";
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+import NewPostClientPage from "./client";
 
-import { createPost } from "@/server/actions/posts";
-import { useRouter } from "next/navigation";
-import { PostForm } from "@/components/posts/PostForm";
+export default async function NewPostPage() {
+    await ensureRole([Role.ADMIN, Role.MODERATOR]);
 
-export default function NewPostPage() {
-    const router = useRouter();
-
-    return (
-        <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-            <div className="w-full">
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden relative">
-                    {/* Decorative Top Bar */}
-                    <div className="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-
-                    <div className="p-8">
-                        <PostForm
-                            submitButtonText="Publiser Innlegg"
-                            pageTitle="Nytt Innlegg"
-                            pageDescription="Publiser nyheter eller beskjeder til tavlen."
-                            onSubmit={async (data) => {
-                                const res = await createPost(data);
-                                if (res.success) {
-                                    setTimeout(() => router.push("/admin/posts"), 1000);
-                                }
-                                return res;
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+    return <NewPostClientPage />;
 }

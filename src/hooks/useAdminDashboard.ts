@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 export type AdminDashboardData = {
     firstName: string | null;
+    role?: string;
     memberCount: number;
     unpaidCount?: number;
     treasuryBalance: number;

@@ -15,6 +15,7 @@ export type EventWithDetails = {
     description: string | null;
     coverImage: string | null;
     location: string | null;
+    isTba?: boolean;
     startAt: string; // ISO Date string
     _count: {
         attendees: number;
@@ -33,7 +34,7 @@ export default function EventCard({ event }: { event: EventWithDetails }) {
 
     return (
         <Link href={`/events/${event.id}`} className="block group">
-            <article className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+            <article className="bg-white rounded-2xl border border-gray-200/80 shadow-md hover:shadow-xl hover:border-gray-300 overflow-hidden transition-all duration-300 h-full flex flex-col">
                 {/* Image Section */}
                 <div className="relative h-32 bg-gray-100 overflow-hidden">
                     {event.coverImage ? (
@@ -66,11 +67,11 @@ export default function EventCard({ event }: { event: EventWithDetails }) {
                 <div className="p-4 flex flex-col flex-1 gap-3">
                     {/* Meta */}
                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                        {event.location && (
+                        {(event.location || event.isTba) && (
                             <>
                                 <div className="flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">location_on</span>
-                                    <span>{event.location}</span>
+                                    <span>{event.isTba ? "TBA" : event.location}</span>
                                 </div>
                                 <div className="h-3 w-[1px] bg-gray-200"></div>
                             </>

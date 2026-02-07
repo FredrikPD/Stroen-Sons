@@ -17,14 +17,15 @@ const getFeeTitle = (year: number, month: number) => {
 /**
  * Generate (or ensure existence of) monthly fee requests for all active members.
  */
+// ... (previous imports)
+
 export async function generateMonthlyFees(year: number, month: number) {
     try {
-        await ensureMember(); // Security check (Admin only ideally, but ensureMember checks role?)
-        // TODO: Ensure strict Admin check here if ensureMember doesn't throw for non-admins?
-        // ensureMember returns the member, usually callers check role.
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
 
         const title = getFeeTitle(year, month);
-        const dueDate = new Date(year, month - 1, 25); // Due date 25th of the month
+        const dueDate = new Date(year, month - 1, 1); // Due date 1st of the month
 
         // 1. Get all active members
         const members = await prisma.member.findMany({
@@ -175,7 +176,7 @@ export async function createFutureMonthlyFees(memberId: string, startYear: numbe
             const m = d.getMonth() + 1; // 1-indexed
 
             const title = getFeeTitle(y, m);
-            const dueDate = new Date(y, m - 1, 25);
+            const dueDate = new Date(y, m - 1, 1);
 
             // Check existence
             const existing = await prisma.paymentRequest.findFirst({
@@ -229,7 +230,8 @@ export async function createFutureMonthlyFees(memberId: string, startYear: numbe
 
 export async function getMonthlyPaymentStatus(year: number, month: number) {
     try {
-        await ensureMember();
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') throw new Error("Unauthorized");
 
         const pad = (n: number) => n.toString().padStart(2, '0');
 
@@ -371,6 +373,25 @@ export async function togglePaymentStatus(requestId: string) {
                         }
                     }
                 });
+
+                // Revert Payment Status (Fixed: This was missing)
+                if (request.category === 'MEMBERSHIP_FEE' && request.dueDate) {
+                    const y = request.dueDate.getFullYear();
+                    const m = String(request.dueDate.getMonth() + 1).padStart(2, '0');
+                    const period = `${y}-${m}`;
+
+                    await tx.payment.updateMany({
+                        where: {
+                            memberId: request.memberId,
+                            period: period
+                        },
+                        data: {
+                            status: "UNPAID",
+                            amount: null,
+                            paidAt: null
+                        }
+                    });
+                }
             });
         } else {
             // Use our helper to Mark PAID
@@ -391,6 +412,9 @@ export async function togglePaymentStatus(requestId: string) {
 
 export async function getMembersAndEvents() {
     try {
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { members: [], events: [] };
+
         const [members, events] = await Promise.all([
             prisma.member.findMany({
                 orderBy: { firstName: 'asc' },
@@ -435,7 +459,8 @@ export async function registerExpense(data: {
     splitMemberIds: string[];
 }) {
     try {
-        await ensureMember();
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
 
         const { amount, description, category, date, eventId, splitMemberIds } = data;
         const totalAmount = Math.abs(amount);
@@ -531,7 +556,7 @@ export async function getMyFinancialData() {
                     memberId: member.id
                 },
                 orderBy: { date: 'desc' },
-                take: 20
+                // take: 20 // Full history requested
             })
         ]);
 
@@ -561,13 +586,21 @@ export async function getAllTransactions() {
         if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
 
         const transactions = await prisma.transaction.findMany({
-            orderBy: { date: "desc" }
+            orderBy: { date: "desc" },
+            include: {
+                member: {
+                    select: {
+                        firstName: true,
+                        lastName: true
+                    }
+                }
+            }
         });
 
         // Grouping Logic (Replicated from API for consistency)
         const groupedTransactionsMap = new Map<string, any>();
 
-        transactions.forEach((tx) => {
+        (transactions as any[]).forEach((tx) => {
             const baseDescription = tx.description.replace(" (Splittet)", "");
             const dateKey = tx.date.toISOString();
             const key = `${dateKey}_${baseDescription}_${tx.category}`;
@@ -575,6 +608,12 @@ export async function getAllTransactions() {
             if (groupedTransactionsMap.has(key)) {
                 const existing = groupedTransactionsMap.get(key);
                 existing.amount += Number(tx.amount);
+                if (tx.member) {
+                    const name = `${tx.member.firstName} ${tx.member.lastName}`;
+                    if (!existing.members.includes(name)) {
+                        existing.members.push(name);
+                    }
+                }
             } else {
                 groupedTransactionsMap.set(key, {
                     id: tx.id,
@@ -583,6 +622,7 @@ export async function getAllTransactions() {
                     category: tx.category,
                     type: Number(tx.amount) > 0 ? "INNTEKT" : "UTGIFT",
                     amount: Number(tx.amount),
+                    members: tx.member ? [`${tx.member.firstName} ${tx.member.lastName}`] : []
                 });
             }
         });
@@ -592,5 +632,246 @@ export async function getAllTransactions() {
     } catch (error) {
         console.error("Failed to fetch all transactions:", error);
         return { success: false, error: "Kunne ikke hente transaksjoner" };
+    }
+}
+
+/**
+ * Recalculate balances for ALL members based on their transaction history.
+ * This effectively fixes any drift between stored balance and actual transactions.
+ */
+export async function recalculateAllBalances() {
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        // 1. Get all members to ensure we reset those with 0 transactions too
+        const members = await prisma.member.findMany({ select: { id: true } });
+
+        // 2. Aggregate transactions by member
+        const aggregates = await prisma.transaction.groupBy({
+            by: ['memberId'],
+            _sum: {
+                amount: true
+            },
+            where: {
+                memberId: { not: null }
+            }
+        });
+
+        // Map memberId -> Sum
+        const balanceMap = new Map<string, number>();
+        // @ts-ignore - Prisma groupBy types can be finicky depending on version
+        aggregates.forEach((agg: any) => {
+            if (agg.memberId) {
+                balanceMap.set(agg.memberId, agg._sum.amount ? Number(agg._sum.amount) : 0);
+            }
+        });
+
+        // 3. Update all members
+        let updatedCount = 0;
+
+        // We use $transaction for safety, though massive updates might timeout if too many.
+        // For a club app (usually < 1000 members), this is fine.
+        await prisma.$transaction(
+            members.map(member => {
+                const correctBalance = balanceMap.get(member.id) || 0;
+                updatedCount++;
+                return prisma.member.update({
+                    where: { id: member.id },
+                    data: { balance: correctBalance }
+                });
+            })
+        );
+
+        revalidatePath("/admin/finance");
+        revalidatePath("/dashboard"); // For the user reporting the issue
+
+        return { success: true, count: updatedCount };
+
+    } catch (error) {
+        console.error("Failed to recalculate balances:", error);
+        return { success: false, error: "Kunne ikke synkronisere saldoer" };
+    }
+}
+
+/**
+ * Manually set a member's balance.
+ * Creates a correction transaction to account for the difference.
+ */
+export async function setMemberBalance(memberId: string, newBalance: number, reason: string) {
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const member = await prisma.member.findUnique({ where: { id: memberId } });
+        if (!member) return { success: false, error: "Fant ikke medlem" };
+
+        const currentBalance = member.balance.toNumber();
+        const difference = newBalance - currentBalance;
+
+        if (difference === 0) {
+            return { success: true, message: "Ingen endring i saldo." };
+        }
+
+        await prisma.$transaction(async (tx) => {
+            // Create Audit Transaction
+            await tx.transaction.create({
+                data: {
+                    amount: difference,
+                    description: `Manuell justering: ${reason}`,
+                    category: "MANUAL_ADJUSTMENT",
+                    date: new Date(),
+                    memberId: member.id,
+                }
+            });
+
+            // Update Member Balance
+            await tx.member.update({
+                where: { id: member.id },
+                data: { balance: newBalance }
+            });
+        });
+
+        revalidatePath("/admin/finance");
+        revalidatePath(`/member/${member.id}`);
+
+        return { success: true };
+
+    } catch (error) {
+        console.error("Failed to set member balance:", error);
+        return { success: false, error: "Kunne ikke oppdatere saldo" };
+    }
+}
+
+/**
+ * Delete a single transaction.
+ * Also reverses the balance impact on the member and REVERTS linked payment statuses.
+ */
+export async function deleteTransaction(transactionId: string) {
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const transaction = await prisma.transaction.findUnique({
+            where: { id: transactionId },
+            include: {
+                member: true,
+                paymentRequest: true // Check if linked to a request
+            }
+        });
+
+        if (!transaction) return { success: false, error: "Transaksjon ikke funnet" };
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Revert PaymentRequest Status (if exists)
+            if (transaction.paymentRequest) {
+                const req = transaction.paymentRequest;
+
+                // Set back to PENDING and remove transaction link
+                await tx.paymentRequest.update({
+                    where: { id: req.id },
+                    data: {
+                        status: RequestStatus.PENDING,
+                        transactionId: null
+                    }
+                });
+
+                // If it was a membership fee, we must also update the simplified Payment table
+                if (req.category === 'MEMBERSHIP_FEE' && req.dueDate) {
+                    // Logic to find the Period string (YYYY-MM) from the due date
+                    // Usually due date is 25th of the month it applies to.
+                    const y = req.dueDate.getFullYear();
+                    const m = String(req.dueDate.getMonth() + 1).padStart(2, '0');
+                    const period = `${y}-${m}`;
+
+                    // Set Payment status to UNPAID
+                    // We use updateMany in case it doesn't exist (though it should), to avoid errors
+                    await tx.payment.updateMany({
+                        where: {
+                            memberId: req.memberId,
+                            period: period
+                        },
+                        data: {
+                            status: "UNPAID",
+                            amount: null,
+                            paidAt: null
+                        }
+                    });
+                }
+            }
+
+            // 2. Delete the transaction
+            await tx.transaction.delete({ where: { id: transactionId } });
+
+            // 3. Revert Member Balance
+            if (transaction.memberId) {
+                await tx.member.update({
+                    where: { id: transaction.memberId },
+                    data: {
+                        balance: {
+                            decrement: transaction.amount
+                        }
+                    }
+                });
+            }
+        });
+
+        revalidatePath("/admin/finance");
+        if (transaction.memberId) revalidatePath(`/member/${transaction.memberId}`);
+
+        return { success: true };
+
+    } catch (error) {
+        console.error("Failed to delete transaction:", error);
+        return { success: false, error: "Kunne ikke slette transaksjon" };
+    }
+}
+
+/**
+ * Delete ALL transactions.
+ * Dangerous action. Resets all member balances to 0 AND resets all payment statuses.
+ */
+export async function deleteAllTransactions() {
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Reset all linked PaymentRequests to PENDING
+            // We find all requests that HAVE a transactionId, since we are about to delete those txs.
+            await tx.paymentRequest.updateMany({
+                where: { transactionId: { not: null } },
+                data: {
+                    status: RequestStatus.PENDING,
+                    transactionId: null
+                }
+            });
+
+            // 2. Reset ALL Payment records to UNPAID
+            // Since "Delete All Transactions" implies a full history wipe/reset.
+            await tx.payment.updateMany({
+                data: {
+                    status: "UNPAID",
+                    amount: null,
+                    paidAt: null
+                }
+            });
+
+            // 3. Delete all transactions
+            await tx.transaction.deleteMany({});
+
+            // 4. Reset all member balances to 0
+            await tx.member.updateMany({
+                data: { balance: 0 }
+            });
+        });
+
+        revalidatePath("/admin/finance");
+
+        return { success: true };
+
+    } catch (error) {
+        console.error("Failed to delete all transactions:", error);
+        return { success: false, error: "Kunne ikke slette alle transaksjoner" };
     }
 }

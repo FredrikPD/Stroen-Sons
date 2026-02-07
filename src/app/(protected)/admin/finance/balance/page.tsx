@@ -24,11 +24,32 @@ type MemberBalance = {
     requests: PaymentRequest[];
 };
 
+import { sendBulkPaymentReminders, sendPaymentReminder } from "@/server/actions/emails";
+import { toast } from "sonner"; // Assuming sonner is used, or alert
+import { PremiumModal } from "@/components/ui/PremiumModal";
+
 export default function MemberBalancePage() {
     const [members, setMembers] = useState<MemberBalance[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+    const [emailSending, setEmailSending] = useState(false);
+
+    // Modal State
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "info" as "info" | "success" | "warning" | "error",
+        isConfirm: false,
+        onConfirm: () => { }
+    });
+
+    const closeModal = () => setModal(prev => ({ ...prev, isOpen: false }));
+
+    // We can use a map to track loading state for individual items if needed, 
+    // but for now global lock is safer to prevent spam.
+
     const router = useRouter();
 
     useEffect(() => {
@@ -53,6 +74,93 @@ export default function MemberBalancePage() {
         };
         checkAuthAndFetch();
     }, [router]);
+
+    const handleBulkReminder = async () => {
+        const hasUnpaidMembers = members.some(m => m.unpaidCount > 0);
+        if (!hasUnpaidMembers) {
+            setModal({
+                isOpen: true,
+                title: "Ingen mottakere",
+                message: "Det finnes ingen medlemmer med ubetalte krav. Ingen e-poster trenger å sendes.",
+                type: "info",
+                isConfirm: false,
+                onConfirm: closeModal
+            });
+            return;
+        }
+
+        setModal({
+            isOpen: true,
+            title: "Bekreft utsending",
+            message: "Er du sikker på at du vil sende betalingspåminnelse til alle medlemmer med ubetalte krav? Dette kan ikke angres.",
+            type: "warning",
+            isConfirm: true,
+            onConfirm: async () => {
+                closeModal();
+                setEmailSending(true);
+                const res = await sendBulkPaymentReminders();
+                setEmailSending(false);
+
+                if (res.success) {
+                    setModal({
+                        isOpen: true,
+                        title: "E-poster sendt",
+                        message: `Sendte betalingspåminnelse til ${res.count} medlemmer.`,
+                        type: "success",
+                        isConfirm: false,
+                        onConfirm: closeModal
+                    });
+                } else {
+                    setModal({
+                        isOpen: true,
+                        title: "Noe gikk galt",
+                        message: "Kunne ikke sende e-poster: " + res.error,
+                        type: "error",
+                        isConfirm: false,
+                        onConfirm: closeModal
+                    });
+                }
+            }
+        });
+    };
+
+    const handleSingleReminder = async (memberId: string, requestId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        setModal({
+            isOpen: true,
+            title: "Send påminnelse",
+            message: "Vil du sende en betalingspåminnelse for denne fakturaen på e-post til medlemmet?",
+            type: "warning",
+            isConfirm: true,
+            onConfirm: async () => {
+                closeModal();
+                setEmailSending(true);
+                const res = await sendPaymentReminder(memberId, [requestId]);
+                setEmailSending(false);
+
+                if (res.success) {
+                    setModal({
+                        isOpen: true,
+                        title: "Påminnelse sendt",
+                        message: "Betalingspåminnelse er sendt på e-post til medlemmet.",
+                        type: "success",
+                        isConfirm: false,
+                        onConfirm: closeModal
+                    });
+                } else {
+                    setModal({
+                        isOpen: true,
+                        title: "Noe gikk galt",
+                        message: "Kunne ikke sende påminnelse: " + res.error,
+                        type: "error",
+                        isConfirm: false,
+                        onConfirm: closeModal
+                    });
+                }
+            }
+        });
+    };
 
     const filteredMembers = members.filter(member =>
         member.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -83,11 +191,26 @@ export default function MemberBalancePage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Saldo og Historikk</h1>
-                <p className="text-gray-500 text-sm max-w-3xl">
-                    Oversikt over medlemmenes betalingskrav og historikk.
-                </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Saldo og Historikk</h1>
+                    <p className="text-gray-500 text-sm max-w-3xl">
+                        Oversikt over medlemmenes betalingskrav og historikk.
+                    </p>
+                </div>
+                <button
+                    onClick={handleBulkReminder}
+                    disabled={emailSending}
+                    className="flex items-center gap-3 bg-orange-50 text-orange-900 hover:bg-orange-100 pl-4 pr-6 py-3 rounded-xl transition-all shadow-sm border border-orange-200 disabled:opacity-50 group text-left"
+                >
+                    <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600 group-hover:bg-white group-hover:shadow-sm transition-all">
+                        <span className="material-symbols-outlined text-xl">mark_email_unread</span>
+                    </div>
+                    <div className="max-w-[200px]">
+                        <span className="block font-bold text-sm">Send E-post Varsel</span>
+                        <span className="block text-xs text-orange-800/70 font-normal leading-snug">Sender e-post påminnelse til alle medlemmer med ubetalte krav.</span>
+                    </div>
+                </button>
             </div>
 
             {/* Search */}
@@ -165,23 +288,36 @@ export default function MemberBalancePage() {
                                                         <p className="text-sm text-gray-500">{formatDate(req.dueDate)}</p>
                                                     </div>
 
-                                                    <div className="text-right min-w-[100px]">
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
-                                                        {req.status === 'PAID' ? (
-                                                            <div className="flex items-center justify-end gap-1 text-emerald-600 text-sm font-bold">
-                                                                <span className="material-symbols-outlined text-base">check_circle</span>
-                                                                <span>Betalt</span>
-                                                            </div>
-                                                        ) : req.status === 'WAIVED' ? (
-                                                            <div className="flex items-center justify-end gap-1 text-gray-500 text-sm font-bold">
-                                                                <span className="material-symbols-outlined text-base">remove_circle</span>
-                                                                <span>Fritatt</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center justify-end gap-1 text-amber-500 text-sm font-bold">
-                                                                <span className="material-symbols-outlined text-base">pending</span>
-                                                                <span>Ubetalt</span>
-                                                            </div>
+                                                    <div className="text-right min-w-[100px] flex items-center justify-end gap-3">
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
+                                                            {req.status === 'PAID' ? (
+                                                                <div className="flex items-center justify-end gap-1 text-emerald-600 text-sm font-bold">
+                                                                    <span className="material-symbols-outlined text-base">check_circle</span>
+                                                                    <span>Betalt</span>
+                                                                </div>
+                                                            ) : req.status === 'WAIVED' ? (
+                                                                <div className="flex items-center justify-end gap-1 text-gray-500 text-sm font-bold">
+                                                                    <span className="material-symbols-outlined text-base">remove_circle</span>
+                                                                    <span>Fritatt</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-end gap-1 text-amber-500 text-sm font-bold">
+                                                                    <span className="material-symbols-outlined text-base">pending</span>
+                                                                    <span>Ubetalt</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {(req.status === 'PENDING') && (
+                                                            <button
+                                                                onClick={(e) => handleSingleReminder(member.id, req.id, e)}
+                                                                disabled={emailSending}
+                                                                className="ml-2 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors border border-indigo-200"
+                                                                title="Send påminnelse på e-post"
+                                                            >
+                                                                <span className="material-symbols-outlined text-lg">forward_to_inbox</span>
+                                                            </button>
                                                         )}
                                                     </div>
                                                 </div>
@@ -208,6 +344,17 @@ export default function MemberBalancePage() {
                     </div>
                 )}
             </div>
+
+            <PremiumModal
+                isOpen={modal.isOpen}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+                isConfirm={modal.isConfirm}
+                onConfirm={modal.onConfirm}
+                onCancel={closeModal}
+                confirmText={modal.isConfirm ? "Gå videre" : "OK"}
+            />
         </div>
     );
 }

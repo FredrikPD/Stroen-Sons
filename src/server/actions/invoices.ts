@@ -176,8 +176,24 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
             }
 
             // Perform Removes (Only DELETE if NOT PAID)
+            // Strict check: If trying to remove a member who has PAID, we must BLOCK the update
             const requestsToRemove = existingRequests.filter(r => toRemoveMemberIds.includes(r.memberId));
-            const safeToRemoveIds = requestsToRemove.filter(r => r.status !== 'PAID').map(r => r.id);
+
+            const paidRequestsToRemove = requestsToRemove.filter(r => r.status === 'PAID');
+
+            if (paidRequestsToRemove.length > 0) {
+                // Fetch member names for better error message
+                const paidMemberIds = paidRequestsToRemove.map(r => r.memberId);
+                const paidMembers = await db.member.findMany({
+                    where: { id: { in: paidMemberIds } },
+                    select: { firstName: true, lastName: true }
+                });
+                const names = paidMembers.map(m => `${m.firstName} ${m.lastName}`).join(", ");
+                return { success: false, error: `Kan ikke fjerne følgende medlemmer fordi de allerede har betalt: ${names}.` };
+            }
+
+            // If we are here, it means all requests to remove are NOT PAID (Pending). Safe to delete.
+            const safeToRemoveIds = requestsToRemove.map(r => r.id);
 
             if (safeToRemoveIds.length > 0) {
                 await db.paymentRequest.deleteMany({
@@ -206,5 +222,55 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
     } catch (error) {
         console.error("Failed to update invoice group:", error);
         return { success: false, error: "Kunne ikke oppdatere fakturagrupppen" };
+    }
+}
+
+export async function deleteInvoiceGroup(title: string) {
+    try {
+        // 1. Find all pending requests in this group
+        const requests = await db.paymentRequest.findMany({
+            where: {
+                title: title,
+                status: RequestStatus.PENDING
+            },
+            select: { id: true }
+        });
+
+        if (requests.length === 0) {
+            // Check if there are ANY requests (maybe all satisfied?)
+            const total = await db.paymentRequest.count({ where: { title: title } });
+            if (total > 0) {
+                // Logic change: If we are here, it means we found NO PENDING requests, but there ARE requests total.
+                // This implies ALL requests are PAID (or some other non-pending status if added later).
+                // The user wants to BLOCK deletion if ANYONE has paid.
+                return { success: false, error: "Kan ikke slette gruppen fordi alle fakturaer er betalt. Slett registrerte betalinger først hvis du vil slette gruppen." };
+            }
+            return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
+        }
+
+        // Check if there are ANY paid requests in this group at all
+        const paidCount = await db.paymentRequest.count({
+            where: {
+                title: title,
+                status: RequestStatus.PAID
+            }
+        });
+
+        if (paidCount > 0) {
+            return { success: false, error: "Kan ikke slette gruppen fordi noen har betalt. Slett registrerte betalinger først." };
+        }
+
+        // 2. Delete them
+        await db.paymentRequest.deleteMany({
+            where: {
+                id: { in: requests.map(r => r.id) }
+            }
+        });
+
+        revalidatePath("/admin/finance/invoices");
+        return { success: true, count: requests.length };
+    } catch (error) {
+        console.error("Failed to delete invoice group:", error);
+        return { success: false, error: "Kunne ikke slette fakturagruppen" };
     }
 }

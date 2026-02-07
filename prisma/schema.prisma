@@ -22,6 +22,7 @@ model Member {
   balance        Decimal      @default(0.0)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+  lastActiveAt   DateTime     @default(now())
 
   payments        Payment[]
   eventsCreated   Event[]          @relation("EventCreatedBy")
@@ -39,13 +40,17 @@ model Event {
   title       String
   description String?
 
-  program     PlanItem[] // Relations
-  coverImage  String?
-  location    String?
-  address     String?
-  startAt     DateTime
-  totalCost   Int?
-  clubSubsidy Int?
+  program              PlanItem[] // Relations
+  coverImage           String?
+  location             String?
+  address              String?
+  isTba                Boolean    @default(false)
+  startAt              DateTime
+  endAt                DateTime? // Optional end date for multi-day events
+  registrationDeadline DateTime? // Deadline for signing up
+  maxAttendees         Int? // Capacity limit
+  totalCost            Int?
+  clubSubsidy          Int?
 
   createdById String
   createdBy   Member @relation("EventCreatedBy", fields: [createdById], references: [id])
@@ -63,8 +68,9 @@ model Event {
 }
 
 model PlanItem {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   time        String
+  date        DateTime? // Optional date for multi-day events
   title       String
   description String?
 
@@ -126,6 +132,7 @@ model Payment {
 
 enum Role {
   MEMBER
+  MODERATOR
   ADMIN
 }
 
@@ -234,7 +241,9 @@ model Notification {
 
 enum NotificationType {
   EVENT_CREATED
+  EVENT_UPDATED
   POST_CREATED
+  POST_UPDATED
   INVOICE_CREATED
   BALANCE_WITHDRAWAL
   PHOTOS_UPLOADED

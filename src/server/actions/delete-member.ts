@@ -3,6 +3,7 @@
 import { db } from "@/server/db";
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { ensureMember } from "@/server/auth/ensureMember";
 
 export type DeleteMemberState = {
     message?: string;
@@ -13,6 +14,9 @@ export async function deleteMember(
     prevState: DeleteMemberState,
     formData: FormData
 ): Promise<DeleteMemberState> {
+    const admin = await ensureMember();
+    if (admin.role !== "ADMIN") return { error: "Du har ikke tilgang til å slette medlemmer." };
+
     const memberId = formData.get("memberId") as string;
 
     if (!memberId) {

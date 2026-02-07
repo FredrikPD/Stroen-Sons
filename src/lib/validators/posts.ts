@@ -13,6 +13,7 @@ export const postSchema = z.object({
         key: z.string().optional(),
         type: z.string().optional(),
     })).optional().default([]),
+    sendNotification: z.boolean().optional().default(false),
 });
 
 export type PostInput = z.infer<typeof postSchema>;

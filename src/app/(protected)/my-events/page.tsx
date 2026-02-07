@@ -8,7 +8,16 @@ export const metadata: Metadata = {
     description: "Oversikt over dine arrangementer og påmeldinger",
 };
 
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
+
 export default async function MyEventsPage() {
+    try {
+        await ensureMember();
+    } catch (e) {
+        redirect("/sign-in");
+    }
+
     const { success, data, error } = await getMyEvents();
 
     if (!success || !data) {

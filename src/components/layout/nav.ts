@@ -22,5 +22,6 @@ export const ACCOUNT_NAV: NavItem[] = [
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Admin Dashboard", icon: "admin_panel_settings", adminOnly: true },
-  { href: "/admin/finance", label: "Økonomi", icon: "account_balance", adminOnly: true }
+  { href: "/admin/finance", label: "Økonomi", icon: "account_balance", adminOnly: true },
+  { href: "/admin/system", label: "System", icon: "settings", adminOnly: true }
 ];

@@ -5,7 +5,11 @@ import { nb } from "date-fns/locale";
 import { deleteEvent } from "@/server/actions/events";
 import { DeleteEventButton } from "./_components/DeleteEventButton";
 
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+
 export default async function EventsListPage() {
+    await ensureRole([Role.ADMIN, Role.MODERATOR]);
     const events = await db.event.findMany({
         orderBy: {
             startAt: "desc",

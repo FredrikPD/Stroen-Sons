@@ -1,10 +1,20 @@
 import { getMyFinancialData } from "@/server/actions/finance";
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { BankInfoCard } from "@/components/dashboard/BankInfoCard";
+import { UserTransactions } from "@/components/dashboard/UserTransactions";
 
 export const dynamic = "force-dynamic";
 
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
+
 export default async function BalancePage() {
+    try {
+        await ensureMember();
+    } catch (e) {
+        redirect("/sign-in");
+    }
+
     const data = await getMyFinancialData();
 
     // Sort transactions by date descending
@@ -123,51 +133,11 @@ export default async function BalancePage() {
             </div>
 
             {/* Transaction History */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h3 className="font-bold text-base text-gray-900">Siste Transaksjoner</h3>
-                    <button className="text-xs text-gray-500 hover:text-gray-900 font-medium">Se alle</button>
-                </div>
-
-                <div className="divide-y divide-gray-100">
-                    {sortedTransactions.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500 flex flex-col items-center gap-2">
-                            <span className="material-symbols-outlined text-3xl text-gray-300">receipt_long</span>
-                            <p className="text-sm">Ingen transaksjoner funnet.</p>
-                        </div>
-                    ) : (
-                        sortedTransactions.map((tx) => (
-                            <div key={tx.id} className="p-3 md:px-5 md:py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg flex items-center justify-center ${tx.amount > 0
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-red-100 text-red-700"
-                                        }`}>
-                                        <span className="material-symbols-outlined text-[1.1rem]">
-                                            {tx.category === 'MEMBERSHIP_FEE' ? 'card_membership' :
-                                                tx.category === 'EVENT' ? 'event' :
-                                                    tx.amount > 0 ? 'add' : 'remove'}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-bold text-gray-900 text-sm group-hover:text-black transition-colors">{tx.description}</span>
-                                        <span className="text-[10px] text-gray-500">
-                                            {new Date(tx.date).toLocaleDateString('no-NO', {
-                                                day: 'numeric',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className={`font-bold tabular-nums text-right text-sm ${tx.amount > 0 ? "text-green-600" : "text-red-600"
-                                    }`}>
-                                    {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString('no-NO')} NOK
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden p-4">
+                <UserTransactions transactions={data.transactions.map(tx => ({
+                    ...tx,
+                    amount: Number(tx.amount)
+                }))} />
             </div>
         </div>
     );

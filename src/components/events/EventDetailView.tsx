@@ -23,6 +23,7 @@ type Photo = {
 type PlanItem = {
     id: string;
     time: string;
+    date?: string | null; // Added date
     title: string;
     description: string | null;
     order: number;
@@ -34,8 +35,11 @@ type EventDetail = {
     description: string | null;
     startAt: string;
     endAt?: string | null; // Optional end time
+    registrationDeadline?: string | null;
+    maxAttendees?: number | null;
     location: string | null;
     address?: string | null;
+    isTba?: boolean;
     totalCost?: number | null;
     clubSubsidy?: number | null;
     coverImage: string | null;
@@ -61,6 +65,19 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
     const startDate = new Date(event.startAt);
     const dateStr = startDate.toLocaleDateString("no-NO", { day: "numeric", month: "long", year: "numeric" });
     const timeStr = startDate.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+
+    // Format end date if present
+    const endDate = event.endAt ? new Date(event.endAt) : null;
+    const endDateStr = endDate?.toLocaleDateString("no-NO", { day: "numeric", month: "long", year: "numeric" });
+    const endTimeStr = endDate?.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+
+    // Format registration deadline
+    const regDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
+    const regDeadlineStr = regDeadline?.toLocaleDateString("no-NO", { day: "numeric", month: "long", year: "numeric" });
+    const regDeadlineTimeStr = regDeadline?.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+
+    // Check if registration is closed
+    const isRegistrationClosed = regDeadline ? new Date() > regDeadline : false;
 
     // Handle Join/Leave
     const handleAttendance = () => {
@@ -114,12 +131,10 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
                                     {event.title}
                                 </h1>
-                                {event.location && (
-                                    <div className="flex items-center gap-1.5 text-white/70 text-sm font-medium">
-                                        <span className="material-symbols-outlined text-base">location_on</span>
-                                        <span>{event.location}</span>
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-1.5 text-white/70 text-sm font-medium">
+                                    <span className="material-symbols-outlined text-base">location_on</span>
+                                    <span>{event.isTba ? "TBA" : event.location}</span>
+                                </div>
                             </div>
 
                             {/* Action Buttons */}
@@ -128,8 +143,10 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     href={`/gallery/${event.id}`}
                                     className="h-9 px-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-1.5 text-white text-xs font-bold transition-all"
                                 >
-                                    <span className="material-symbols-outlined text-sm">photo_library</span>
-                                    <span>Se alle bilder</span>
+                                    <span className="material-symbols-outlined text-sm">
+                                        {totalPhotoCount > 0 ? "photo_library" : "add_a_photo"}
+                                    </span>
+                                    <span>{totalPhotoCount > 0 ? "Se alle bilder" : "Ingen bilder enda"}</span>
                                 </Link>
                             </div>
                         </div>
@@ -145,29 +162,21 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                     {/* About Section */}
                     <div className="flex flex-col gap-3">
-                        <h2 className="text-lg font-bold text-gray-900">Om kvelden</h2>
+                        <h2 className="text-xl font-bold text-gray-900">Om Arrangementet</h2>
                         <div className="prose prose-sm text-gray-500 leading-relaxed max-w-none">
                             {event.description ? (
                                 <ReactMarkdown>{event.description}</ReactMarkdown>
                             ) : (
                                 "Ingen beskrivelse tilgjengelig."
                             )}
-                            {/* Placeholder text if description is short to match design vibe */}
-                            {!event.description && (
-                                <>
-                                    <p>Årets høydepunkt for klubben ble en uforglemmelig aften på ærverdige Grand Hotel. Vi startet kvelden i Rococo-salen med en eksklusiv aperitiff kl 18:00, ledsaget av levende jazzmusikk.</p>
-                                    <p>Middagen bestod av en nøye sammensatt tre-retters meny med tilhørende vinpakke, kuratert av hotellets sommelier. Tradisjonen tro ble det holdt taler fra både formannen og årets nykommere, etterfulgt av utdeling av årets hederspriser.</p>
-                                    <p>Takk til alle som bidro til å gjøre kvelden magisk. Vi ser allerede frem til neste år!</p>
-                                </>
-                            )}
                         </div>
                     </div>
 
                     {/* Program Section */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 pt-8 border-t border-gray-200/60">
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-[#4F46E5] text-lg">schedule</span>
-                            <h2 className="text-lg font-bold text-gray-900">Program for kvelden</h2>
+                            <h2 className="text-lg font-bold text-gray-900">Program</h2>
                         </div>
 
                         <div className="relative pl-2 border-l border-gray-200 flex flex-col gap-6 ml-1.5">
@@ -176,7 +185,12 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     <div key={item.id} className="relative pl-5">
                                         <div className="absolute -left-[11px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#4F46E5] bg-[#F9F9F7]"></div>
                                         <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-baseline gap-2.5">
+                                            <div className="flex items-baseline gap-2.5 flex-wrap">
+                                                {item.date && (
+                                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                        {new Date(item.date).toLocaleDateString("no-NO", { weekday: 'short', day: 'numeric', month: 'short' })}
+                                                    </span>
+                                                )}
                                                 <span className="text-sm font-bold text-gray-900">{item.time}</span>
                                                 <span className="text-sm font-bold text-gray-900">-</span>
                                                 <span className="text-sm font-bold text-gray-900">{item.title}</span>
@@ -196,19 +210,19 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     </div>
 
                     {/* Gallery Section */}
-                    {photos && photos.length > 0 && (
-                        <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                    Bildearkiv
-                                    <span className="material-symbols-outlined text-gray-400 text-sm">lock</span>
-                                </h2>
-                                <Link href={`/gallery/${event.id}`} className="text-[#4F46E5] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
-                                    <span>Se alle bilder</span>
-                                    <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
-                                </Link>
-                            </div>
+                    <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                Bildearkiv
+                                <span className="material-symbols-outlined text-gray-400 text-sm">lock</span>
+                            </h2>
+                            <Link href={`/gallery/${event.id}`} className="text-[#4F46E5] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                                <span>Se alle bilder</span>
+                                <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
+                            </Link>
+                        </div>
 
+                        {photos && photos.length > 0 ? (
                             <div className="grid grid-cols-3 gap-4">
                                 {photos.slice(0, 6).map((photo, i) => (
                                     <Link
@@ -237,8 +251,18 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     </Link>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
+                                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                                    <span className="material-symbols-outlined text-gray-400">photo_library</span>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900">Ingen bilder enda</p>
+                                <p className="text-xs text-gray-500 mt-1 max-w-xs">
+                                    Det er ikke lastet opp noen bilder fra dette arrangementet enda.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* RIGHT COLUMN (Sidebar) */}
@@ -249,44 +273,68 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         <h3 className="text-base font-bold text-gray-900">Detaljer</h3>
 
                         <div className="flex flex-col gap-4">
-                            {/* Date */}
-                            <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                    <span className="material-symbols-outlined">calendar_month</span>
+                            {/* Start Time */}
+                            {dateStr && (
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
+                                        <span className="material-symbols-outlined">schedule</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Start</span>
+                                        <span className="text-sm font-bold text-gray-900">
+                                            {dateStr} {timeStr}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Dato</span>
-                                    <span className="text-sm font-bold text-gray-900">{dateStr}</span>
-                                </div>
-                            </div>
+                            )}
 
-                            {/* Time */}
-                            <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                    <span className="material-symbols-outlined">schedule</span>
+                            {/* End Time */}
+                            {endTimeStr && (
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
+                                        <span className="material-symbols-outlined">schedule</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Slutt</span>
+                                        <span className="text-sm font-bold text-gray-900">
+                                            {endDateStr !== dateStr ? `${endDateStr} ` : ''}{endTimeStr}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tid</span>
-                                    <span className="text-sm font-bold text-gray-900">{timeStr} - 02:00</span>
+                            )}
+
+                            {/* Registration Deadline */}
+                            {regDeadlineStr && (
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] flex items-center justify-center text-[#F97316]">
+                                        <span className="material-symbols-outlined">event_busy</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Påmeldingsfrist</span>
+                                        <span className="text-sm font-bold text-gray-900">{regDeadlineStr} kl {regDeadlineTimeStr}</span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Location */}
-                            <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                    <span className="material-symbols-outlined">domain</span>
+                            {(event.location || event.address || event.isTba) && (
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
+                                        <span className="material-symbols-outlined">domain</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sted</span>
+                                        <span className="text-sm font-bold text-gray-900">{event.isTba ? "TBA" : (event.location || event.address)}</span>
+                                        {event.address && !event.isTba && <span className="text-xs text-gray-500">{event.address}</span>}
+                                        {event.isTba && <span className="text-xs text-gray-500">Sted kommer senere</span>}
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sted</span>
-                                    <span className="text-sm font-bold text-gray-900">{event.location || event.address || "Ikke spesifisert"}</span>
-                                    {event.address && <span className="text-xs text-gray-500">{event.address}</span>}
-                                </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* Map Placeholder */}
-                        <div className="h-32 w-full bg-gray-100 rounded-lg overflow-hidden relative">
-                            {event.address || event.location ? (
+                        {((event.location || event.address) && !event.isTba) && (
+                            <div className="h-32 w-full bg-gray-100 rounded-lg overflow-hidden relative">
                                 <iframe
                                     width="100%"
                                     height="100%"
@@ -297,14 +345,8 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     src={`https://maps.google.com/maps?q=${encodeURIComponent(event.address || event.location || "")}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                                     className="filter grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
                                 ></iframe>
-                            ) : (
-                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md text-gray-900">
-                                        <span className="material-symbols-outlined text-sm">map</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Economy Card */}
@@ -350,7 +392,11 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
                         <div className="flex items-center justify-between">
                             <h3 className="text-base font-bold text-gray-900">Deltakere</h3>
-                            <span className="px-1.5 py-0.5 bg-[#EEF2FF] text-[#4F46E5] rounded text-[10px] font-bold">{attendeeCount}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="px-1.5 py-0.5 bg-[#EEF2FF] text-[#4F46E5] rounded text-[10px] font-bold">
+                                    {attendeeCount} {event.maxAttendees ? `/ ${event.maxAttendees}` : ''}
+                                </span>
+                            </div>
                         </div>
 
                         {attendees.length > 0 ? (
@@ -389,15 +435,19 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             <p className="text-xs text-gray-500">
                                 {currentUserIsAttending
                                     ? "Du er påmeldt dette arrangementet."
-                                    : "Meld deg på arrangementet her."}
+                                    : (isRegistrationClosed
+                                        ? "Påmeldingsfristen er over."
+                                        : "Meld deg på arrangementet her.")}
                             </p>
 
                             <button
                                 onClick={handleAttendance}
-                                disabled={isPending}
+                                disabled={isPending || (!currentUserIsAttending && isRegistrationClosed)}
                                 className={`w-full py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${currentUserIsAttending
                                     ? "bg-red-50 text-red-600 hover:bg-red-100"
-                                    : "bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-xl"
+                                    : (!currentUserIsAttending && isRegistrationClosed)
+                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                        : "bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-xl"
                                     }`}
                             >
                                 {isPending ? (
@@ -405,9 +455,9 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 ) : (
                                     <>
                                         <span className="material-symbols-outlined text-[1.2rem]">
-                                            {currentUserIsAttending ? "remove_circle" : "check_circle"}
+                                            {currentUserIsAttending ? "remove_circle" : (isRegistrationClosed ? "block" : "check_circle")}
                                         </span>
-                                        {currentUserIsAttending ? "Meld meg av" : "Meld meg på"}
+                                        {currentUserIsAttending ? "Meld meg av" : (isRegistrationClosed ? "Påmelding stengt" : "Meld meg på")}
                                     </>
                                 )}
                             </button>
