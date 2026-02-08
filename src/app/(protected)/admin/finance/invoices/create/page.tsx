@@ -107,13 +107,12 @@ export default function CreateInvoicePage() {
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Beløp (NOK)</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-3.5 text-gray-400 material-symbols-outlined text-[1.2rem]">attach_money</span>
                                 <input
                                     required
                                     type="number"
                                     value={amount}
                                     onChange={e => setAmount(e.target.value)}
-                                    className="w-full bg-gray-50 border-gray-100 rounded-xl pl-10 pr-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                                    className="w-full bg-gray-50 border-gray-100 rounded-xl pl-4 pr-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
                                     placeholder="0"
                                 />
                             </div>

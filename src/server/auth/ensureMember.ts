@@ -24,7 +24,9 @@ export async function ensureMember() {
     if (!existingMember.lastActiveAt || (now.getTime() - existingMember.lastActiveAt.getTime() > 15 * 60 * 1000)) {
       await prisma.member.update({
         where: { id: existingMember.id },
-        data: { lastActiveAt: now }
+        data: {
+          lastActiveAt: now,
+        }
       });
     }
     return existingMember;

@@ -270,7 +270,13 @@ export default function ExpensesPage() {
                                     className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${selectedMemberIds.includes(member.id) ? 'bg-indigo-50 border border-indigo-100' : 'hover:bg-gray-50 border border-transparent'}`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Avatar src={null} alt={member.firstName || ""} size="sm" className="w-8 h-8 text-xs" />
+                                        <Avatar
+                                            src={null}
+                                            initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
+                                            alt={member.firstName || ""}
+                                            size="sm"
+                                            className="w-8 h-8 text-xs bg-[#222222]"
+                                        />
                                         <div>
                                             <p className="text-sm font-bold text-gray-900">{member.firstName} {member.lastName}</p>
                                             <p className="text-[10px] text-gray-500 capitalize">{member.role.toLowerCase()}</p>

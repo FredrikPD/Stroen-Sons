@@ -359,14 +359,15 @@ export default function IncomePage() {
                 <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex flex-col justify-center">
                     <div className="flex items-center gap-3 mb-3 text-blue-800">
                         <span className="material-symbols-outlined">info</span>
-                        <h3 className="font-bold text-sm">Ny funksjonalitet</h3>
+                        <h3 className="font-bold text-sm">Informasjon</h3>
                     </div>
                     <p className="text-xs text-blue-900/80 leading-relaxed mb-4">
-                        Systemet baserer seg nå på "Betalingskrav".
+                        Systemet baserer seg på "Betalingskrav".
                         Du må trykke "Generer krav" hver måned for å opprette kravene.
+                        Deretter fører du hvem som har betalt.
                     </p>
-                    <p className="text-xs text-blue-900/80 leading-relaxed font-semibold">
-                        Dette sikrer at riktig beløp føres selv om priser endres.
+                    <p className="text-xs text-blue-900/80 leading-relaxed mb-4">
+                        For å opprette enkeltkrav, trykk "Nytt enkeltkrav", velg person og antall måneder.
                     </p>
                 </div>
             </div>
