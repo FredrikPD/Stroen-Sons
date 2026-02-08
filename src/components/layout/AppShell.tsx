@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import TopHeader from "./TopHeader";
 import Footer from "./Footer";
+import MobileMenu from "./MobileMenu";
 import { getCurrentMember } from "@/server/actions/finance";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [member, setMember] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchMember = async () => {
@@ -27,14 +29,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
+    setMenuOpen(false); // Close mobile menu on navigate
   }, [pathname]);
 
   return (
     <div className="flex h-screen w-full bg-background-main text-text-main overflow-hidden">
       <Sidebar role={member?.role} />
 
-      {/* MobileMenu removed per user request */}
-      {/* <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} /> */}
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        role={member?.role}
+        userName={[member?.firstName, member?.lastName].filter(Boolean).join(" ") || null}
+      />
 
       <main
         ref={mainRef}
@@ -44,7 +51,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           loading={loading}
           userName={[member?.firstName, member?.lastName].filter(Boolean).join(" ") || null}
           avatarUrl={null}
-          onMenuClick={() => { }} // Disabled menu click
+          onMenuClick={() => setMenuOpen(true)}
         />
 
         <div className={pathname === '/about'
