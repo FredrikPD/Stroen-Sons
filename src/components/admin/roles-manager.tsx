@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import { getMembers, updateMemberRole, updateMemberType } from '@/actions/admin-roles';
+import { getMembershipTypes, MembershipTypeWithCount } from '@/server/actions/membership-types';
 import { Role } from '@prisma/client';
 import { Avatar } from '@/components/Avatar';
 
@@ -17,19 +18,27 @@ interface Member {
 
 export default function RolesManager() {
     const [members, setMembers] = useState<Member[]>([]);
+    const [membershipTypes, setMembershipTypes] = useState<MembershipTypeWithCount[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchMembers = async () => {
-            const result = await getMembers();
-            if (result.success && result.data) {
-                setMembers(result.data);
+        const fetchData = async () => {
+            const [membersRes, typesRes] = await Promise.all([
+                getMembers(),
+                getMembershipTypes()
+            ]);
+
+            if (membersRes.success && membersRes.data) {
+                setMembers(membersRes.data);
+            }
+            if (typesRes.success && typesRes.data) {
+                setMembershipTypes(typesRes.data);
             }
             setLoading(false);
         };
-        fetchMembers();
+        fetchData();
     }, []);
 
     const filteredMembers = members.filter(member => {
@@ -154,10 +163,15 @@ export default function RolesManager() {
                                                         'text-emerald-700 font-medium bg-emerald-50 border-emerald-200'
                                                 }`}
                                         >
-                                            <option value="STANDARD">Standard</option>
-                                            <option value="HONORARY">Æresmedlem</option>
-                                            <option value="TRIAL">Prøvemedlem</option>
-                                            <option value="SUPPORT">Støttemedlem</option>
+                                            {membershipTypes.map(type => (
+                                                <option key={type.id} value={type.name}>
+                                                    {type.name} ({type.fee} kr)
+                                                </option>
+                                            ))}
+                                            {/* Fallback if member has a type not in DB? */}
+                                            {!membershipTypes.find(t => t.name === member.membershipType) && (
+                                                <option value={member.membershipType}>{member.membershipType} (Ukjent)</option>
+                                            )}
                                         </select>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

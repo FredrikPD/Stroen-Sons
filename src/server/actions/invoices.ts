@@ -63,7 +63,8 @@ export async function getInvoiceGroupDetails(title: string) {
             where: { title: title }, // Title is exact match
             include: {
                 member: { select: { id: true, firstName: true, lastName: true } },
-                transaction: true // To see when it was paid
+                transaction: true, // To see when it was paid
+                event: { select: { id: true, title: true } }
             },
             orderBy: { member: { firstName: 'asc' } }
         });
@@ -272,5 +273,79 @@ export async function deleteInvoiceGroup(title: string) {
     } catch (error) {
         console.error("Failed to delete invoice group:", error);
         return { success: false, error: "Kunne ikke slette fakturagruppen" };
+    }
+}
+
+export async function getInvoices(filters?: {
+    memberId?: string;
+    status?: RequestStatus;
+    search?: string;
+}) {
+    try {
+        const where: any = {};
+
+        if (filters?.memberId) {
+            where.memberId = filters.memberId;
+        }
+
+        if (filters?.status) {
+            where.status = filters.status;
+        }
+
+        if (filters?.search) {
+            where.OR = [
+                { title: { contains: filters.search, mode: 'insensitive' } },
+                { description: { contains: filters.search, mode: 'insensitive' } },
+                { member: { firstName: { contains: filters.search, mode: 'insensitive' } } },
+                { member: { lastName: { contains: filters.search, mode: 'insensitive' } } }
+            ];
+        }
+
+        const requests = await db.paymentRequest.findMany({
+            where: where,
+            include: {
+                member: { select: { id: true, firstName: true, lastName: true } }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 100 // Limit for safety
+        });
+
+        return { success: true, requests };
+    } catch (error) {
+        console.error("Failed to fetch invoices:", error);
+        return { success: false, error: "Kunne ikke hente fakturaer" };
+    }
+}
+
+export async function deleteMultipleInvoices(ids: string[]) {
+    try {
+        // 1. Validate: Check if any are PAID
+        const paidCount = await db.paymentRequest.count({
+            where: {
+                id: { in: ids },
+                status: RequestStatus.PAID
+            }
+        });
+
+        if (paidCount > 0) {
+            return {
+                success: false,
+                error: `Kan ikke slette fordi ${paidCount} av de valgte fakturaene er allerede betalt. Slett transaksjoner først hvis nødvendig.`
+            };
+        }
+
+        // 2. Delete
+        const result = await db.paymentRequest.deleteMany({
+            where: {
+                id: { in: ids }
+            }
+        });
+
+        revalidatePath("/admin/finance/invoices");
+        return { success: true, count: result.count };
+
+    } catch (error) {
+        console.error("Failed to delete multiple invoices:", error);
+        return { success: false, error: "Kunne ikke slette fakturaer." };
     }
 }

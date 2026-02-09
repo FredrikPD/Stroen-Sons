@@ -367,8 +367,8 @@ export default function InvoiceDetailPage() {
                                     <div>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tilknyttet Event</p>
                                         {requests[0]?.eventId ? (
-                                            <Link href={`/admin/events/${requests[0].eventId}/edit`} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline">
-                                                Se event <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                                            <Link href={`/events/${requests[0].eventId}`} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline">
+                                                {requests[0].event?.title || "Se event"} <span className="material-symbols-outlined text-xs">arrow_outward</span>
                                             </Link>
                                         ) : (
                                             <p className="text-sm text-gray-400 italic">Ingen</p>

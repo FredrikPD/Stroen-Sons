@@ -35,6 +35,15 @@ model Member {
   @@index([firstName])
 }
 
+model MembershipType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  fee         Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Event {
   id          String  @id @default(cuid())
   title       String

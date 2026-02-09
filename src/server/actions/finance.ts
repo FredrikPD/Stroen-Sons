@@ -3,7 +3,6 @@
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { revalidatePath } from "next/cache";
-import { MEMBER_FEES } from "@/lib/finance";
 import { PaymentCategory, RequestStatus, Prisma } from "@prisma/client";
 import { markRequestAsPaid } from "./payment-requests";
 import { createNotification } from "@/server/actions/notifications";
@@ -35,7 +34,6 @@ export async function generateMonthlyFees(year: number, month: number) {
         });
 
         // 2. Create requests if they don't exist
-        // logic: upsert is hard with many-to-many logic, but we can check existing first
         const existingRequests = await prisma.paymentRequest.findMany({
             where: {
                 title,
@@ -46,17 +44,26 @@ export async function generateMonthlyFees(year: number, month: number) {
 
         const existingMemberIds = new Set(existingRequests.map(r => r.memberId));
 
+        // Fetch dynamic fees
+        const membershipTypes = await prisma.membershipType.findMany();
+        const feeMap = new Map<string, number>();
+        membershipTypes.forEach(t => feeMap.set(t.name, t.fee));
+
         const newRequests = members
             .filter(m => !existingMemberIds.has(m.id))
-            .map(m => ({
-                title,
-                description: `Månedlig kontingent for ${month}/${year}`,
-                amount: MEMBER_FEES[m.membershipType as keyof typeof MEMBER_FEES] || 750,
-                dueDate,
-                memberId: m.id,
-                category: PaymentCategory.MEMBERSHIP_FEE,
-                status: RequestStatus.PENDING
-            }));
+            .map(m => {
+                // Default to 750 if type not found (fallback)
+                const amount = feeMap.get(m.membershipType) ?? 750;
+                return {
+                    title,
+                    description: `Månedlig kontingent for ${month}/${year}`,
+                    amount,
+                    dueDate,
+                    memberId: m.id,
+                    category: PaymentCategory.MEMBERSHIP_FEE,
+                    status: RequestStatus.PENDING
+                };
+            });
 
         if (newRequests.length > 0) {
             await prisma.paymentRequest.createMany({
@@ -192,8 +199,10 @@ export async function createFutureMonthlyFees(memberId: string, startYear: numbe
                 continue;
             }
 
-            // Create request
-            const amount = MEMBER_FEES[member.membershipType as keyof typeof MEMBER_FEES] || 750;
+            // Fetch fee dynamically
+            // Optimization: could fetch once outside loop, but loop is small usually.
+            const type = await prisma.membershipType.findUnique({ where: { name: member.membershipType } });
+            const amount = type?.fee ?? 750;
 
             await prisma.paymentRequest.create({
                 data: {

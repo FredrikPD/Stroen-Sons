@@ -73,14 +73,14 @@ export default function AdminSystemClientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Sett Saldo */}
-                    <Link href="/admin/finance/set-balance" className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-4">
-                        <div className="w-12 h-12 bg-fuchsia-50 text-fuchsia-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/finance/set-balance" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-fuchsia-50 text-fuchsia-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">edit_note</span>
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900 mb-1">Sett Saldo</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Manuell justering av saldo for enkeltmedlemmer.
+                                Sett saldo for enkeltmedlemmer.
                             </p>
                         </div>
                     </Link>
@@ -89,9 +89,9 @@ export default function AdminSystemClientPage() {
                     <button
                         onClick={handleSyncBalances}
                         disabled={syncing}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow text-left w-full group flex items-start gap-4"
+                        className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow text-left w-full group flex items-start gap-3"
                     >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${syncing ? 'bg-amber-100 text-amber-600' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${syncing ? 'bg-amber-100 text-amber-600' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'}`}>
                             {syncing ? (
                                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-amber-600 border-t-transparent" />
                             ) : (
@@ -107,14 +107,26 @@ export default function AdminSystemClientPage() {
                     </button>
 
                     {/* Slett Transaksjoner */}
-                    <Link href="/admin/finance/delete" className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-4">
-                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/finance/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">delete_forever</span>
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900 mb-1">Slett Transaksjoner</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Slett eller nullstill transaksjoner permanent.
+                                Slett eller nullstill transaksjoner.
+                            </p>
+                        </div>
+                    </Link>
+                    {/* Slett Fakturaer */}
+                    <Link href="/admin/finance/invoices/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">remove_shopping_cart</span>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 mb-1">Slett Fakturaer</h3>
+                            <p className="text-sm text-gray-500 leading-snug">
+                                Bulk-sletting av ubetalte fakturaer.
                             </p>
                         </div>
                     </Link>
@@ -130,17 +142,30 @@ export default function AdminSystemClientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Håndter invitasjoner */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
+                    <Link href="/admin/system/invitations" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">send</span>
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900 mb-1">Håndter invitasjoner</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Send ut og administrer nye invitasjoner. (Kommer snart)
+                                Send ut og administrer nye invitasjoner.
                             </p>
                         </div>
-                    </div>
+                    </Link>
+
+                    {/* Medlemstyper */}
+                    <Link href="/admin/system/membership-types" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">loyalty</span>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 mb-1">Medlemstyper</h3>
+                            <p className="text-sm text-gray-500 leading-snug">
+                                Medlemskapstyper og kontingenter
+                            </p>
+                        </div>
+                    </Link>
                 </div>
             </div>
 
@@ -153,8 +178,8 @@ export default function AdminSystemClientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Administrer kategorier (Static) */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
+                    <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
                             <span className="material-symbols-outlined text-xl">category</span>
                         </div>
                         <div>
@@ -166,8 +191,8 @@ export default function AdminSystemClientPage() {
                     </div>
 
                     {/* Oppdater velkomsttekst (Static) */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
+                    <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
                             <span className="material-symbols-outlined text-xl">edit_note</span>
                         </div>
                         <div>
@@ -189,14 +214,14 @@ export default function AdminSystemClientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Resource Manager */}
-                    <Link href="/admin/system/resource-manager" className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-4">
-                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/resource-manager" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">memory</span>
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900 mb-1">Resource Manager</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Oversikt over systemressurser og lagring.
+                                Systemressurser og lagring.
                             </p>
                         </div>
                     </Link>

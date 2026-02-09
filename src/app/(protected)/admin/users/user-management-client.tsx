@@ -69,30 +69,6 @@ export default function UserManagementClient({ members }: { members: Member[] })
 
     return (
         <div className="space-y-8">
-            {/* Search Bar */}
-            <div className="flex gap-4">
-                <div className="relative flex-1">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                    <input
-                        type="text"
-                        placeholder="Søk etter navn, e-post, medlemsnummer eller rolle..."
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-sm shadow-sm"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-                <button className="px-6 py-3 bg-[#1A56DB] hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-sm flex items-center gap-2">
-                    <span>Søk Bruker</span>
-                </button>
-            </div>
-
-            {/* Stats Cards - Placeholder for layout, assuming parent passes stats or we calculate */}
-            {/* Note: Stats are rendered in parent (Server Component) or passed down. 
-                For the design match, I'll assume they are passed or static here. 
-                Actually, the design has them above Quick Actions. 
-                I will put them in the Server Component to keep this Client Component focused on the interactive list.
-             */}
-
             {/* Quick Actions */}
             <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Hurtighandlinger</h2>
