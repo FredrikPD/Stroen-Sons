@@ -6,7 +6,7 @@ import type { PostWithDetails } from "@/components/posts/PostItem";
 import { revalidatePath } from "next/cache";
 import { PostCategory } from "@prisma/client";
 import { broadcastNotification } from "@/server/actions/notifications";
-import { sendPostNotification } from "@/server/actions/emails";
+import { sendPostNotification, sendPostUpdateNotification } from "@/server/actions/emails";
 
 export type GetPostsParams = {
     cursor?: string;
@@ -139,12 +139,21 @@ export async function updatePost(postId: string, data: PostInput) {
         revalidatePath("/admin/posts");
         revalidatePath("/admin/posts");
 
+        // Broadcast notification (unconditional to match create behavior)
+        await broadcastNotification({
+            type: "POST_UPDATED",
+            title: "Innlegg oppdatert",
+            message: `"${data.title}" har blitt oppdatert.`,
+            link: `/posts/${postId}`,
+        });
+
         if (data.sendNotification) {
-            await broadcastNotification({
-                type: "POST_UPDATED",
-                title: "Innlegg oppdatert",
-                message: `"${data.title}" har blitt oppdatert.`,
-                link: `/posts/${postId}`,
+            await sendPostUpdateNotification({
+                postTitle: data.title,
+                postContent: data.content,
+                authorName: `${member.firstName} ${member.lastName}`,
+                postId,
+                category: data.category
             });
         }
 

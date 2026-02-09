@@ -1,5 +1,6 @@
 // import "@uploadthing/react/styles.css";
 import "./globals.css";
+import NextTopLoader from "nextjs-toploader";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body className="bg-background-main text-text-main font-display">
+          <NextTopLoader color="#4F46E5" showSpinner={false} />
           <NextSSRPlugin
             /**
              * The `extractRouterConfig` will extract all the route configurations

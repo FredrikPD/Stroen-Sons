@@ -4,6 +4,7 @@ import { db } from "@/server/db";
 import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/server/actions/notifications";
+import { ensureMember } from "@/server/auth/ensureMember";
 
 /**
  * Create a single payment request for a member.
@@ -240,5 +241,33 @@ export async function deletePaymentRequest(requestId: string) {
     } catch (error) {
         console.error("Failed to delete request:", error);
         return { success: false, error: "Kunne ikke slette forespørselen." };
+    }
+}
+
+/**
+ * Get a single payment request by ID
+ */
+export async function getPaymentRequest(requestId: string) {
+    try {
+        const member = await ensureMember();
+
+        const request = await db.paymentRequest.findUnique({
+            where: { id: requestId },
+            include: { member: true }
+        });
+
+        if (!request) {
+            return { success: false, error: "Faktura ikke funnet" };
+        }
+
+        // Auth check: User must be the owner OR an admin
+        if (request.memberId !== member.id && member.role !== "ADMIN") {
+            return { success: false, error: "Du har ikke tilgang til denne fakturaen" };
+        }
+
+        return { success: true, data: request };
+    } catch (error) {
+        console.error("Failed to fetch request:", error);
+        return { success: false, error: "Kunne ikke hente faktura" };
     }
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { getNotifications, markAsRead, markAllAsRead } from "@/server/actions/notifications";
 import { Notification, NotificationType } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -30,7 +31,7 @@ export default function NotificationBell() {
     // Initial fetch and polling
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 86400000); // Poll every 24 hours
+        const interval = setInterval(fetchNotifications, 60000); // Poll every 1 minute
         return () => clearInterval(interval);
     }, []);
 
@@ -56,7 +57,7 @@ export default function NotificationBell() {
 
         if (notification.link) {
             setIsOpen(false);
-            router.push(notification.link);
+            // router.push(notification.link); // Handled by Link wrapper
         }
     };
 
@@ -69,7 +70,9 @@ export default function NotificationBell() {
     const getIcon = (type: NotificationType) => {
         switch (type) {
             case "EVENT_CREATED": return "calendar_add_on";
+            case "EVENT_UPDATED": return "edit_calendar";
             case "POST_CREATED": return "article";
+            case "POST_UPDATED": return "edit_note";
             case "INVOICE_CREATED": return "payments";
             case "BALANCE_WITHDRAWAL": return "account_balance_wallet";
             case "PHOTOS_UPLOADED": return "add_a_photo";
@@ -124,35 +127,39 @@ export default function NotificationBell() {
                             </div>
                         ) : (
                             <div className="divide-y divide-gray-50">
-                                {notifications.map((notification) => (
-                                    <div
-                                        key={notification.id}
-                                        onClick={() => handleNotificationClick(notification)}
-                                        className={`p-4 flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors ${!notification.read ? "bg-[#4F46E5]/5" : ""
-                                            }`}
-                                    >
-                                        <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${!notification.read ? "bg-[#4F46E5]/10 text-[#4F46E5]" : "bg-gray-100 text-gray-500"
-                                            }`}>
-                                            <span className="material-symbols-outlined text-xl">
-                                                {getIcon(notification.type)}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-sm ${!notification.read ? "font-semibold text-gray-900" : "font-medium text-gray-700"} truncate`}>
-                                                {notification.title}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
-                                                {notification.message}
-                                            </p>
-                                            <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
-                                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: nb })}
-                                            </p>
-                                        </div>
-                                        {!notification.read && (
-                                            <div className="w-2 h-2 rounded-full bg-[#4F46E5] mt-2 shrink-0" />
-                                        )}
-                                    </div>
-                                ))}
+                                {notifications.map((notification) => {
+                                    const NotificationWrapper = notification.link ? Link : "div";
+                                    return (
+                                        <NotificationWrapper
+                                            key={notification.id}
+                                            href={notification.link || ""}
+                                            onClick={() => handleNotificationClick(notification)}
+                                            className={`p-4 flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors block text-left w-full ${!notification.read ? "bg-[#4F46E5]/5" : ""
+                                                }`}
+                                        >
+                                            <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${!notification.read ? "bg-[#4F46E5]/10 text-[#4F46E5]" : "bg-gray-100 text-gray-500"
+                                                }`}>
+                                                <span className="material-symbols-outlined text-xl">
+                                                    {getIcon(notification.type)}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-sm ${!notification.read ? "font-semibold text-gray-900" : "font-medium text-gray-700"} truncate`}>
+                                                    {notification.title}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                                    {notification.message}
+                                                </p>
+                                                <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
+                                                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: nb })}
+                                                </p>
+                                            </div>
+                                            {!notification.read && (
+                                                <div className="w-2 h-2 rounded-full bg-[#4F46E5] mt-2 shrink-0" />
+                                            )}
+                                        </NotificationWrapper>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

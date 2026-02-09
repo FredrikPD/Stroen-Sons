@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV } from "./nav";
 import { useHeader } from "./HeaderContext";
 import NotificationBell from "../notifications/NotificationBell";
@@ -54,13 +55,13 @@ export default function TopHeader({
         <div className="hidden md:flex items-center gap-2 text-sm text-text-main">
           {backHref ? (
             // Explicit back link from context
-            <div
-              onClick={() => router.push(backHref)}
+            <Link
+              href={backHref}
               className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
             >
               <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
               <span>{backLabel || "Tilbake"}</span>
-            </div>
+            </Link>
           ) : (
             // Standard logic
             (() => {
@@ -71,13 +72,13 @@ export default function TopHeader({
 
               if (parent) {
                 return (
-                  <div
-                    onClick={() => router.push(parent.href)}
+                  <Link
+                    href={parent.href}
                     className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
                   >
                     <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
                     <span>{parent.label}</span>
-                  </div>
+                  </Link>
                 )
               }
 

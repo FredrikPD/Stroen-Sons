@@ -2,6 +2,7 @@
 
 import { Resend } from "resend";
 import { NewPostEmail } from "@/components/emails/new-post-email";
+import { UpdatedPostEmail } from "@/components/emails/updated-post-email";
 import { db } from "@/server/db";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -113,6 +114,78 @@ export async function sendPostNotification({
 
     } catch (error) {
         console.error("Failed to send post notifications:", error);
+        return { success: false, error };
+    }
+}
+
+export async function sendPostUpdateNotification({
+    postTitle,
+    postContent,
+    authorName,
+    postId,
+    category
+}: SendPostNotificationParams) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn("Missing RESEND_API_KEY, skipping email notification");
+        return { success: false, error: "Missing API Key" };
+    }
+
+    try {
+        const members = await db.member.findMany({
+            where: {
+                status: "ACTIVE",
+                email: { not: undefined }
+            },
+            select: { email: true }
+        });
+
+        if (members.length === 0) {
+            return { success: true, count: 0 };
+        }
+
+        const emailList = members.map(m => m.email);
+        const postUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/posts/${postId}`;
+
+        const cleanContent = postContent
+            .replace(/[#*`_]/g, '')
+            .split('\n')[0];
+
+        const chunkSize = 50;
+        const chunks = [];
+
+        for (let i = 0; i < emailList.length; i += chunkSize) {
+            chunks.push(emailList.slice(i, i + chunkSize));
+        }
+
+        let totalSent = 0;
+
+        for (const chunk of chunks) {
+            const { error } = await resend.emails.send({
+                from: FROM_EMAIL,
+                to: chunk,
+                bcc: chunk,
+                subject: `Oppdatert innlegg: ${postTitle}`,
+                react: UpdatedPostEmail({
+                    postTitle,
+                    postContent: cleanContent,
+                    authorName,
+                    postUrl,
+                    category
+                }),
+            });
+
+            if (error) {
+                console.error("Resend error:", error);
+            } else {
+                totalSent += chunk.length;
+            }
+        }
+
+        console.log(`Sent email notifications to ${totalSent} members`);
+        return { success: true, count: totalSent };
+
+    } catch (error) {
+        console.error("Failed to send post update notifications:", error);
         return { success: false, error };
     }
 }
@@ -263,6 +336,7 @@ interface SendEventNotificationParams {
 }
 
 import { NewEventEmail } from "@/components/emails/new-event-email";
+import { UpdatedEventEmail } from "@/components/emails/updated-event-email";
 
 export async function sendEventNotification({
     eventTitle,
@@ -324,6 +398,69 @@ export async function sendEventNotification({
         return { success: true, count: emailList.length };
     } catch (error) {
         console.error("Failed to send event notification email:", error);
+        return { success: false, error };
+    }
+}
+
+export async function sendEventUpdateNotification({
+    eventTitle,
+    eventDescription,
+    eventDate,
+    eventLocation,
+    eventId
+}: SendEventNotificationParams) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn("Missing RESEND_API_KEY, skipping email notification");
+        return { success: false, error: "Missing API Key" };
+    }
+
+    try {
+        const members = await db.member.findMany({
+            where: {
+                status: "ACTIVE",
+                email: { not: undefined }
+            },
+            select: { email: true }
+        });
+
+        if (members.length === 0) {
+            return { success: true, count: 0 };
+        }
+
+        const emailList = members.map(m => m.email);
+        const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/events/${eventId}`;
+
+        const cleanDescription = eventDescription
+            ? eventDescription.replace(/[#*`_]/g, '').split('\n')[0]
+            : "Ingen beskrivelse";
+
+        const chunkSize = 50;
+        const chunks = [];
+
+        for (let i = 0; i < emailList.length; i += chunkSize) {
+            chunks.push(emailList.slice(i, i + chunkSize));
+        }
+
+        for (const chunk of chunks) {
+            await resend.emails.send({
+                from: FROM_EMAIL,
+                to: [FROM_EMAIL],
+                bcc: chunk,
+                subject: `Oppdatert arrangement: ${eventTitle}`,
+                text: cleanDescription,
+                react: UpdatedEventEmail({
+                    eventTitle,
+                    eventDescription: cleanDescription,
+                    eventDate,
+                    eventLocation,
+                    eventUrl,
+                })
+            });
+        }
+
+        return { success: true, count: emailList.length };
+    } catch (error) {
+        console.error("Failed to send event update notification email:", error);
         return { success: false, error };
     }
 }

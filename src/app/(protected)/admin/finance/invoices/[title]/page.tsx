@@ -160,7 +160,7 @@ export default function InvoiceDetailPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex justify-center items-center h-[50vh]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
         );
@@ -297,46 +297,115 @@ export default function InvoiceDetailPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 relative group">
-                    <div className="absolute top-6 right-6">
-                        <Dropdown
-                            trigger={
-                                <button
-                                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all"
-                                    title="Alternativer"
-                                >
-                                    <span className="material-symbols-outlined">more_vert</span>
-                                </button>
-                            }
-                        >
-                            <DropdownItem onClick={() => setIsEditing(true)}>
-                                <span className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-lg">edit</span>
-                                    Rediger faktura
-                                </span>
-                            </DropdownItem>
-                            <DropdownItem danger onClick={handleDeleteGroup}>
-                                <span className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-lg">delete</span>
-                                    Slett faktura
-                                </span>
-                            </DropdownItem>
-                        </Dropdown>
-                    </div>
+                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6 shadow-sm group">
+                    <div className="p-6 relative">
+                        <div className="absolute top-6 right-6 z-10">
+                            <Dropdown
+                                trigger={
+                                    <button
+                                        className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                                        title="Alternativer"
+                                    >
+                                        <span className="material-symbols-outlined">more_horiz</span>
+                                    </button>
+                                }
+                            >
+                                <DropdownItem onClick={() => setIsEditing(true)}>
+                                    <span className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-lg">edit</span>
+                                        Rediger faktura
+                                    </span>
+                                </DropdownItem>
+                                <DropdownItem danger onClick={handleDeleteGroup}>
+                                    <span className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                        Slett faktura
+                                    </span>
+                                </DropdownItem>
+                            </Dropdown>
+                        </div>
 
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">{title}</h1>
-                    <p className="text-sm text-gray-500 mb-4">
-                        {paidCount} av {requests.length} har betalt.
-                    </p>
-                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-2">
-                        <div
-                            className="bg-indigo-500 h-2 transition-all duration-500"
-                            style={{ width: `${(paidCount / requests.length) * 100}%` }}
-                        ></div>
-                    </div>
-                    <div className="flex justify-between text-sm font-medium">
-                        <span className="text-gray-500">Innkommet: {paidAmount.toLocaleString()} kr</span>
-                        <span className="text-gray-900">Totalt: {totalAmount.toLocaleString()} kr</span>
+                        <div className="flex flex-col md:flex-row gap-8">
+                            {/* Main Info */}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                        <span className="material-symbols-outlined">receipt_long</span>
+                                    </div>
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                                        <p className="text-xs text-gray-500 font-mono uppercase tracking-wider">
+                                            {requests[0]?.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' :
+                                                requests[0]?.category === 'EVENT' ? 'Arrangement' : 'Faktura'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <p className="text-gray-600 text-sm leading-relaxed mb-6 max-w-2xl">
+                                    {requests[0]?.description || "Ingen beskrivelse lagt til."}
+                                </p>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-gray-100 pt-6">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Opprettet</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {requests[0]?.createdAt ? new Date(requests[0].createdAt).toLocaleDateString() : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Forfall</p>
+                                        <p className={`text-sm font-medium ${requests[0]?.dueDate && new Date(requests[0].dueDate) < new Date() ? 'text-red-600' : 'text-gray-900'}`}>
+                                            {requests[0]?.dueDate ? new Date(requests[0].dueDate).toLocaleDateString() : 'Ingen'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Beløp per pers</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {requests[0]?.amount},-
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tilknyttet Event</p>
+                                        {requests[0]?.eventId ? (
+                                            <Link href={`/admin/events/${requests[0].eventId}/edit`} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline">
+                                                Se event <span className="material-symbols-outlined text-xs">arrow_outward</span>
+                                            </Link>
+                                        ) : (
+                                            <p className="text-sm text-gray-400 italic">Ingen</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Status Sidebar */}
+                            <div className="w-full md:w-72 bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Statusoversikt</h3>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="text-gray-600">Betalt</span>
+                                            <span className="font-bold text-emerald-600">{paidCount}/{requests.length}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                            <div
+                                                className="bg-emerald-500 h-2 transition-all duration-500"
+                                                style={{ width: `${(paidCount / requests.length) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                                        <span className="text-xs text-gray-500">Totalt innbetalt</span>
+                                        <span className="text-lg font-bold text-gray-900">{paidAmount.toLocaleString()} kr</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                                        <span className="text-xs text-gray-500">Utestående</span>
+                                        <span className="text-base font-medium text-red-500">{(totalAmount - paidAmount).toLocaleString()} kr</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

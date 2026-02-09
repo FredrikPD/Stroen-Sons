@@ -5,9 +5,11 @@ import { getInvoiceFormData } from "@/server/actions/invoices";
 import { createBulkPaymentRequests } from "@/server/actions/payment-requests";
 import Link from "next/link";
 import { PaymentCategory } from "@prisma/client";
+import { useModal } from "@/components/providers/ModalContext";
 
 export default function CreateInvoicePage() {
     const router = useRouter();
+    const { openAlert } = useModal();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
@@ -51,31 +53,58 @@ export default function CreateInvoicePage() {
         const targetIds = getTargetMemberIds();
 
         if (targetIds.length === 0) {
-            alert("Ingen mottakere valgt");
+            await openAlert({
+                title: "Mangler mottakere",
+                message: "Du må velge minst én mottaker.",
+                type: "warning"
+            });
             setSubmitting(false);
             return;
         }
 
-        const res = await createBulkPaymentRequests({
-            title,
-            description,
-            amount: parseInt(amount),
-            dueDate: dueDate ? new Date(dueDate) : undefined,
-            category: category as PaymentCategory,
-            eventId: selectedEventId || undefined,
-            memberIds: targetIds
-        });
+        try {
+            const res = await createBulkPaymentRequests({
+                title,
+                description,
+                amount: parseInt(amount),
+                dueDate: dueDate ? new Date(dueDate) : undefined,
+                category: category as PaymentCategory,
+                eventId: selectedEventId || undefined,
+                memberIds: targetIds
+            });
 
-        if (res.success) {
-            alert(`Opprettet ${res.count} krav.`);
-            router.push("/admin/finance/invoices");
-        } else {
-            alert("Feil: " + res.error);
+            if (res.success) {
+                await openAlert({
+                    title: "Fakturaer opprettet",
+                    message: `Opprettet ${res.count} krav. Betalingskravene er nå sendt til mottakerne.`,
+                    type: "success",
+                    confirmText: "OK"
+                });
+                router.push("/admin/finance/invoices");
+            } else {
+                await openAlert({
+                    title: "Feil",
+                    message: res.error || "Ukjent feil",
+                    type: "error"
+                });
+            }
+        } catch (error) {
+            await openAlert({
+                title: "Feil",
+                message: "Noe gikk galt",
+                type: "error"
+            });
         }
         setSubmitting(false);
     };
 
-    if (loading) return <div className="p-10 text-center text-gray-500">Laster data...</div>;
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-[60vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
 
     const targetCount = getTargetMemberIds().length;
     const filteredMembers = members.filter(m =>

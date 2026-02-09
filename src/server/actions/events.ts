@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { broadcastNotification } from "@/server/actions/notifications";
 
 import { eventSchema, EventInput } from "@/lib/validators/events";
-import { sendEventNotification } from "@/server/actions/emails";
+import { sendEventNotification, sendEventUpdateNotification } from "@/server/actions/emails";
 
 export type CreateEventInput = EventInput;
 
@@ -187,12 +187,29 @@ export async function updateEvent(id: string, input: EventInput) {
         revalidatePath(`/admin/events/${id}/edit`);
         revalidatePath("/dashboard");
 
-        if (input.sendNotification) {
-            await broadcastNotification({
-                type: "EVENT_UPDATED",
-                title: "Arrangement oppdatert",
-                message: `"${title}" har blitt oppdatert.`,
-                link: `/events/${id}`,
+        // Broadcast notification (unconditional)
+        await broadcastNotification({
+            type: "EVENT_UPDATED",
+            title: "Arrangement oppdatert",
+            message: `"${title}" har blitt oppdatert.`,
+            link: `/events/${id}`,
+        });
+
+        if (validData.data.sendNotification) {
+            const dateStr = startAt.toLocaleDateString("no-NO", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
+            await sendEventUpdateNotification({
+                eventTitle: title,
+                eventDescription: description || "",
+                eventDate: dateStr,
+                eventLocation: location || undefined,
+                eventId: id
             });
         }
 

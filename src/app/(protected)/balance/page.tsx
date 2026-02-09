@@ -32,10 +32,10 @@ export default async function BalancePage() {
             </div>
 
             {/* Main Grid: Balance/Bank Card (Left) vs Invoices (Right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-1 space-y-4">
+            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                <div className="lg:w-1/3 flex flex-col gap-4">
                     {/* Balance Card */}
-                    <div className="bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col justify-between min-h-[180px] relative overflow-hidden group">
+                    <div className="bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col justify-between min-h-[180px] relative overflow-hidden group shrink-0">
                         {/* Background Icon */}
                         <div className="absolute top-4 right-4 text-white/5 pointer-events-none">
                             <span className="material-symbols-outlined text-[5rem]">account_balance_wallet</span>
@@ -64,8 +64,10 @@ export default async function BalancePage() {
                 </div>
 
                 {/* Unpaid Invoices (Right - 2/3 width) */}
-                <div className="lg:col-span-2">
-                    <MyInvoices invoices={data.paymentRequests} className="h-full" />
+                <div className="lg:w-2/3 relative min-h-[400px] lg:min-h-0">
+                    <div className="lg:absolute lg:inset-0">
+                        <MyInvoices invoices={data.paymentRequests} className="h-full" />
+                    </div>
                 </div>
             </div>
 

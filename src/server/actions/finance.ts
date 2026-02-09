@@ -543,8 +543,8 @@ export async function getMyFinancialData() {
             // Get unpaid or pending requests
             prisma.paymentRequest.findMany({
                 where: {
-                    memberId: member.id,
-                    status: { not: 'PAID' }
+                    memberId: member.id
+                    // status: { not: 'PAID' } // Fetched all for history
                 },
                 orderBy: { dueDate: 'asc' }
             }),
