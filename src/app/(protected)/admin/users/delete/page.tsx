@@ -1,4 +1,4 @@
-"use server";
+
 
 import { db } from "@/server/db";
 import DeleteUserClient from "./delete-user-client";

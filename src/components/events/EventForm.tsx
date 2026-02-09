@@ -52,13 +52,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
         return format(d, "yyyy-MM-dd'T'HH:mm");
     };
 
-    // Sync state with initialData if it changes
-    useEffect(() => {
-        console.log("Syncing from initialData:", initialData?.coverImage);
-        if (initialData?.coverImage) {
-            setUploadedCoverImage(initialData.coverImage);
-        }
-    }, [initialData?.coverImage]);
+
 
     const {
         register,
@@ -80,7 +74,9 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
             location: initialData?.location || "",
             address: initialData?.address || "",
             totalCost: initialData?.totalCost || 0,
+
             clubSubsidy: initialData?.clubSubsidy || 0,
+            coverImage: initialData?.coverImage || "",
             isTba: initialData?.isTba || false,
             isSameDay: !initialData?.endAt,
             program: initialData?.program?.map(p => ({
@@ -89,6 +85,14 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
             })) || [],
         },
     });
+
+    // Sync state with initialData if it changes
+    useEffect(() => {
+        if (initialData?.coverImage) {
+            setUploadedCoverImage(initialData.coverImage);
+            setValue("coverImage", initialData.coverImage);
+        }
+    }, [initialData?.coverImage, setValue]);
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -131,7 +135,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                 endAt: data.endAt ? new Date(data.endAt) : undefined,
                 registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline) : undefined,
                 maxAttendees: data.maxAttendees || undefined,
-                coverImage: uploadedCoverImage || undefined,
+
                 program: data.program?.map(p => ({
                     ...p,
                     date: p.date ? new Date(p.date) : undefined,
@@ -169,6 +173,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
 
     return (
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+            <input type="hidden" {...register("coverImage")} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Main Info */}
                 <div className="lg:col-span-2 space-y-6">
@@ -399,7 +404,10 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button
                                         type="button"
-                                        onClick={() => setUploadedCoverImage(null)}
+                                        onClick={() => {
+                                            setUploadedCoverImage(null);
+                                            setValue("coverImage", "", { shouldValidate: true });
+                                        }}
                                         className="bg-white/90 text-red-500 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-white"
                                     >
                                         <span className="material-symbols-outlined">delete</span>
@@ -425,6 +433,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
 
                                             if (fileUrl) {
                                                 setUploadedCoverImage(fileUrl);
+                                                setValue("coverImage", fileUrl, { shouldValidate: true });
                                                 toast.success("Bilde lastet opp!");
                                             } else {
                                                 console.error("No URL found in response", res);
@@ -453,6 +462,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 )}
                             </div>
                         )}
+                        {errors.coverImage && <p className="text-red-500 text-xs mt-1">{errors.coverImage.message}</p>}
                     </div>
 
                     {/* Economics */}

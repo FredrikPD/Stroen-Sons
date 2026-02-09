@@ -1,4 +1,4 @@
-"use server";
+
 
 import { getAlbums } from "./actions";
 import GalleryView from "@/components/gallery/GalleryView";
