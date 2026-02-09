@@ -11,9 +11,10 @@ import { useModal } from "@/components/providers/ModalContext";
 interface PhotoManagerProps {
     initialEvents: Awaited<ReturnType<typeof getRecentEvents>>;
     initialPhotos: Awaited<ReturnType<typeof getRecentPhotos>>;
+    settings: { maxSizeMB: number; maxFiles: number };
 }
 
-export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps) {
+export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoManagerProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const eventIdParam = searchParams.get("eventId");
@@ -68,12 +69,40 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
 
-        setIsUploading(true);
-        setUploadProgress(0);
         const files = Array.from(e.target.files);
 
+        // Validation
+        if (files.length > settings.maxFiles) {
+            await openAlert({
+                title: "For mange filer",
+                message: `Du kan maksimalt laste opp ${settings.maxFiles} bilder samtidig. Du valgte ${files.length}.`,
+                type: "error"
+            });
+            e.target.value = "";
+            return;
+        }
+
+        const maxSizeBytes = settings.maxSizeMB * 1024 * 1024;
+        const tooBigFiles = files.filter(f => f.size > maxSizeBytes);
+
+        if (tooBigFiles.length > 0) {
+            await openAlert({
+                title: "Fil for stor",
+                message: `Følgende filer er større enn grensen på ${settings.maxSizeMB} MB:\n${tooBigFiles.map(f => f.name).join(", ")}`,
+                type: "error"
+            });
+            e.target.value = "";
+            return;
+        }
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
         try {
-            await startUpload(files, { eventId: selectedEventId });
+            await startUpload(files, {
+                eventId: selectedEventId,
+                fileCount: files.length // Pass count for server validation
+            });
         } catch (error) {
             console.error("Upload failed", error);
             setIsUploading(false);
@@ -145,16 +174,20 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
 
     // Sync selection with available photos (to handle deletions gracefully)
     useEffect(() => {
-        const validSelections = new Set<string>();
-        for (const id of selectedPhotos) {
-            if (initialPhotos.some(p => p.id === id)) {
-                validSelections.add(id);
+        setSelectedPhotos(prev => {
+            const validSelections = new Set<string>();
+            for (const id of prev) {
+                if (initialPhotos.some(p => p.id === id)) {
+                    validSelections.add(id);
+                }
             }
-        }
-        if (validSelections.size !== selectedPhotos.size) {
-            setSelectedPhotos(validSelections);
-        }
-    }, [initialPhotos, selectedPhotos]);
+            // Only update if size changes to avoid loop (though Set comparison is tricky, size check is usually enough for deletion scenarios)
+            if (validSelections.size !== prev.size) {
+                return validSelections;
+            }
+            return prev;
+        });
+    }, [initialPhotos]);
 
     const handleBulkDelete = async () => {
         if (selectedPhotos.size === 0) return;
@@ -304,7 +337,9 @@ export function PhotoManager({ initialEvents, initialPhotos }: PhotoManagerProps
                                     </div>
                                     <h3 className="text-lg font-bold text-gray-900 mb-2">Last opp bilder</h3>
                                     <p className="text-gray-500 text-sm mb-2 max-w-[200px]">Dra og slipp bilder her, eller klikk for å velge filer.</p>
-                                    <p className="text-amber-600/80 text-xs font-medium mb-6 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">Max 50 bilder (opp til 8MB per fil)</p>
+                                    <p className="text-amber-600/80 text-xs font-medium mb-6 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                                        Max {settings.maxFiles} bilder (opp til {settings.maxSizeMB}MB per fil)
+                                    </p>
 
                                     <button
                                         onClick={() => fileInputRef.current?.click()}

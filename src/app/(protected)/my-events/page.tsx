@@ -4,7 +4,7 @@ import { getMyEvents } from "@/server/actions/my-events";
 import MyEventsClient from "./MyEventsClient";
 
 export const metadata: Metadata = {
-    title: "Mine Arrangementer | Strøen Søns",
+    title: "Mine Arrangementer",
     description: "Oversikt over dine arrangementer og påmeldinger",
 };
 

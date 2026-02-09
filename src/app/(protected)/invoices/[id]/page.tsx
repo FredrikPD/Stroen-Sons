@@ -4,6 +4,22 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { RequestStatus } from "@prisma/client";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const res = await getPaymentRequest(id);
+
+    if (!res.success || !res.data) {
+        return {
+            title: "Faktura ikke funnet"
+        };
+    }
+
+    return {
+        title: `Faktura: ${res.data.title}`
+    };
+}
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
     try {

@@ -4,7 +4,6 @@ import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import type { PostWithDetails } from "@/components/posts/PostItem";
 import { revalidatePath } from "next/cache";
-import { PostCategory } from "@prisma/client";
 import { broadcastNotification } from "@/server/actions/notifications";
 import { sendPostNotification, sendPostUpdateNotification } from "@/server/actions/emails";
 

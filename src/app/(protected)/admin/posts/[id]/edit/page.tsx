@@ -13,6 +13,19 @@ interface EditPostPageProps {
 
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: EditPostPageProps): Promise<Metadata> {
+    const { id } = await params;
+    const post = await prisma.post.findUnique({
+        where: { id },
+        select: { title: true }
+    });
+
+    return {
+        title: post ? `Rediger: ${post.title}` : "Rediger Innlegg",
+    };
+}
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
     await ensureRole([Role.ADMIN, Role.MODERATOR]);
@@ -45,6 +58,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         })),
     };
 
+    const categories = await prisma.category.findMany({
+        orderBy: { name: "asc" }
+    });
+
     return (
         <div className="space-y-8 pb-12">
             <PostForm
@@ -55,6 +72,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 pageTitle="Rediger Innlegg"
                 pageDescription="Endre informasjonen for dette innlegget."
                 redirectOnSuccess="/admin/posts"
+                categories={categories}
             />
         </div>
     );

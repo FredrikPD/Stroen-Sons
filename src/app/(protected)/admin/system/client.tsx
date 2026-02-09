@@ -166,6 +166,19 @@ export default function AdminSystemClientPage() {
                             </p>
                         </div>
                     </Link>
+
+                    {/* Event Participation */}
+                    <Link href="/admin/system/event-participation" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">event_available</span>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 mb-1">Påmeldinger</h3>
+                            <p className="text-sm text-gray-500 leading-snug">
+                                Administrer påmeldinger manuelt.
+                            </p>
+                        </div>
+                    </Link>
                 </div>
             </div>
 
@@ -177,31 +190,31 @@ export default function AdminSystemClientPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Administrer kategorier (Static) */}
-                    <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
+                    {/* Administrer kategorier */}
+                    <Link href="/admin/system/categories" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">category</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Administrer kategorier</h3>
+                            <h3 className="font-bold text-gray-900 mb-1">Innlegg kategorier</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Organiser bildegallerier. (Kommer snart)
+                                Administrer innlegg kategorier.
                             </p>
                         </div>
-                    </div>
+                    </Link>
 
-                    {/* Oppdater velkomsttekst (Static) */}
-                    <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow opacity-60 flex items-start gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-700">
-                            <span className="material-symbols-outlined text-xl">edit_note</span>
+                    {/* Bildeinnstillinger */}
+                    <Link href="/admin/system/photos" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">image</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Oppdater velkomsttekst</h3>
+                            <h3 className="font-bold text-gray-900 mb-1">Bildeinnstillinger</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Endre velkomstteksten. (Kommer snart)
+                                Opplastingsgrenser og bildearkiv.
                             </p>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </div>
 

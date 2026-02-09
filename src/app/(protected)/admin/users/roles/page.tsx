@@ -1,6 +1,10 @@
 import RolesManager from "@/components/admin/roles-manager";
 import Link from "next/link";
 
+export const metadata = {
+    title: "Roller",
+};
+
 export default function MemberRolesPage() {
     return (
         <div className="space-y-6">

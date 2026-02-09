@@ -13,6 +13,19 @@ interface EditEventPageProps {
 
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: EditEventPageProps): Promise<Metadata> {
+    const { id } = await params;
+    const event = await db.event.findUnique({
+        where: { id },
+        select: { title: true }
+    });
+
+    return {
+        title: event ? `Rediger: ${event.title}` : "Rediger Arrangement",
+    };
+}
 
 export default async function EditEventPage({ params }: EditEventPageProps) {
     await ensureRole([Role.ADMIN, Role.MODERATOR]);

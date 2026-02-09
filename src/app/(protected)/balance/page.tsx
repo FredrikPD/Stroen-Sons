@@ -2,8 +2,14 @@ import { getMyFinancialData } from "@/server/actions/finance";
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { BankInfoCard } from "@/components/dashboard/BankInfoCard";
 import { UserTransactions } from "@/components/dashboard/UserTransactions";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+    title: "Saldo & Økonomi",
+    description: "Oversikt over din konto, fakturaer og betalingshistorikk.",
+};
 
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
@@ -124,7 +130,10 @@ export default async function BalancePage() {
                     </div>
                     <div>
                         <span className="text-3xl font-bold tracking-tight text-gray-900">
-                            {data.paymentRequests.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString('no-NO')}
+                            {data.paymentRequests
+                                .filter(req => req.status === 'PENDING')
+                                .reduce((acc, curr) => acc + curr.amount, 0)
+                                .toLocaleString('no-NO')}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>

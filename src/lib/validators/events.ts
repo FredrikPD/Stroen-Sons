@@ -13,7 +13,7 @@ export const eventSchema = z.object({
     address: z.string().optional(),
     isTba: z.boolean().optional(),
 
-    coverImage: z.string().optional(),
+    coverImage: z.string().min(1, "En cover-bilde er påkrevd"),
     totalCost: z.preprocess((arg) => (arg === "" || arg === undefined ? undefined : arg), z.coerce.number().min(0).optional()),
     clubSubsidy: z.preprocess((arg) => (arg === "" || arg === undefined ? undefined : arg), z.coerce.number().min(0).optional()),
     program: z.array(z.object({

@@ -6,7 +6,11 @@ import { toast } from "sonner";
 import { getCurrentMember } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
 
-export default function ResourceManagerPage() {
+export const metadata = {
+    title: "Ressursstyring",
+};
+
+export default async function ResourceManagerPage() {
     const [stats, setStats] = useState<SystemStats | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();

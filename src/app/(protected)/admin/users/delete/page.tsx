@@ -3,6 +3,10 @@
 import { db } from "@/server/db";
 import DeleteUserClient from "./delete-user-client";
 
+export const metadata = {
+    title: "Slett Brukere",
+};
+
 export default async function DeleteUserPage() {
     const members = await db.member.findMany({
         select: {

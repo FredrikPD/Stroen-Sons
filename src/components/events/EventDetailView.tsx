@@ -5,6 +5,7 @@ import { joinEvent, leaveEvent } from "@/app/(protected)/events/[id]/actions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { Avatar } from "@/components/Avatar";
 
 // Types
 type Attendee = {
@@ -402,13 +403,12 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         {attendees.length > 0 ? (
                             <div className="flex items-center -space-x-3 overflow-hidden py-1">
                                 {attendees.slice(0, 5).map((a, i) => (
-                                    <div
+                                    <Avatar
                                         key={a.id}
-                                        className="w-10 h-10 rounded-full bg-gradient-to-br from-[#222] to-[#444] border-2 border-white flex items-center justify-center text-white text-[10px] font-bold ring-1 ring-gray-100"
-                                        title={`${a.firstName} ${a.lastName}`}
-                                    >
-                                        {(a.firstName || a.email).charAt(0).toUpperCase()}
-                                    </div>
+                                        initials={a.firstName && a.lastName ? `${a.firstName[0]}${a.lastName[0]}`.toUpperCase() : (a.firstName || a.email).substring(0, 2).toUpperCase()}
+                                        alt={`${a.firstName || ''} ${a.lastName || ''}`}
+                                        className="w-10 h-10 border-2 border-white ring-1 ring-gray-100"
+                                    />
                                 ))}
                                 {attendeeCount > 5 && (
                                     <div className="w-10 h-10 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-gray-500 text-[10px] font-bold ring-1 ring-gray-100">
@@ -495,9 +495,11 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 <div className="flex flex-col gap-1">
                                     {attendees.map((attendee) => (
                                         <div key={attendee.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#222] to-[#444] text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0">
-                                                {(attendee.firstName || attendee.email).charAt(0).toUpperCase()}
-                                            </div>
+                                            <Avatar
+                                                initials={attendee.firstName && attendee.lastName ? `${attendee.firstName[0]}${attendee.lastName[0]}`.toUpperCase() : (attendee.firstName || attendee.email).substring(0, 2).toUpperCase()}
+                                                alt={`${attendee.firstName || ''} ${attendee.lastName || ''}`}
+                                                className="w-8 h-8 flex-shrink-0 text-[10px]"
+                                            />
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-sm font-bold text-gray-900 truncate">
                                                     {attendee.firstName ? `${attendee.firstName} ${attendee.lastName || ''}` : 'Anonym'}

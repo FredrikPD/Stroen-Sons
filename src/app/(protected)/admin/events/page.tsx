@@ -8,6 +8,10 @@ import { DeleteEventButton } from "./_components/DeleteEventButton";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
 
+export const metadata = {
+    title: "Administrer Arrangementer",
+};
+
 export default async function EventsListPage() {
     await ensureRole([Role.ADMIN, Role.MODERATOR]);
     const events = await db.event.findMany({

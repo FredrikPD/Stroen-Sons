@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Avatar } from "@/components/Avatar";
 
 type EventAttendee = {
     firstName: string | null;
@@ -101,13 +102,12 @@ export default function EventCard({ event }: { event: EventWithDetails }) {
                             {event.attendees.length > 0 ? (
                                 <div className="flex -space-x-1.5">
                                     {event.attendees.map((attendee, i) => (
-                                        <div
+                                        <Avatar
                                             key={i}
-                                            className="w-6 h-6 rounded-full bg-gradient-to-br from-[#222] to-[#444] border-[1.5px] border-white flex items-center justify-center text-white text-[8px] font-bold"
-                                            title={`${attendee.firstName} ${attendee.lastName}`}
-                                        >
-                                            {(attendee.firstName || attendee.email || "?").charAt(0).toUpperCase()}
-                                        </div>
+                                            initials={attendee.firstName && attendee.lastName ? `${attendee.firstName[0]}${attendee.lastName[0]}`.toUpperCase() : (attendee.firstName || attendee.email || "?").substring(0, 2).toUpperCase()}
+                                            alt={`${attendee.firstName || ''} ${attendee.lastName || ''}`}
+                                            className="w-6 h-6 border-[1.5px] border-white text-xs"
+                                        />
                                     ))}
                                     {event._count.attendees > 3 && (
                                         <div className="w-6 h-6 rounded-full bg-gray-100 border-[1.5px] border-white flex items-center justify-center text-gray-500 text-[8px] font-bold">

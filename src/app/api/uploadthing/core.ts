@@ -9,8 +9,8 @@ const f = createUploadthing();
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
     // Define as many FileRoutes as you like, each with a unique routeSlug
-    eventImage: f({ image: { maxFileSize: "8MB", maxFileCount: 50 } })
-        .input(z.object({ eventId: z.string() }))
+    eventImage: f({ image: { maxFileSize: "32MB", maxFileCount: 100 } })
+        .input(z.object({ eventId: z.string(), fileCount: z.number().optional() }))
         // Set permissions and file types for this FileRoute
         .middleware(async ({ input }) => {
             // This code runs on your server before upload
@@ -29,6 +29,15 @@ export const ourFileRouter = {
 
             if (!member || member.role !== "ADMIN") {
                 throw new UploadThingError("Admin access required");
+            }
+
+            // Validate File Count against System Setting
+            if (input.fileCount) {
+                const setting = await db.systemSetting.findUnique({ where: { key: "PHOTO_MAX_FILES" } });
+                const maxFiles = setting ? parseInt(setting.value, 10) : 50;
+                if (input.fileCount > maxFiles) {
+                    throw new UploadThingError(`Du kan maksimalt laste opp ${maxFiles} bilder samtidig.`);
+                }
             }
 
             // Whatever is returned here is accessible in onUploadComplete as `metadata`

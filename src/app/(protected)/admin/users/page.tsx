@@ -3,6 +3,10 @@ import UserManagementClient from "./user-management-client";
 import { Role } from "@prisma/client";
 import { ensureRole } from "@/server/auth/ensureRole";
 
+export const metadata = {
+    title: "Administrer Brukere",
+};
+
 export default async function UserManagementPage() {
     await ensureRole([Role.ADMIN]);
 

@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import AccountClient from "./AccountClient";
 
 export const metadata: Metadata = {
-    title: "Min Konto | Strøen Søns",
+    title: "Min Konto",
     description: "Administrer din konto og dine innstillinger",
 };
 
@@ -127,16 +127,7 @@ export default async function AccountPage() {
             </div>
 
             {/* Content Form */}
-            <AccountClient initialData={{
-                firstName: profile.firstName || "",
-                lastName: profile.lastName || "",
-                email: profile.email || "",
-                role: profile.role,
-                phoneNumber: profile.phoneNumber || "",
-                address: profile.address || "",
-                zipCode: profile.zipCode || "",
-                city: profile.city || "",
-            }} />
+            <AccountClient initialProfile={profile} />
         </div>
     );
 }

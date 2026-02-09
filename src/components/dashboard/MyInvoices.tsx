@@ -13,7 +13,7 @@ type Invoice = {
     category: string;
 };
 
-export function MyInvoices({ invoices, className = "" }: { invoices: Invoice[], className?: string }) {
+export function MyInvoices({ invoices, className = "", limit }: { invoices: Invoice[], className?: string, limit?: number }) {
     // Sort: Unpaid (Overdue first), then Paid (Newest first)
     const sortedInvoices = [...invoices].sort((a, b) => {
         if (a.status !== b.status) {
@@ -83,7 +83,7 @@ export function MyInvoices({ invoices, className = "" }: { invoices: Invoice[], 
 
                 <div className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 space-y-3 custom-scrollbar">
                     <div className="space-y-3">
-                        {sortedInvoices.map((inv) => {
+                        {sortedInvoices.slice(0, limit).map((inv) => {
                             const isPaid = inv.status === 'PAID';
                             const isOverdue = !isPaid && inv.dueDate && new Date(inv.dueDate) < new Date();
                             const dueDateDisplay = inv.dueDate
@@ -134,7 +134,7 @@ export function MyInvoices({ invoices, className = "" }: { invoices: Invoice[], 
                     </div>
 
                     <div className="mt-6 mb-1 text-center pb-2">
-                        <p className="font-medium text-gray-400 text-xs">Viser siste {invoices.length} fakturaer</p>
+                        <p className="font-medium text-gray-400 text-xs">Viser {Math.min(limit || invoices.length, invoices.length)} av {invoices.length} fakturaer</p>
                     </div>
                 </div>
             </div>

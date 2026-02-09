@@ -90,11 +90,11 @@ model PlanItem {
 }
 
 model Post {
-  id       String       @id @default(cuid())
+  id       String  @id @default(cuid())
   title    String
   content  String
-  category PostCategory @default(NYHET)
-  isPinned Boolean      @default(false)
+  category String  @default("NYHET")
+  isPinned Boolean @default(false)
 
   authorId String
   author   Member @relation(fields: [authorId], references: [id])
@@ -150,11 +150,11 @@ enum PaymentStatus {
   UNPAID
 }
 
-enum PostCategory {
-  EVENT
-  NYHET
-  REFERAT
-  SOSIALT
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
 }
 
 enum MemberStatus {
@@ -256,4 +256,10 @@ enum NotificationType {
   INVOICE_CREATED
   BALANCE_WITHDRAWAL
   PHOTOS_UPLOADED
+}
+
+model SystemSetting {
+  key         String  @id
+  value       String
+  description String?
 }

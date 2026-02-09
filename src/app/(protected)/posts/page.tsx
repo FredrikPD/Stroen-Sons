@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import PostList from "@/components/posts/PostList";
 
 export const metadata: Metadata = {
-    title: "Innlegg | Strøen Søns",
+    title: "Innlegg",
     description: "Nyheter og oppdateringer fra klubben.",
 };
 
@@ -12,6 +12,8 @@ import { getRecentFiles } from "@/server/actions/files";
 import { ensureMember } from "@/server/auth/ensureMember";
 import Link from "next/link";
 
+import { prisma } from "@/server/db";
+
 export default async function PostsPage() {
     const pinnedPosts = await getPinnedPosts();
     const upcomingEvents = await getUpcomingEvents();
@@ -19,11 +21,15 @@ export default async function PostsPage() {
     const member = await ensureMember();
     const isAdmin = member?.role === "ADMIN";
 
+    const categories = await prisma.category.findMany({
+        orderBy: { name: "asc" }
+    });
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto pb-12">
             {/* Main Feed Column */}
             <div className="lg:col-span-2">
-                <PostList isAdmin={isAdmin} />
+                <PostList isAdmin={isAdmin} categories={categories} />
             </div>
 
             {/* Sidebar Column */}

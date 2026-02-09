@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 import { TransactionDeleter } from "@/components/admin/finance/TransactionDeleter";
 import Link from "next/link";
 
+export const metadata = {
+    title: "Slett Transaksjoner",
+};
+
 export default async function TransactionDeletePage() {
     try {
         const member = await ensureMember();

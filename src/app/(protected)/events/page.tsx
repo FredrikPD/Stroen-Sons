@@ -6,7 +6,7 @@ import EventsView from "@/components/events/EventsView";
 import { unstable_cache } from "next/cache";
 
 export const metadata: Metadata = {
-    title: "Arrangementer | Strøen Søns",
+    title: "Arrangementer",
     description: "Kommende og tidligere arrangementer.",
 };
 

@@ -3,6 +3,10 @@ import { Role } from "@prisma/client";
 import MembershipTypesClient from "./client";
 import { getMembershipTypes, seedDefaultTypes } from "@/server/actions/membership-types";
 
+export const metadata = {
+    title: "Medlemstyper",
+};
+
 export default async function MembershipTypesPage() {
     await ensureRole([Role.ADMIN]);
 

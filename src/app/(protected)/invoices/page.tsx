@@ -6,6 +6,10 @@ import Link from "next/link";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 import { RequestStatus } from "@prisma/client";
 
+export const metadata = {
+    title: "Mine Fakturaer",
+};
+
 export default async function AllInvoicesPage() {
     try {
         await ensureMember();

@@ -3,6 +3,10 @@ import Image from "next/image";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
 
+export const metadata = {
+    title: "Om oss",
+};
+
 export default async function AboutPage() {
     try {
         await ensureMember();

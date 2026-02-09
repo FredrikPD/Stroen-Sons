@@ -2,7 +2,7 @@ import { getMembers } from "@/server/actions/members";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Medlemmer | Strøen Søns",
+    title: "Medlemmer",
     description: "Oversikt over alle medlemmer i Strøen Søns",
 };
 

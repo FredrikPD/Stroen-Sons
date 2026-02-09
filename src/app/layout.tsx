@@ -7,6 +7,16 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { ModalProvider } from "@/components/providers/ModalContext";
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Strøen Søns',
+    default: 'Strøen Søns',
+  },
+  description: 'Foreningen for gentlemen',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
@@ -19,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             rel="stylesheet"
           />
           <link
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
             rel="stylesheet"
           />
         </head>

@@ -4,7 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import PostItem, { PostWithDetails } from "./PostItem";
 import { getPosts } from "@/server/actions/posts";
 
-export default function PostList({ isAdmin }: { isAdmin: boolean }) {
+interface PostListProps {
+    isAdmin: boolean;
+    categories?: { id: string; name: string }[];
+}
+
+export default function PostList({ isAdmin, categories = [] }: PostListProps) {
     const [posts, setPosts] = useState<PostWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -83,34 +88,50 @@ export default function PostList({ isAdmin }: { isAdmin: boolean }) {
                 >
                     Siste innlegg
                 </button>
-                <button
-                    onClick={() => setCategory("NYHET")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "NYHET" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                        }`}
-                >
-                    Nyheter
-                </button>
-                <button
-                    onClick={() => setCategory("EVENT")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "EVENT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                        }`}
-                >
-                    Arrangementer
-                </button>
-                <button
-                    onClick={() => setCategory("REFERAT")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "REFERAT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                        }`}
-                >
-                    Referater
-                </button>
-                <button
-                    onClick={() => setCategory("SOSIALT")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "SOSIALT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                        }`}
-                >
-                    Sosialt
-                </button>
+                {categories.length > 0 ? (
+                    categories.map((cat) => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setCategory(cat.name)}
+                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === cat.name ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                                }`}
+                        >
+                            {cat.name}
+                        </button>
+                    ))
+                ) : (
+                    // Fallback if no categories
+                    <>
+                        <button
+                            onClick={() => setCategory("NYHET")}
+                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "NYHET" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                                }`}
+                        >
+                            Nyheter
+                        </button>
+                        <button
+                            onClick={() => setCategory("EVENT")}
+                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "EVENT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                                }`}
+                        >
+                            Arrangementer
+                        </button>
+                        <button
+                            onClick={() => setCategory("REFERAT")}
+                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "REFERAT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                                }`}
+                        >
+                            Referater
+                        </button>
+                        <button
+                            onClick={() => setCategory("SOSIALT")}
+                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "SOSIALT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
+                                }`}
+                        >
+                            Sosialt
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* List */}

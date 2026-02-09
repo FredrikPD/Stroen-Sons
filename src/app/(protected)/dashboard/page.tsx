@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { type Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
@@ -30,15 +31,35 @@ const getRecentPosts = async () => {
   });
 };
 
-const getRecentMemories = async () => {
-  return prisma.event.findMany({
+type EventWithPhotos = Prisma.EventGetPayload<{
+  include: { photos: { select: { url: true } } }
+}>;
+
+const getRecentMemories = async (): Promise<EventWithPhotos[]> => {
+  const events = await prisma.event.findMany({
     where: {
       startAt: { lt: new Date() },
-      coverImage: { not: null },
+      OR: [
+        { coverImage: { not: null } },
+        { photos: { some: {} } }
+      ]
     },
     orderBy: { startAt: "desc" },
     take: 4,
+    include: {
+      photos: {
+        take: 1,
+        orderBy: { createdAt: "desc" }, // or whatever order makes sense
+        select: { url: true }
+      }
+    }
   });
+
+  return events as unknown as EventWithPhotos[];
+};
+
+export const metadata = {
+  title: "Oversikt",
 };
 
 export default async function DashboardPage() {
@@ -88,8 +109,9 @@ export default async function DashboardPage() {
 
   const memories = cachedMemories.map(event => ({
     ...event,
-    startAt: new Date(event.startAt)
-  }));
+    startAt: new Date(event.startAt),
+    displayImage: event.coverImage || event.photos[0]?.url
+  })).filter(e => e.displayImage); // Double check we have an image
 
   const firstName = member.firstName ?? member.email.split("@")[0];
   const paymentStatus = payment?.status ?? "UNPAID";
@@ -199,7 +221,7 @@ export default async function DashboardPage() {
                 memories.map((event) => (
                   <Link key={event.id} href={`/gallery/${event.id}`} className="aspect-video bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer border border-gray-200 block">
                     <Image
-                      src={event.coverImage!}
+                      src={event.displayImage!}
                       alt={event.title}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -334,7 +356,7 @@ export default async function DashboardPage() {
 
           {/* Kommende Fakturaer */}
           <div>
-            <MyInvoices invoices={unpaidInvoices} />
+            <MyInvoices invoices={unpaidInvoices} limit={4} />
           </div>
 
         </div>

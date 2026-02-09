@@ -4,7 +4,11 @@ import { createPost } from "@/server/actions/posts";
 import { useRouter } from "next/navigation";
 import { PostForm } from "@/components/posts/PostForm";
 
-export default function NewPostClientPage() {
+interface NewPostClientPageProps {
+    categories?: { id: string; name: string }[];
+}
+
+export default function NewPostClientPage({ categories }: NewPostClientPageProps) {
     const router = useRouter();
 
     return (
@@ -23,6 +27,7 @@ export default function NewPostClientPage() {
                                 return await createPost(data);
                             }}
                             redirectOnSuccess="/admin/posts"
+                            categories={categories}
                         />
                     </div>
                 </div>

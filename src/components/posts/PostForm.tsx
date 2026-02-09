@@ -20,9 +20,10 @@ interface PostFormProps {
     pageDescription?: string;
     onSuccess?: () => void;
     redirectOnSuccess?: string;
+    categories?: { id: string; name: string }[];
 }
 
-export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode = false, pageTitle, pageDescription, onSuccess, redirectOnSuccess }: PostFormProps) {
+export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode = false, pageTitle, pageDescription, onSuccess, redirectOnSuccess, categories = [] }: PostFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"write" | "preview">("write");
@@ -167,10 +168,18 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                     {...register("category")}
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
                                 >
-                                    <option value="NYHET">Nyhet</option>
-                                    <option value="ARRANGEMENT">Arrangement</option>
-                                    <option value="REFERAT">Referat</option>
-                                    <option value="SOSIALT">Sosialt</option>
+                                    {categories.length > 0 ? (
+                                        categories.map((cat) => (
+                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <option value="NYHET">Nyhet</option>
+                                            <option value="ARRANGEMENT">Arrangement</option>
+                                            <option value="REFERAT">Referat</option>
+                                            <option value="SOSIALT">Sosialt</option>
+                                        </>
+                                    )}
                                 </select>
                                 <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
                             </div>

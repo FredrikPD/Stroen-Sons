@@ -8,6 +8,10 @@ import { DeletePostButton } from "./_components/DeletePostButton";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
 
+export const metadata = {
+    title: "Administrer Innlegg",
+};
+
 export default async function AdminPostsPage() {
     await ensureRole([Role.ADMIN, Role.MODERATOR]);
     const { items: posts } = await getPosts({ limit: 100 });

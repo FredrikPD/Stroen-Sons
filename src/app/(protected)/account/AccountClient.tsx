@@ -1,287 +1,405 @@
 "use client";
 
+import { useUser, useSession } from "@clerk/nextjs";
 import { useState } from "react";
-import { updatePassword, updateProfile } from "@/server/actions/account";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { updateProfile } from "@/server/actions/account";
 
 interface AccountClientProps {
-    initialData: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        role: string;
-        phoneNumber: string;
-        address: string;
-        zipCode: string;
-        city: string;
-    };
+    initialProfile: any; // Ideally stricter type from Prisma
 }
 
-export default function AccountClient({ initialData }: AccountClientProps) {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [passwordLoading, setPasswordLoading] = useState(false);
+type PasswordStep = "initial" | "ready" | "success";
 
-    // Profile State
+export default function AccountClient({ initialProfile }: AccountClientProps) {
+    const { user, isLoaded } = useUser();
+    const { session } = useSession();
+
+    // Password Update State
+    const [passwordStep, setPasswordStep] = useState<PasswordStep>("initial");
+    const [code, setCode] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    // Profile Edit State
+    const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
-        firstName: initialData.firstName,
-        lastName: initialData.lastName,
-        email: initialData.email,
-        phoneNumber: initialData.phoneNumber,
-        address: initialData.address,
-        zipCode: initialData.zipCode,
-        city: initialData.city,
+        firstName: initialProfile?.firstName || "",
+        lastName: initialProfile?.lastName || "",
+        email: initialProfile?.email || "",
+        phoneNumber: initialProfile?.phoneNumber || "",
+        address: initialProfile?.address || "",
+        zipCode: initialProfile?.zipCode || "",
+        city: initialProfile?.city || "",
     });
 
-    // Password State
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    if (!isLoaded || !user || !session) {
+        return (
+            <div className="w-full h-96 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
 
-    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const formatPhoneNumber = (phone: string) => phone;
 
-    const handleProfileUpdate = async (e: React.FormEvent) => {
-        e.preventDefault();
+    /**
+     * Start the verification process by sending a code.
+     */
+    const handleStartVerification = async () => {
         setLoading(true);
-        setMessage(null);
+        try {
+            const emailAddressId = user.primaryEmailAddressId;
+            if (!emailAddressId) {
+                toast.error("Ingen primær e-postadresse funnet for verifisering.");
+                return;
+            }
 
-        const res = await updateProfile({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            address: formData.address,
-            zipCode: formData.zipCode,
-            city: formData.city,
-        });
+            // Start step-up / reverification flow
+            await session.startVerification({ level: "first_factor" });
 
-        if (res.success) {
-            setMessage({ type: 'success', text: "Profil oppdatert!" });
-            router.refresh();
-        } else {
-            setMessage({ type: 'error', text: res.error || "Noe gikk galt." });
+            // Send code
+            await session.prepareFirstFactorVerification({
+                strategy: "email_code",
+                emailAddressId,
+            });
+
+            toast.info("Bekreftelseskode sendt til din e-post.");
+            setPasswordStep("ready");
+        } catch (err: any) {
+            console.error("Error sending code:", err);
+            // If already prepared, proceed to ready step
+            if (err?.errors?.[0]?.code === "verification_already_prepared") {
+                setPasswordStep("ready");
+                toast.info("Bekreftelseskode allerede sendt. Sjekk e-posten din.");
+            } else {
+                toast.error(err?.errors?.[0]?.message || "Kunne ikke sende bekreftelseskode.");
+            }
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
-    const handlePasswordUpdate = async (e: React.FormEvent) => {
+    /**
+     * Verify the code AND update the password in one go.
+     */
+    const handleVerifyAndUpdate = async () => {
+        if (!code || code.length < 6) {
+            toast.error("Vennligst skriv inn en gyldig 6-sifret kode.");
+            return;
+        }
+        if (!newPassword || newPassword.length < 8) {
+            toast.error("Passordet må være på minst 8 tegn.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // 1. Attempt verification
+            const verifyRes = await session.attemptFirstFactorVerification({
+                strategy: "email_code",
+                code,
+            });
+
+            if (verifyRes.status !== "complete") {
+                toast.error("Verifisering feilet eller ufullstendig.");
+                // If failed, user might need to re-enter code, but stay on "ready" step
+                return;
+            }
+
+            // 2. Verification complete -> Update Password
+            await user.updatePassword({ newPassword });
+
+            setPasswordStep("success");
+            toast.success("Passord oppdatert!");
+        } catch (err: any) {
+            console.error("Error updating password:", err);
+            toast.error(err?.errors?.[0]?.message || "Kunne ikke oppdatere passord.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleProfileSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password !== confirmPassword) {
-            setMessage({ type: 'error', text: "Passordene er ikke like." });
-            return;
+        setLoading(true);
+        try {
+            const res = await updateProfile(formData);
+            if (res.success) {
+                toast.success("Profil oppdatert!");
+                setIsEditing(false);
+            } else {
+                toast.error(res.error || "Kunne ikke oppdatere profil.");
+            }
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            toast.error("En uventet feil oppstod.");
+        } finally {
+            setLoading(false);
         }
-        if (password.length < 8) {
-            setMessage({ type: 'error', text: "Passordet må være minst 8 tegn." });
-            return;
-        }
-
-        setPasswordLoading(true);
-        setMessage(null);
-
-        const res = await updatePassword(password);
-
-        if (res.success) {
-            setMessage({ type: 'success', text: "Passord oppdatert!" });
-            setPassword("");
-            setConfirmPassword("");
-        } else {
-            setMessage({ type: 'error', text: res.error || "Kunne ikke oppdatere passord." });
-        }
-        setPasswordLoading(false);
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* LEFT COLUMN: Profile Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+            {/* Left Column: Account Info (Editable) */}
             <div className="space-y-6">
-                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm relative">
+                    <div className="absolute top-8 right-8">
+                        {!isEditing ? (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-lg">edit</span>
+                                Rediger
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="text-sm font-bold text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-lg">close</span>
+                                Avbryt
+                            </button>
+                        )}
+                    </div>
 
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2 relative z-10">
-                        <span className="material-symbols-outlined text-zinc-400">id_card</span>
-                        Personalia & Kontakt
+                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-indigo-600">person</span>
+                        Kontoinformasjon
                     </h2>
 
-                    <form onSubmit={handleProfileUpdate} className="space-y-4 relative z-10">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Fornavn</label>
-                                <input
-                                    type="text"
-                                    value={formData.firstName}
-                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
+                    {!isEditing ? (
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
+                                <img
+                                    src={user.imageUrl}
+                                    alt="Profilbilde"
+                                    className="w-16 h-16 rounded-full border-2 border-white shadow-sm"
                                 />
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">
+                                        {formData.firstName} {formData.lastName}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                        Medlem siden {user.createdAt ? new Date(user.createdAt).getFullYear() : "N/A"}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Etternavn</label>
-                                <input
-                                    type="text"
-                                    value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">E-post</label>
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                            />
-                            <p className="text-[10px] text-amber-600 flex items-center gap-1 mt-1">
-                                <span className="material-symbols-outlined text-[10px]">info</span>
-                                Endring av e-post kan kreve ny verifisering.
-                            </p>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Telefon (Valgfritt)</label>
-                            <input
-                                type="tel"
-                                value={formData.phoneNumber}
-                                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                placeholder="123 45 678"
-                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                            />
-                        </div>
-
-                        <div className="pt-2 border-t border-gray-100 my-4"></div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Adresse (Valgfritt)</label>
-                            <input
-                                type="text"
-                                value={formData.address}
-                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                placeholder="Storgata 1"
-                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-1 space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Postnr</label>
-                                <input
-                                    type="text"
-                                    value={formData.zipCode}
-                                    onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                                    placeholder="0001"
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                                />
-                            </div>
-                            <div className="col-span-2 space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Poststed</label>
-                                <input
-                                    type="text"
-                                    value={formData.city}
-                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                    placeholder="Oslo"
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                                />
+                            {/* Display fields... I'll keep the existing structure but shortened request here */}
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">E-post</label>
+                                    <div className="text-gray-900 font-medium">{formData.email}</div>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Telefon</label>
+                                    <div className="text-gray-900 font-medium">
+                                        {formData.phoneNumber ? formatPhoneNumber(formData.phoneNumber) : <span className="text-gray-400 italic">Ikke satt</span>}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Adresse</label>
+                                    <div className="text-gray-900 font-medium">
+                                        {formData.address ? (
+                                            <>
+                                                {formData.address}<br />
+                                                {formData.zipCode} {formData.city}
+                                            </>
+                                        ) : (
+                                            <span className="text-gray-400 italic">Ingen adresse oppgitt</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="pt-4">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                            >
-                                {loading ? (
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <>
-                                        <span className="material-symbols-outlined text-lg">save</span>
-                                        Lagre Endringer
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
+                    ) : (
+                        <form onSubmit={handleProfileSubmit} className="space-y-4">
+                            {/* Form fields same as before... */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Fornavn</label>
+                                    <input
+                                        type="text"
+                                        value={formData.firstName}
+                                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Etternavn</label>
+                                    <input
+                                        type="text"
+                                        value={formData.lastName}
+                                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">E-post</label>
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    readOnly
+                                    disabled
+                                    className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-500 cursor-not-allowed"
+                                />
+                                <p className="text-[10px] text-gray-400 mt-1">Kontakt support for å endre e-post.</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Telefon</label>
+                                <input
+                                    type="tel"
+                                    value={formData.phoneNumber}
+                                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Adresse</label>
+                                <input
+                                    type="text"
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    placeholder="Gateadresse"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none mb-2"
+                                />
+                                <div className="grid grid-cols-3 gap-2">
+                                    <input
+                                        type="text"
+                                        value={formData.zipCode}
+                                        onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                                        placeholder="Postnummer"
+                                        className="col-span-1 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={formData.city}
+                                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                        placeholder="Poststed"
+                                        className="col-span-2 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="pt-2 flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(false)}
+                                    className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors"
+                                >
+                                    Avbryt
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-70"
+                                >
+                                    {loading ? "Lagrer..." : "Lagre endringer"}
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </div>
-
-                {/* Feedback Message */}
-                {message && (
-                    <div className={`p-4 rounded-xl border flex items-center gap-3 ${message.type === 'success'
-                        ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
-                        : 'bg-red-50 border-red-100 text-red-700'
-                        }`}>
-                        <span className="material-symbols-outlined">
-                            {message.type === 'success' ? 'check_circle' : 'error'}
-                        </span>
-                        <p className="text-sm font-medium">{message.text}</p>
-                    </div>
-                )}
             </div>
 
-            {/* RIGHT COLUMN: Security & Info */}
+            {/* Right Column: Password Reset */}
             <div className="space-y-6">
-
-
-                {/* Password Change */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm relative overflow-hidden">
+                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm h-full">
                     <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-zinc-400">lock</span>
-                        Sikkerhet
+                        <span className="material-symbols-outlined text-indigo-600">lock_reset</span>
+                        Bytt passord
                     </h2>
 
-                    <form onSubmit={handlePasswordUpdate} className="space-y-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Nytt Passord</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Minst 8 tegn"
-                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bekreft Passord</label>
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Gjenta passord"
-                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500 transition-all"
-                            />
-                        </div>
-
-                        <div className="pt-4">
+                    {passwordStep === "initial" && (
+                        <div className="space-y-4">
+                            <p className="text-gray-600 text-sm">
+                                For å bytte passord må vi først bekrefte din identitet. Klikk på knappen under for å sende en bekreftelseskode til din e-post.
+                            </p>
                             <button
-                                type="submit"
-                                disabled={passwordLoading}
-                                className="w-full py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 hover:border-gray-300"
+                                onClick={handleStartVerification}
+                                disabled={loading}
+                                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                                {passwordLoading ? (
-                                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <>
-                                        <span className="material-symbols-outlined text-lg">key</span>
-                                        Oppdater Passord
-                                    </>
-                                )}
+                                {loading ? "Sender..." : "Send bekreftelseskode"}
                             </button>
                         </div>
-                    </form>
-                </div>
+                    )}
 
-                {/* MFA / Other Settings */}
-                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex flex-col gap-4">
-                    <div className="flex items-start gap-3">
-                        <div className="p-2 bg-amber-100 rounded-lg text-amber-700">
-                            <span className="material-symbols-outlined text-xl">shield_lock</span>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-bold text-amber-900">To-trinns bekreftelse (MFA)</h3>
-                            <p className="text-xs text-amber-700/80 mt-1 leading-relaxed">
-                                Øk sikkerheten på din konto ved å aktivere to-trinns bekreftelse. Dette administreres via vår sikkerhetsleverandør.
+                    {passwordStep === "ready" && (
+                        <div className="space-y-4">
+                            <p className="text-gray-600 text-sm mb-4">
+                                En bekreftelseskode er sendt til <strong>{user.primaryEmailAddress?.emailAddress}</strong>.
                             </p>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    Bekreftelseskode
+                                </label>
+                                <input
+                                    type="text"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    placeholder="Skriv inn 6-sifret kode"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-mono tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    Nytt passord
+                                </label>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Skriv inn nytt passord"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleVerifyAndUpdate}
+                                disabled={loading || code.length < 6 || newPassword.length < 8}
+                                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                            >
+                                {loading ? "Oppdaterer..." : "Oppdater passord"}
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setPasswordStep("initial");
+                                    setCode("");
+                                    setNewPassword("");
+                                }}
+                                className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
+                            >
+                                Avbryt
+                            </button>
                         </div>
-                    </div>
+                    )}
+
+                    {passwordStep === "success" && (
+                        <div className="flex flex-col items-center justify-center text-center py-8 space-y-4">
+                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2">
+                                <span className="material-symbols-outlined text-3xl">check</span>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900">Suksess!</h3>
+                            <p className="text-gray-500 text-sm">Ditt passord er oppdatert.</p>
+                            <button
+                                onClick={() => {
+                                    setPasswordStep("initial");
+                                    setCode("");
+                                    setNewPassword("");
+                                }}
+                                className="mt-4 px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-bold text-sm transition-colors"
+                            >
+                                Ferdig
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

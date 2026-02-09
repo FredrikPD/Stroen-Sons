@@ -3,6 +3,10 @@ import { Role } from "@prisma/client";
 import { getInvitations } from "@/server/actions/invitations";
 import InvitationsClientPage from "./client";
 
+export const metadata = {
+    title: "Invitasjoner",
+};
+
 export default async function InvitationsPage() {
     await ensureRole([Role.ADMIN]);
 
