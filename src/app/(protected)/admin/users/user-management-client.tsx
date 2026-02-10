@@ -39,12 +39,12 @@ const QUICK_ACTIONS = [
         hoverBorder: "hover:border-purple-500/50"
     },
     {
-        title: "Slett Bruker",
-        description: "Fjern medlem permanent",
-        icon: "person_remove",
-        href: "/admin/users/delete",
-        colorClass: "text-red-500 bg-red-500/10 group-hover:bg-red-500 group-hover:text-white",
-        hoverBorder: "hover:border-red-500/50"
+        title: "Håndter invitasjoner",
+        description: "Administrer invitasjoner",
+        icon: "send",
+        href: "/admin/system/invitations",
+        colorClass: "text-amber-500 bg-amber-500/10 group-hover:bg-amber-500 group-hover:text-white",
+        hoverBorder: "hover:border-amber-500/50"
     }
 ];
 
@@ -180,7 +180,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                         e.target.value
                                                     )}
                                                     className={`
-                                                        appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors
+                                                        w-full appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors
                                                         ${member.userRole?.name === 'Admin' ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
                                                             member.userRole?.name === 'Moderator' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' :
                                                                 'bg-gray-100 text-gray-700 hover:bg-gray-200'}

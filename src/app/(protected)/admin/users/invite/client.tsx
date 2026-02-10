@@ -1,19 +1,31 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef, useEffect } from "react";
 import { inviteMember } from "@/server/actions/invite-member";
 
 export default function InviteMemberForm({ availableRoles }: { availableRoles: { id: string, name: string }[] }) {
     const [state, formAction, isPending] = useActionState(inviteMember, {});
+    const formRef = useRef<HTMLFormElement>(null);
 
-    // Local state for preview
-    const [preview, setPreview] = useState({
+    // Initial preview state
+    const initialPreview = {
         firstName: "",
         lastName: "",
         roleName: availableRoles.find(r => r.name === "Member")?.name || availableRoles[0]?.name || "Medlem",
         type: "STANDARD",
         email: ""
-    });
+    };
+
+    // Local state for preview
+    const [preview, setPreview] = useState(initialPreview);
+
+    // Reset form and preview on success or error
+    useEffect(() => {
+        if (state.message || state.error) {
+            setPreview(initialPreview);
+            formRef.current?.reset();
+        }
+    }, [state, availableRoles]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -36,7 +48,7 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                         <p className="text-gray-500 mt-2">Opprett tilgang og send invitasjon.</p>
                     </div>
 
-                    <form action={formAction} className="space-y-6">
+                    <form ref={formRef} action={formAction} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Fornavn</label>

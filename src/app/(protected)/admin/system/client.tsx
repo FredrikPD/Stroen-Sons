@@ -155,15 +155,15 @@ export default function AdminSystemClientPage() {
                             </p>
                         </div>
                     </Link>
-                    {/* Håndter invitasjoner */}
-                    <Link href="/admin/system/invitations" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-xl">send</span>
+                    {/* Slett Bruker */}
+                    <Link href="/admin/users/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">person_remove</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Håndter invitasjoner</h3>
+                            <h3 className="font-bold text-gray-900 mb-1">Slett Bruker</h3>
                             <p className="text-sm text-gray-500 leading-snug">
-                                Send ut og administrer nye invitasjoner.
+                                Fjern medlem permanent.
                             </p>
                         </div>
                     </Link>
