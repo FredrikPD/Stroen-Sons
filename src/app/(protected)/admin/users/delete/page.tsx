@@ -7,7 +7,11 @@ export const metadata = {
     title: "Slett Brukere",
 };
 
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+
 export default async function DeleteUserPage() {
+    await ensureRole([Role.ADMIN]);
     const members = await db.member.findMany({
         select: {
             id: true,

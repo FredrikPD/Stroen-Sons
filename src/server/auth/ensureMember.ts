@@ -15,6 +15,7 @@ export async function ensureMember() {
   // Read first (fastest)
   const existingMember = await prisma.member.findUnique({
     where: { clerkId: userId },
+    include: { userRole: true },
   });
 
   if (existingMember) {
@@ -35,6 +36,7 @@ export async function ensureMember() {
   // If not found by Clerk ID, try by Email (Lazy Linking for Invited Users)
   const existingByEmail = await prisma.member.findUnique({
     where: { email },
+    include: { userRole: true },
   });
 
   if (existingByEmail) {
@@ -49,7 +51,8 @@ export async function ensureMember() {
         // Let's keep our DB as authority for now unless empty
         firstName: existingByEmail.firstName || user.firstName,
         lastName: existingByEmail.lastName || user.lastName,
-      }
+      },
+      include: { userRole: true },
     });
   }
 
@@ -62,6 +65,7 @@ export async function ensureMember() {
       lastName: user.lastName,
       status: "ACTIVE", // Self-sign up = Active
     },
+    include: { userRole: true },
   });
 
   return member;

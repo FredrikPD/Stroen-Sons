@@ -77,7 +77,7 @@ export default async function AccountPage() {
                     <div className="relative z-10 flex items-center justify-between">
                         <div>
                             <p className="text-zinc-400 text-xs uppercase tracking-wider font-bold mb-1">Din Rolle</p>
-                            <h3 className="text-2xl font-bold">{profile.role}</h3>
+                            <h3 className="text-2xl font-bold">{profile.userRole?.name || profile.role}</h3>
                         </div>
                         <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
                             <span className="material-symbols-outlined text-2xl">verified_user</span>

@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
     "/",
@@ -16,14 +17,8 @@ export default clerkMiddleware(async (auth, req) => {
     if (isAdminRoute(req)) {
         await auth.protect();
 
-        const { sessionClaims } = await auth();
-        // @ts-ignore
-        const role = sessionClaims?.public_metadata?.role;
-
-        if (role !== "ADMIN" && role !== "MODERATOR") {
-            const url = new URL("/dashboard", req.url);
-            return Response.redirect(url);
-        }
+        // Dynamic roles are handled in the application layer (ensureRole / checkAccess).
+        // We pass the current path as a header to allow server components to check access.
     }
 
     // 2. Redirect Authenticated Users from Public Auth Routes
@@ -42,6 +37,19 @@ export default clerkMiddleware(async (auth, req) => {
     if (!isPublicRoute(req)) {
         await auth.protect();
     }
+
+    // Pass current path in headers for server components
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-current-path", req.nextUrl.pathname);
+
+    // Use NextResponse.next to pass headers, but clerkMiddleware expects void or Response? 
+    // Clerk docs say you can return a Response. 
+    // We need to import NextResponse.
+    return NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
 });
 
 export const config = {

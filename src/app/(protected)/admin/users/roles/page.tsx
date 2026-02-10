@@ -5,7 +5,11 @@ export const metadata = {
     title: "Roller",
 };
 
-export default function MemberRolesPage() {
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+
+export default async function MemberRolesPage() {
+    await ensureRole([Role.ADMIN]);
     return (
         <div className="space-y-6">
 

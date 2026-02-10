@@ -24,6 +24,28 @@ export default function AdminDashboardClientPage() {
         );
     }
 
+    const hasAccess = (path: string) => {
+        if (!data) return false;
+        if (data.role === "ADMIN") return true;
+
+        // Legacy moderator check
+        if (data.role === "MODERATOR") {
+            const allowed = ["/admin", "/admin/events", "/admin/posts", "/admin/photos"];
+            return allowed.includes(path);
+        }
+
+        // Dynamic userRole check
+        if (data.userRole?.allowedPaths && data.userRole.allowedPaths.length > 0) {
+            return data.userRole.allowedPaths.some((pattern: string) => {
+                try {
+                    return new RegExp(`^${pattern}$`).test(path);
+                } catch (e) { return false; }
+            });
+        }
+
+        return false;
+    };
+
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -106,66 +128,100 @@ export default function AdminDashboardClientPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                     {/* All Events */}
-                    <Link href="/admin/events" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
-                        <div className="mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">calendar_month</span>
+                    {hasAccess("/admin/events") ? (
+                        <Link href="/admin/events" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                            <div className="mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
+                                    <span className="material-symbols-outlined text-lg">calendar_month</span>
+                                </div>
+                                <h3 className="text-base font-bold text-gray-900 mb-1">Arrangementer</h3>
+                                <p className="text-gray-500 text-xs leading-relaxed">Se oversikt og administrer alle arrangementer.</p>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Arrangementer</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Se oversikt og administrer alle arrangementer.</p>
-                        </div>
-                        <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-                            <span className="material-symbols-outlined text-base">arrow_forward</span>
-                            Gå til Arrangementer
-                        </div>
-                    </Link>
-
-                    {/* Posts */}
-                    <Link href="/admin/posts" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
-                        <div className="mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">post_add</span>
+                            <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                                <span className="material-symbols-outlined text-base">arrow_forward</span>
+                                Gå til Arrangementer
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Innlegg</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Administrer nyheter og innlegg.</p>
-                        </div>
-                        <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-                            <span className="material-symbols-outlined text-base">arrow_forward</span>
-                            Gå til Innlegg
-                        </div>
-                    </Link>
-
-                    {/* Upload Photos */}
-                    <Link href="/admin/photos" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
-                        <div className="mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
-                                <span className="material-symbols-outlined text-lg">cloud_upload</span>
-                            </div>
-                            <h3 className="text-base font-bold text-gray-900 mb-1">Bilder</h3>
-                            <p className="text-gray-500 text-xs leading-relaxed">Last opp eller slett bilder fra arkivet.</p>
-                        </div>
-                        <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-                            <span className="material-symbols-outlined text-base">arrow_forward</span>
-                            Gå til Bilder
-                        </div>
-                    </Link>
-
-                    {/* User Management Shortcut */}
-                    {data?.role === 'MODERATOR' ? (
+                        </Link>
+                    ) : (
                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] opacity-60 cursor-not-allowed grayscale">
                             <div className="mb-4">
                                 <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 mb-3">
-                                    <span className="material-symbols-outlined text-lg">manage_accounts</span>
+                                    <span className="material-symbols-outlined text-lg">calendar_month</span>
                                 </div>
-                                <h3 className="text-base font-bold text-gray-500 mb-1">Brukere</h3>
-                                <p className="text-gray-400 text-xs leading-relaxed">Inviter, slett eller endre roller.</p>
+                                <h3 className="text-base font-bold text-gray-500 mb-1">Arrangementer</h3>
+                                <p className="text-gray-400 text-xs leading-relaxed">Se oversikt og administrer alle arrangementer.</p>
                             </div>
                             <div className="w-full py-2.5 bg-gray-200 text-gray-400 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
                                 <span className="material-symbols-outlined text-base">lock</span>
                                 Ingen tilgang
                             </div>
                         </div>
+                    )}
+
+                    {/* Posts */}
+                    {hasAccess("/admin/posts") ? (
+                        <Link href="/admin/posts" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                            <div className="mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
+                                    <span className="material-symbols-outlined text-lg">post_add</span>
+                                </div>
+                                <h3 className="text-base font-bold text-gray-900 mb-1">Innlegg</h3>
+                                <p className="text-gray-500 text-xs leading-relaxed">Administrer nyheter og innlegg.</p>
+                            </div>
+                            <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                                <span className="material-symbols-outlined text-base">arrow_forward</span>
+                                Gå til Innlegg
+                            </div>
+                        </Link>
                     ) : (
+                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] opacity-60 cursor-not-allowed grayscale">
+                            <div className="mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 mb-3">
+                                    <span className="material-symbols-outlined text-lg">post_add</span>
+                                </div>
+                                <h3 className="text-base font-bold text-gray-500 mb-1">Innlegg</h3>
+                                <p className="text-gray-400 text-xs leading-relaxed">Administrer nyheter og innlegg.</p>
+                            </div>
+                            <div className="w-full py-2.5 bg-gray-200 text-gray-400 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                                <span className="material-symbols-outlined text-base">lock</span>
+                                Ingen tilgang
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Upload Photos */}
+                    {hasAccess("/admin/photos") ? (
+                        <Link href="/admin/photos" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#4F46E5]/50 transition-colors shadow-sm hover:shadow-md">
+                            <div className="mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5] mb-3 group-hover:bg-[#4F46E5] group-hover:text-white transition-all">
+                                    <span className="material-symbols-outlined text-lg">cloud_upload</span>
+                                </div>
+                                <h3 className="text-base font-bold text-gray-900 mb-1">Bilder</h3>
+                                <p className="text-gray-500 text-xs leading-relaxed">Last opp eller slett bilder fra arkivet.</p>
+                            </div>
+                            <div className="w-full py-2.5 bg-[#4F46E5] hover:bg-[#4338ca] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                                <span className="material-symbols-outlined text-base">arrow_forward</span>
+                                Gå til Bilder
+                            </div>
+                        </Link>
+                    ) : (
+                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] opacity-60 cursor-not-allowed grayscale">
+                            <div className="mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 mb-3">
+                                    <span className="material-symbols-outlined text-lg">cloud_upload</span>
+                                </div>
+                                <h3 className="text-base font-bold text-gray-500 mb-1">Bilder</h3>
+                                <p className="text-gray-400 text-xs leading-relaxed">Last opp eller slett bilder fra arkivet.</p>
+                            </div>
+                            <div className="w-full py-2.5 bg-gray-200 text-gray-400 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                                <span className="material-symbols-outlined text-base">lock</span>
+                                Ingen tilgang
+                            </div>
+                        </div>
+                    )}
+
+                    {/* User Management Shortcut */}
+                    {hasAccess("/admin/users") ? (
                         <Link href="/admin/users" className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] group hover:border-[#1A56DB]/50 transition-colors shadow-sm hover:shadow-md">
                             <div className="mb-4">
                                 <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center text-[#1A56DB] mb-3 group-hover:bg-[#1A56DB] group-hover:text-white transition-all">
@@ -179,6 +235,20 @@ export default function AdminDashboardClientPage() {
                                 Gå til Brukere
                             </div>
                         </Link>
+                    ) : (
+                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] opacity-60 cursor-not-allowed grayscale">
+                            <div className="mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 mb-3">
+                                    <span className="material-symbols-outlined text-lg">manage_accounts</span>
+                                </div>
+                                <h3 className="text-base font-bold text-gray-500 mb-1">Brukere</h3>
+                                <p className="text-gray-400 text-xs leading-relaxed">Inviter, slett eller endre roller.</p>
+                            </div>
+                            <div className="w-full py-2.5 bg-gray-200 text-gray-400 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                                <span className="material-symbols-outlined text-base">lock</span>
+                                Ingen tilgang
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

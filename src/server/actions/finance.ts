@@ -537,7 +537,9 @@ export async function getCurrentMember() {
         const member = await ensureMember();
         return {
             ...member,
-            balance: member.balance.toNumber()
+            balance: member.balance.toNumber(),
+            // Ensure userRole is included (ensureMember already fetches it)
+            userRole: member.userRole
         };
     } catch (error) {
         return null;

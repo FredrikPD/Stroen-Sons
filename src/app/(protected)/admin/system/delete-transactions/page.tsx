@@ -7,15 +7,11 @@ export const metadata = {
     title: "Slett Transaksjoner",
 };
 
+import { ensureRole } from "@/server/auth/ensureRole";
+import { Role } from "@prisma/client";
+
 export default async function TransactionDeletePage() {
-    try {
-        const member = await ensureMember();
-        if (member.role !== "ADMIN") {
-            redirect("/dashboard");
-        }
-    } catch {
-        redirect("/sign-in");
-    }
+    await ensureRole([Role.ADMIN]);
 
     return (
         <div className="space-y-6">

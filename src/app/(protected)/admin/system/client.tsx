@@ -73,7 +73,7 @@ export default function AdminSystemClientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Sett Saldo */}
-                    <Link href="/admin/finance/set-balance" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                    <Link href="/admin/system/set-balance" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
                         <div className="w-10 h-10 bg-fuchsia-50 text-fuchsia-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">edit_note</span>
                         </div>
@@ -106,20 +106,9 @@ export default function AdminSystemClientPage() {
                         </div>
                     </button>
 
-                    {/* Slett Transaksjoner */}
-                    <Link href="/admin/finance/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-xl">delete_forever</span>
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Slett Transaksjoner</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
-                                Slett eller nullstill transaksjoner.
-                            </p>
-                        </div>
-                    </Link>
+
                     {/* Slett Fakturaer */}
-                    <Link href="/admin/finance/invoices/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                    <Link href="/admin/system/delete-invoices" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
                         <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-rose-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">remove_shopping_cart</span>
                         </div>
@@ -141,6 +130,18 @@ export default function AdminSystemClientPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Brukerroller */}
+                    <Link href="/admin/system/user-roles" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">security</span>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 mb-1">Brukerroller</h3>
+                            <p className="text-sm text-gray-500 leading-snug">
+                                Administrer roller og rettigheter.
+                            </p>
+                        </div>
+                    </Link>
                     {/* Håndter invitasjoner */}
                     <Link href="/admin/system/invitations" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
                         <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">

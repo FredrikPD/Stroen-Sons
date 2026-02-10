@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 export type AdminDashboardData = {
     firstName: string | null;
     role?: string;
+    userRole?: any;
     memberCount: number;
     unpaidCount?: number;
     treasuryBalance: number;

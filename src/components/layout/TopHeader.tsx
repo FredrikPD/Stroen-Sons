@@ -53,38 +53,40 @@ export default function TopHeader({
         {/* Path (Desktop) */}
         {/* Path (Desktop) */}
         <div className="hidden md:flex items-center gap-2 text-sm text-text-main">
-          {backHref ? (
-            // Explicit back link from context
-            <Link
-              href={backHref}
-              className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
-            >
-              <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
-              <span>{backLabel || "Tilbake"}</span>
-            </Link>
-          ) : (
-            // Standard logic
-            (() => {
-              const allNavItems = [...MAIN_NAV, ...ACCOUNT_NAV, ...ADMIN_NAV];
-              const sortedItems = allNavItems.sort((a, b) => b.href.length - a.href.length);
-              // Ignore strict matches (current page) to find parent
-              const parent = sortedItems.find((item) => pathname.startsWith(item.href) && pathname !== item.href && item.href !== "/");
+          {pathname === "/admin/access-denied" ? null : (
+            backHref ? (
+              // Explicit back link from context
+              <Link
+                href={backHref}
+                className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
+              >
+                <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
+                <span>{backLabel || "Tilbake"}</span>
+              </Link>
+            ) : (
+              // Standard logic
+              (() => {
+                const allNavItems = [...MAIN_NAV, ...ACCOUNT_NAV, ...ADMIN_NAV];
+                const sortedItems = allNavItems.sort((a, b) => b.href.length - a.href.length);
+                // Ignore strict matches (current page) to find parent
+                const parent = sortedItems.find((item) => pathname.startsWith(item.href) && pathname !== item.href && item.href !== "/");
 
-              if (parent) {
-                return (
-                  <Link
-                    href={parent.href}
-                    className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
-                  >
-                    <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
-                    <span>{parent.label}</span>
-                  </Link>
-                )
-              }
+                if (parent) {
+                  return (
+                    <Link
+                      href={parent.href}
+                      className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
+                    >
+                      <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
+                      <span>{parent.label}</span>
+                    </Link>
+                  )
+                }
 
-              // Fallback: Just show current page title (static)
-              return <span className="font-bold">{baseTitle}</span>
-            })()
+                // Fallback: Just show current page title (static)
+                return <span className="font-bold">{baseTitle}</span>
+              })()
+            )
           )}
         </div>
       </div>

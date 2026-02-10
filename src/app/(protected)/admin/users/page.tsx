@@ -15,7 +15,8 @@ export default async function UserManagementPage() {
         adminCount,
         studentCount,
         pendingCount,
-        allMembers
+        allMembers,
+        availableRoles
     ] = await Promise.all([
         db.member.count(),
         db.member.count({ where: { role: "ADMIN" } }),
@@ -28,17 +29,19 @@ export default async function UserManagementPage() {
                 lastName: true,
                 email: true,
                 role: true,
+                userRole: { select: { id: true, name: true } },
                 membershipType: true,
                 status: true,
                 createdAt: true, // Used to calc approximate "last active" if not tracking activity
                 updatedAt: true,
                 lastActiveAt: true,
             }
-        })
+        }),
+        db.userRole.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } })
     ]);
 
     // Format members for the client component
-    const formattedMembers = allMembers.map(m => {
+    const formattedMembers = allMembers.map((m: any) => {
         // Calculate "Last Active"
         const lastActiveDate = m.lastActiveAt || m.updatedAt;
         const diffInSeconds = Math.floor((new Date().getTime() - new Date(lastActiveDate).getTime()) / 1000);
@@ -54,6 +57,7 @@ export default async function UserManagementPage() {
             lastName: m.lastName,
             email: m.email,
             role: m.role,
+            userRole: m.userRole,
             membershipType: m.membershipType,
             status: m.status === 'ACTIVE' ? "Aktiv" : m.status === 'PENDING' ? "Ventende" : "Inaktiv",
             lastActive: lastActive,
@@ -114,7 +118,7 @@ export default async function UserManagementPage() {
                 ))}
             </div>
 
-            <UserManagementClient members={formattedMembers} />
+            <UserManagementClient members={formattedMembers} availableRoles={availableRoles} />
         </div>
     );
 }

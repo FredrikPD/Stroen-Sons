@@ -19,6 +19,7 @@ export async function getProfile() {
                 lastName: true,
                 email: true,
                 role: true,
+                userRole: true,
                 membershipType: true,
                 createdAt: true,
                 phoneNumber: true,

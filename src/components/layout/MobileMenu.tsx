@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV, type NavItem } from "./nav";
 
@@ -10,55 +10,46 @@ interface MobileMenuProps {
     open: boolean;
     onClose: () => void;
     role?: string;
+    userRole?: any; // Consider typing this properly with Prisma types if available in client
     userName?: string | null;
     avatarUrl?: string | null;
 }
 
-function MobileLink({ item, onClick }: { item: NavItem; onClick: () => void }) {
+// ... MobileLink component ...
+
+export default function MobileMenu({ open, onClose, role, userRole, userName, avatarUrl }: MobileMenuProps) {
     const pathname = usePathname();
-    const isActive = pathname === item.href;
-
-    return (
-        <Link
-            href={item.href}
-            onClick={onClick}
-            className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${isActive
-                ? "bg-[#1A1A1A] text-white shadow-sm border border-white/5"
-                : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-                }`}
-        >
-            <span className={`material-symbols-outlined text-[1.125rem] ${isActive ? "text-white" : "text-gray-400"}`}>
-                {item.icon}
-            </span>
-            <p className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-900"}`}>{item.label}</p>
-        </Link>
-    );
-}
-
-export default function MobileMenu({ open, onClose, role, userName, avatarUrl }: MobileMenuProps) {
+    const router = useRouter();
     const { signOut } = useClerk();
-    const isAdmin = role === "ADMIN";
-    const [isVisible, setIsVisible] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
-    // Handle animation delay for unmounting
     useEffect(() => {
-        if (open) {
-            setIsVisible(true);
-            document.body.style.overflow = "hidden"; // Lock scroll
+        if (role === "ADMIN") {
+            setIsAdmin(true);
         } else {
-            const timer = setTimeout(() => setIsVisible(false), 300); // Wait for transition
-            document.body.style.overflow = ""; // Unlock scroll
-            return () => clearTimeout(timer);
+            setIsAdmin(false);
         }
-    }, [open]);
+    }, [role]);
 
-    if (!open && !isVisible) return null;
+    const MobileLink = ({ item, onClick }: { item: NavItem; onClick: () => void }) => {
+        const isActive = pathname === item.href;
+        return (
+            <Link
+                href={item.href}
+                onClick={onClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}
+            >
+                <span className="material-symbols-outlined text-[1.125rem]">{item.icon}</span>
+                <span className="text-sm font-medium">{item.label}</span>
+            </Link>
+        );
+    };
 
     return (
         <div className="relative z-50 lg:hidden" aria-hidden={!open}>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
+                className={`fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
                 onClick={onClose}
             />
 
@@ -105,12 +96,34 @@ export default function MobileMenu({ open, onClose, role, userName, avatarUrl }:
                             </div>
                         </div>
 
-                        {(isAdmin || role === "MODERATOR") && (
+                        {(isAdmin || role === "MODERATOR" || (userRole?.allowedPaths && userRole.allowedPaths.length > 0)) && (
                             <div className="flex flex-col gap-2">
                                 <h3 className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Admin</h3>
                                 <div className="flex flex-col gap-1">
                                     {ADMIN_NAV
-                                        .filter(item => role === "ADMIN" || (role === "MODERATOR" && item.href === "/admin"))
+                                        .filter(item => {
+                                            if (isAdmin) return true;
+
+                                            // Check dynamic permissions
+                                            if (userRole?.allowedPaths && userRole.allowedPaths.length > 0) {
+                                                // Special case for main Admin link
+                                                if (item.href === "/admin") {
+                                                    return userRole.allowedPaths.some((pattern: string) => pattern.startsWith("/admin") || pattern === "*" || pattern === "/admin");
+                                                }
+
+                                                return userRole.allowedPaths.some((pattern: string) => {
+                                                    try {
+                                                        return new RegExp(`^${pattern}$`).test(item.href);
+                                                    } catch (e) { return false; }
+                                                });
+                                            }
+
+                                            // Fallback for Moderators
+                                            if (role === "MODERATOR") {
+                                                return ["/admin", "/admin/events", "/admin/posts", "/admin/photos"].includes(item.href);
+                                            }
+                                            return false;
+                                        })
                                         .map((item) => (
                                             <MobileLink key={item.href} item={item} onClick={onClose} />
                                         ))}
@@ -121,10 +134,6 @@ export default function MobileMenu({ open, onClose, role, userName, avatarUrl }:
 
                     {/* Footer / User Info */}
                     <div className="p-2 border-t border-gray-100 mt-auto">
-                        {/* User Profile - Optional to keep or remove, Sidebar doesn't show profile here, but MobileMenu did. 
-                            Sidebar has Logout button at bottom. Layout usually: Nav takes space, Logout at bottom.
-                            I will keep layout similar to before but with p-2 padding. 
-                        */}
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-3 px-3 py-2">
                                 <div className="h-8 w-8 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-bold shadow-sm">
@@ -137,7 +146,7 @@ export default function MobileMenu({ open, onClose, role, userName, avatarUrl }:
                             </div>
 
                             <button
-                                onClick={() => signOut({ redirectUrl: '/sign-in' })}
+                                onClick={() => signOut(() => router.push('/sign-in'))}
                                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-gray-600 hover:text-red-700 transition-colors"
                             >
                                 <span className="material-symbols-outlined text-[1.125rem] scale-x-[-1]">logout</span>

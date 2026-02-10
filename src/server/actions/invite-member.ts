@@ -5,11 +5,12 @@ import { db } from "@/server/db";
 import { clerkClient } from "@clerk/nextjs/server";
 import { Role } from "@prisma/client";
 import { ensureMember } from "@/server/auth/ensureMember";
+
 const InviteMemberSchema = z.object({
     firstName: z.string().min(1, "Fornavn er påkrevd"),
     lastName: z.string().min(1, "Etternavn er påkrevd"),
     email: z.string().email("Ugyldig e-postadresse"),
-    role: z.nativeEnum(Role),
+    roleId: z.string().min(1, "Rolle er påkrevd"),
     membershipType: z.string().min(1, "Medlemskapstype er påkrevd"),
 });
 
@@ -23,14 +24,15 @@ export type InviteMemberState = {
 
 export async function inviteMember(prevState: InviteMemberState, formData: FormData): Promise<InviteMemberState> {
     const member = await ensureMember();
+    // Use checkAccess or just check admin role here? 
+    // Ideally checkAccess(member.userRole, '/admin/users/invite') but for now let's stick to legacy or simple check.
     if (member.role !== "ADMIN") return { error: "Du har ikke tilgang til å invitere nye medlemmer." };
 
     const validatedFields = InviteMemberSchema.safeParse({
         firstName: formData.get("firstName"),
         lastName: formData.get("lastName"),
         email: formData.get("email"),
-        password: formData.get("password"),
-        role: formData.get("role"),
+        roleId: formData.get("roleId"),
         membershipType: formData.get("membershipType"),
     });
 
@@ -41,7 +43,7 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
         };
     }
 
-    const { firstName, lastName, email, role, membershipType } = validatedFields.data;
+    const { firstName, lastName, email, roleId, membershipType } = validatedFields.data;
 
     // 1. Check if user already exists in DB
     const existingMember = await db.member.findUnique({
@@ -52,6 +54,14 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
         return { error: "En bruker med denne e-posten finnes allerede i systemet." };
     }
 
+    // Fetch the Role to map to legacy enum
+    const userRole = await db.userRole.findUnique({ where: { id: roleId } });
+    if (!userRole) return { error: "Ugyldig rolle valgt." };
+
+    let legacyRole: Role = Role.MEMBER;
+    if (userRole.name === "Admin") legacyRole = Role.ADMIN;
+    if (userRole.name === "Moderator") legacyRole = Role.MODERATOR;
+
     try {
         const client = await clerkClient();
 
@@ -61,10 +71,12 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
             await client.invitations.createInvitation({
                 emailAddress: email,
                 publicMetadata: {
-                    role,
+                    role: legacyRole, // Clerk metadata still uses legacy role as string? Or update to use roleId? 
+                    // Let's keep legacy role for now to not break other Clerk integrations.
+                    roleId: userRole.id,
                     source: "admin_invite"
                 },
-                ignoreExisting: true, // Don't fail if already invited? Or maybe Invites are idempotent
+                ignoreExisting: true,
             });
         } catch (clerkError: any) {
             const msg = clerkError?.errors?.[0]?.message || clerkError?.message || "Feil med Clerk invitasjon";
@@ -78,20 +90,18 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
         try {
             await db.member.create({
                 data: {
-                    clerkId: null, // Will be linked upon first login/signup
+                    clerkId: null,
                     email: email,
                     firstName,
                     lastName,
-                    role,
+                    role: legacyRole,
+                    userRoleId: userRole.id, // Link Dynamic Role
                     membershipType,
                     status: "PENDING"
                 },
             });
         } catch (prismaError) {
             console.error("Prisma creation failed:", prismaError);
-            // Note: We can't easily "revoke" the invitation if email is already sent, 
-            // but we should error out so admin knows DB is out of sync.
-            // Ideally we'd wrap in transaction if possible, but Clerk is external.
             throw new Error("Kunne ikke lagre bruker i databasen.");
         }
 

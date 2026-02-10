@@ -2,6 +2,7 @@
 
 import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
+import { checkAccess } from "@/server/auth/checkAccess";
 import { UTApi } from "uploadthing/server";
 // Initialize UTApi lazily to avoid build-time env checks
 const getUtapi = () => new UTApi();
@@ -35,10 +36,16 @@ export async function getRecentEvents(): Promise<EventWithCount[]> {
 
     const member = await db.member.findUnique({
         where: { clerkId: userId },
-        select: { role: true },
+        select: { role: true, userRole: true },
     });
 
-    if (member?.role !== "ADMIN") throw new Error("Unauthorized");
+    if (member?.role === "ADMIN" || member?.role === "MODERATOR") {
+        // Allow legacy roles
+    } else if (member?.userRole && checkAccess(member.userRole, "/admin/photos")) {
+        // Allow dynamic roles with access to /admin/photos
+    } else {
+        throw new Error("Unauthorized");
+    }
 
     const events = await db.event.findMany({
         orderBy: { startAt: "desc" },
@@ -65,10 +72,16 @@ export async function getRecentPhotos(eventId?: string): Promise<PhotoWithEvent[
 
     const member = await db.member.findUnique({
         where: { clerkId: userId },
-        select: { role: true },
+        select: { role: true, userRole: true },
     });
 
-    if (member?.role !== "ADMIN") throw new Error("Unauthorized");
+    if (member?.role === "ADMIN" || member?.role === "MODERATOR") {
+        // Allow legacy roles
+    } else if (member?.userRole && checkAccess(member.userRole, "/admin/photos")) {
+        // Allow dynamic roles with access to /admin/photos
+    } else {
+        throw new Error("Unauthorized");
+    }
 
     const whereClause = eventId ? { eventId } : {};
 
@@ -102,10 +115,16 @@ export async function deletePhotos(photoIds: string[]) {
 
     const member = await db.member.findUnique({
         where: { clerkId: userId },
-        select: { role: true },
+        select: { role: true, userRole: true },
     });
 
-    if (member?.role !== "ADMIN") throw new Error("Unauthorized");
+    if (member?.role === "ADMIN" || member?.role === "MODERATOR") {
+        // Allow legacy roles
+    } else if (member?.userRole && checkAccess(member.userRole, "/admin/photos")) {
+        // Allow dynamic roles with access to /admin/photos
+    } else {
+        throw new Error("Unauthorized");
+    }
 
     // Fetch photos to get file keys
     const photos = await db.photo.findMany({
@@ -139,10 +158,16 @@ export async function getStorageStats() {
 
     const member = await db.member.findUnique({
         where: { clerkId: userId },
-        select: { role: true },
+        select: { role: true, userRole: true },
     });
 
-    if (member?.role !== "ADMIN") throw new Error("Unauthorized");
+    if (member?.role === "ADMIN" || member?.role === "MODERATOR") {
+        // Allow legacy roles
+    } else if (member?.userRole && checkAccess(member.userRole, "/admin/photos")) {
+        // Allow dynamic roles with access to /admin/photos
+    } else {
+        throw new Error("Unauthorized");
+    }
 
     try {
         const usage = await getUtapi().getUsageInfo();

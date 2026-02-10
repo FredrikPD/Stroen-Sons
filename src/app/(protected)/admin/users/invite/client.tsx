@@ -3,21 +3,26 @@
 import { useActionState, useState } from "react";
 import { inviteMember } from "@/server/actions/invite-member";
 
-export default function InviteMemberForm() {
+export default function InviteMemberForm({ availableRoles }: { availableRoles: { id: string, name: string }[] }) {
     const [state, formAction, isPending] = useActionState(inviteMember, {});
 
     // Local state for preview
     const [preview, setPreview] = useState({
         firstName: "",
         lastName: "",
-        role: "MEMBER",
+        roleName: availableRoles.find(r => r.name === "Member")?.name || availableRoles[0]?.name || "Medlem",
         type: "STANDARD",
         email: ""
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setPreview(prev => ({ ...prev, [name]: value }));
+        if (name === "roleId") {
+            const roleName = availableRoles.find(r => r.id === value)?.name || "";
+            setPreview(prev => ({ ...prev, roleName }));
+        } else {
+            setPreview(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     return (
@@ -79,14 +84,15 @@ export default function InviteMemberForm() {
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Rolle</label>
                                 <div className="relative">
                                     <select
-                                        name="role"
+                                        name="roleId"
                                         className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium appearance-none"
                                         onChange={handleChange}
-                                        defaultValue="MEMBER"
+                                        defaultValue={availableRoles.find(r => r.name === "Member")?.id || ""}
                                     >
-                                        <option value="MEMBER">Medlem</option>
-                                        <option value="MODERATOR">Moderator</option>
-                                        <option value="ADMIN">Administrator</option>
+                                        <option value="" disabled>Velg rolle...</option>
+                                        {availableRoles.map(role => (
+                                            <option key={role.id} value={role.id}>{role.name}</option>
+                                        ))}
                                     </select>
                                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-lg">expand_more</span>
                                 </div>
@@ -191,9 +197,9 @@ export default function InviteMemberForm() {
                                         <div>
                                             <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
                                             <div className="flex items-center gap-1.5 mt-1">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${preview.role === 'ADMIN' ? 'bg-indigo-400' : preview.role === 'MODERATOR' ? 'bg-fuchsia-400' : 'bg-emerald-400'} animate-pulse`} />
+                                                <div className={`w-1.5 h-1.5 rounded-full ${preview.roleName === 'Admin' ? 'bg-indigo-400' : preview.roleName === 'Moderator' ? 'bg-fuchsia-400' : 'bg-emerald-400'} animate-pulse`} />
                                                 <span className="text-xs font-semibold tracking-wide">
-                                                    {preview.role === 'ADMIN' ? 'Administrator' : preview.role === 'MODERATOR' ? 'Moderator' : 'Medlem'}
+                                                    {preview.roleName}
                                                 </span>
                                             </div>
                                         </div>

@@ -33,7 +33,7 @@ export default async function PostsPage() {
             </div>
 
             {/* Sidebar Column */}
-            <div>
+            <div className="order-first lg:order-none">
                 {/* Spacer to align with posts (below header/tabs) */}
                 <div className="hidden lg:block h-[126px]"></div>
 

@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Role } from "@prisma/client";
+import { assignRole } from "@/server/actions/roles";
+import { useModal } from "@/components/providers/ModalContext";
+import { useRouter } from "next/navigation";
 
 type Member = {
     id: string;
@@ -10,9 +13,10 @@ type Member = {
     lastName: string | null;
     email: string;
     role: Role;
+    userRole: { id: string; name: string } | null;
     membershipType: string;
-    status: string; // "Aktiv", "Inaktiv", etc. - Derived or approximated
-    lastActive: string; // Placeholder string like "2 minutter siden"
+    status: string;
+    lastActive: string;
     avatarInitial: string;
 };
 
@@ -30,7 +34,7 @@ const QUICK_ACTIONS = [
         title: "Endre Medlemsroller",
         description: "Oppdater tilganger",
         icon: "admin_panel_settings",
-        href: "/admin/users/roles",
+        href: "/admin/system/user-roles",
         colorClass: "text-purple-500 bg-purple-500/10 group-hover:bg-purple-500 group-hover:text-white",
         hoverBorder: "hover:border-purple-500/50"
     },
@@ -44,9 +48,12 @@ const QUICK_ACTIONS = [
     }
 ];
 
-export default function UserManagementClient({ members }: { members: Member[] }) {
+export default function UserManagementClient({ members, availableRoles }: { members: Member[], availableRoles: { id: string, name: string }[] }) {
+    const { openAlert, openConfirm } = useModal();
+    const router = useRouter();
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
     const pageSize = 10;
 
     const filteredMembers = useMemo(() => {
@@ -55,6 +62,7 @@ export default function UserManagementClient({ members }: { members: Member[] })
             (m.firstName?.toLowerCase() || "").includes(lower) ||
             (m.lastName?.toLowerCase() || "").includes(lower) ||
             m.email.toLowerCase().includes(lower) ||
+            (m.userRole?.name.toLowerCase() || "").includes(lower) ||
             m.role.toLowerCase().includes(lower)
         );
     }, [members, search]);
@@ -66,6 +74,31 @@ export default function UserManagementClient({ members }: { members: Member[] })
     if (search && currentPage !== 1 && filteredMembers.length < (currentPage - 1) * pageSize) {
         setCurrentPage(1);
     }
+
+    const handleRoleChange = async (memberName: string, memberId: string, newRoleId: string) => {
+        // Find role name for confirmation
+        const roleName = availableRoles.find(r => r.id === newRoleId)?.name || "Standard Medlem";
+
+        const confirmed = await openConfirm({
+            title: "Endre Rolle",
+            message: `Vil du endre rollen til ${memberName} til "${roleName}"?`,
+            type: "info",
+            confirmText: "Endre"
+        });
+
+        if (!confirmed) return;
+
+        setUpdatingRoleId(memberId);
+        const res = await assignRole(memberId, newRoleId);
+        setUpdatingRoleId(null);
+
+        if (res.success) {
+            await openAlert({ title: "Oppdatert", message: "Rollen ble endret.", type: "success" });
+            router.refresh();
+        } else {
+            await openAlert({ title: "Feil", message: res.error || "Kunne ikke endre rolle.", type: "error" });
+        }
+    };
 
     return (
         <div className="space-y-8">
@@ -98,6 +131,14 @@ export default function UserManagementClient({ members }: { members: Member[] })
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold text-gray-900">Nylig Aktive Brukere</h2>
+                    {/* Search Input Could Go Here */}
+                    <input
+                        type="text"
+                        placeholder="Søk..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -110,7 +151,6 @@ export default function UserManagementClient({ members }: { members: Member[] })
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                                     <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Sist Aktiv</th>
-
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -129,17 +169,40 @@ export default function UserManagementClient({ members }: { members: Member[] })
                                             </div>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold gap-1.5 ${member.role === 'ADMIN' ? 'bg-purple-50 text-purple-700' :
-                                                member.membershipType === 'STUDENT' ? 'bg-orange-50 text-orange-700' :
-                                                    'bg-blue-50 text-blue-700'
-                                                }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${member.role === 'ADMIN' ? 'bg-purple-500' :
-                                                    member.membershipType === 'STUDENT' ? 'bg-orange-500' :
-                                                        'bg-blue-500'
-                                                    }`}></span>
-                                                {member.role === 'ADMIN' ? 'Administrator' :
-                                                    member.membershipType === 'STUDENT' ? 'Student' : 'Medlem'}
-                                            </span>
+                                            {/* Role Dropdown */}
+                                            <div className="relative">
+                                                <select
+                                                    disabled={updatingRoleId === member.id}
+                                                    value={member.userRole?.id || ""}
+                                                    onChange={(e) => handleRoleChange(
+                                                        member.firstName || member.email,
+                                                        member.id,
+                                                        e.target.value
+                                                    )}
+                                                    className={`
+                                                        appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors
+                                                        ${member.userRole?.name === 'Admin' ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
+                                                            member.userRole?.name === 'Moderator' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' :
+                                                                'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                                                    `}
+                                                >
+                                                    {/* If user has no role, we can show a placeholder or map to "Member" role if exists */}
+                                                    {!member.userRole && <option value="">Velg rolle...</option>}
+                                                    {availableRoles.map(role => (
+                                                        <option key={role.id} value={role.id} className="bg-white text-gray-900 font-normal">
+                                                            {role.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                                                </div>
+                                                {updatingRoleId === member.id && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+                                                        <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="py-4 px-6">
                                             <span className="text-sm font-medium text-gray-900">
@@ -151,17 +214,16 @@ export default function UserManagementClient({ members }: { members: Member[] })
                                             </span>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${member.status === 'Aktiv' ? 'bg-green-50 text-green-700' :
-                                                member.status === 'Ventende' ? 'bg-amber-50 text-amber-700' :
+                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${member.status === 'ACTIVE' ? 'bg-green-50 text-green-700' :
+                                                member.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
                                                     'bg-gray-50 text-gray-700'
                                                 }`}>
-                                                {member.status}
+                                                {member.status === 'ACTIVE' ? 'Aktiv' : member.status === 'PENDING' ? 'Ventende' : member.status}
                                             </span>
                                         </td>
                                         <td className="py-4 px-6 text-sm text-gray-500">
                                             {member.lastActive}
                                         </td>
-
                                     </tr>
                                 ))}
                                 {paginatedMembers.length === 0 && (

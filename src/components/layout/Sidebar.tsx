@@ -24,7 +24,7 @@ function SidebarLink({ item }: { item: NavItem }) {
   );
 }
 
-export default function Sidebar({ role }: { role?: string }) {
+export default function Sidebar({ role, userRole }: { role?: string, userRole?: any }) {
   const isAdmin = role === "ADMIN";
   const { signOut } = useClerk();
   const router = useRouter();
@@ -66,12 +66,35 @@ export default function Sidebar({ role }: { role?: string }) {
           </nav>
         </div>
 
-        {(isAdmin || role === "MODERATOR") && (
+        {(isAdmin || role === "MODERATOR" || (userRole?.allowedPaths && userRole.allowedPaths.length > 0)) && (
           <div className="flex flex-col gap-2">
             <h3 className="px-3 text-[10px] font-bold text-white/60 uppercase tracking-widest">Admin</h3>
             <nav className="flex flex-col gap-1">
               {ADMIN_NAV
-                .filter(item => role === "ADMIN" || (role === "MODERATOR" && item.href === "/admin"))
+                .filter(item => {
+                  if (isAdmin) return true;
+
+                  // Check dynamic permissions
+                  if (userRole?.allowedPaths && userRole.allowedPaths.length > 0) {
+                    // Special case for the main Admin Dashboard link
+                    if (item.href === "/admin") {
+                      // Show if user has access to ANY admin path (starts with /admin)
+                      return userRole.allowedPaths.some((pattern: string) => pattern.startsWith("/admin") || pattern === "*" || pattern === "/admin");
+                    }
+
+                    return userRole.allowedPaths.some((pattern: string) => {
+                      try {
+                        return new RegExp(`^${pattern}$`).test(item.href);
+                      } catch (e) { return false; }
+                    });
+                  }
+
+                  // Fallback for Moderator (legacy)
+                  if (role === "MODERATOR") {
+                    return ["/admin", "/admin/events", "/admin/posts", "/admin/photos"].includes(item.href);
+                  }
+                  return false;
+                })
                 .map((item) => (
                   <SidebarLink key={item.href} item={item} />
                 ))}
@@ -85,7 +108,7 @@ export default function Sidebar({ role }: { role?: string }) {
       {/* Logout */}
       <div className="p-2 border-t border-white/5 mt-auto">
         <button
-          onClick={() => signOut({ redirectUrl: '/sign-in' })}
+          onClick={() => signOut(() => router.push('/sign-in'))}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-[1.125rem] scale-x-[-1]">logout</span>

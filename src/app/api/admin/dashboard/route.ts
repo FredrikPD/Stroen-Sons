@@ -13,7 +13,13 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (member.role !== "ADMIN" && member.role !== "MODERATOR") {
+    // Check for Admin, Moderator, OR any custom role with allowed paths
+    const hasAccess =
+        member.role === "ADMIN" ||
+        member.role === "MODERATOR" ||
+        (member.userRole?.allowedPaths && member.userRole.allowedPaths.length > 0);
+
+    if (!hasAccess) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -43,6 +49,7 @@ export async function GET() {
     return NextResponse.json({
         firstName: member.firstName,
         role: member.role,
+        userRole: member.userRole, // Send dynamic role data to client
         memberCount,
         unpaidCount,
         treasuryBalance: treasurySum._sum.amount?.toNumber() ?? 0,

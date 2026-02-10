@@ -6,7 +6,7 @@ export const metadata = {
     title: "Nytt Arrangement",
 };
 
-export default async function CreateEventPage() {
+export default async function NewEventPage() {
     await ensureRole([Role.ADMIN, Role.MODERATOR]);
 
     return <CreateEventClientPage />;
