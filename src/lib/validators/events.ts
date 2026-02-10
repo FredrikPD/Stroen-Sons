@@ -3,6 +3,7 @@ import { z } from "zod";
 export const eventSchema = z.object({
     title: z.string().min(1, "Tittel er påkrevd"),
     description: z.string().optional(),
+    category: z.string().optional(),
     startAt: z.coerce.date(),
     endAt: z.preprocess((arg) => (arg === "" || arg === undefined ? undefined : arg), z.coerce.date().optional()),
     registrationDeadline: z.preprocess((arg) => (arg === "" || arg === undefined ? undefined : arg), z.coerce.date().optional()),

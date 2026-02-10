@@ -5,9 +5,10 @@ import EventCard, { EventWithDetails } from "./EventCard";
 
 type EventsViewProps = {
     initialEvents: EventWithDetails[];
+    categoryColorMap?: Record<string, string>;
 };
 
-export default function EventsView({ initialEvents }: EventsViewProps) {
+export default function EventsView({ initialEvents, categoryColorMap = {} }: EventsViewProps) {
     const [search, setSearch] = useState("");
     const [yearFilter, setYearFilter] = useState<string>("ALL");
 
@@ -75,7 +76,7 @@ export default function EventsView({ initialEvents }: EventsViewProps) {
                 {upcomingEvents.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {upcomingEvents.map(event => (
-                            <EventCard key={event.id} event={event} />
+                            <EventCard key={event.id} event={event} color={event.category ? categoryColorMap[event.category] : undefined} />
                         ))}
                     </div>
                 ) : (
@@ -129,7 +130,7 @@ export default function EventsView({ initialEvents }: EventsViewProps) {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {pastEventsByYear[year].map(event => (
-                                        <EventCard key={event.id} event={event} />
+                                        <EventCard key={event.id} event={event} color={event.category ? categoryColorMap[event.category] : undefined} />
                                     ))}
                                 </div>
                             </div>

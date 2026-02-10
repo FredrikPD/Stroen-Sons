@@ -53,10 +53,15 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
         return await updateEvent(id, data);
     };
 
+    const categories = await db.eventCategory.findMany({
+        orderBy: { name: 'asc' }
+    });
+
     // Prepare initial data
     const initialData: Partial<EventInput> = {
         title: event.title,
         description: event.description || "",
+        category: event.category || "",
         startAt: event.startAt,
         registrationDeadline: event.registrationDeadline || undefined,
         endAt: event.endAt || undefined,
@@ -91,6 +96,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
                 submitButtonText="Lagre Endringer"
                 isEditMode
                 redirectOnSuccess="/admin/events"
+                categories={categories}
             />
         </div>
     );

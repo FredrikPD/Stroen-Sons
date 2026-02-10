@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { getCategoryColorClasses } from "@/lib/category-colors";
 
 type EventAttendee = {
     firstName: string | null;
@@ -21,10 +22,11 @@ export type EventWithDetails = {
     _count: {
         attendees: number;
     };
+    category: string | null;
     attendees: EventAttendee[];
 };
 
-export default function EventCard({ event }: { event: EventWithDetails }) {
+export default function EventCard({ event, color = "blue" }: { event: EventWithDetails; color?: string }) {
     const startDate = new Date(event.startAt);
     const month = startDate.toLocaleDateString("no-NO", { month: "short" }).toUpperCase().replace(".", "");
     const day = startDate.getDate();
@@ -56,12 +58,19 @@ export default function EventCard({ event }: { event: EventWithDetails }) {
                         <span className="text-lg font-bold text-gray-900 leading-none">{day}</span>
                     </div>
 
-                    {/* Status Badge */}
-                    {isUpcoming && (
-                        <div className="absolute top-3 right-3 bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide backdrop-blur-sm">
-                            Påmelding åpen
-                        </div>
-                    )}
+                    {/* Status & Category Badges */}
+                    <div className="absolute top-3 right-3 flex flex-row-reverse items-center gap-2">
+                        {isUpcoming && (
+                            <div className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide backdrop-blur-sm">
+                                Påmelding åpen
+                            </div>
+                        )}
+                        {event.category && (
+                            <div className={`px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider border backdrop-blur-md ${getCategoryColorClasses(color).bg} ${getCategoryColorClasses(color).text} ${getCategoryColorClasses(color).border}`}>
+                                {event.category}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Content Section */}

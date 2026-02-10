@@ -8,6 +8,8 @@ import { redirect } from "next/navigation";
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
 import { EventCountdown } from "@/components/dashboard/EventCountdown";
+import { getCategoryColorClasses } from "@/lib/category-colors";
+
 
 function currentPeriod() {
   const d = new Date();
@@ -102,10 +104,20 @@ export default async function DashboardPage() {
     startAt: new Date(cachedNextEvent.startAt)
   } : null;
 
+  let nextEventColor = "blue";
+  if (nextEvent?.category) {
+    const cat = await prisma.eventCategory.findFirst({
+      where: { name: nextEvent.category },
+      select: { color: true }
+    });
+    if (cat) nextEventColor = cat.color;
+  }
+
   const posts = cachedPosts.map(post => ({
     ...post,
     createdAt: new Date(post.createdAt)
   }));
+
 
   const memories = cachedMemories.map(event => ({
     ...event,
@@ -173,9 +185,16 @@ export default async function DashboardPage() {
               {/* Content */}
               <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
                 <div className="flex justify-between items-start">
-                  <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                    Neste Samling
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                      Neste Samling
+                    </span>
+                    {nextEvent.category && (
+                      <span className={`backdrop-blur-md border text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
+                        {nextEvent.category}
+                      </span>
+                    )}
+                  </div>
 
                   {/* Countdown Widget */}
                   <EventCountdown targetDate={nextEvent.startAt} />

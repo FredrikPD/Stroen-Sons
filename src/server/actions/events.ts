@@ -45,7 +45,8 @@ export async function createEvent(input: CreateEventInput) {
             totalCost,
             clubSubsidy,
             program,
-            isTba
+            isTba,
+            category
         } = validData.data;
 
         const event = await db.event.create({
@@ -62,6 +63,7 @@ export async function createEvent(input: CreateEventInput) {
                 totalCost: totalCost || null,
                 clubSubsidy: clubSubsidy || null,
                 isTba: isTba || false,
+                category: category || null,
                 createdById: member.id,
                 program: program ? {
                     createMany: {
@@ -152,7 +154,8 @@ export async function updateEvent(id: string, input: EventInput) {
             totalCost,
             clubSubsidy,
             program,
-            isTba
+            isTba,
+            category
         } = validData.data;
 
         await db.event.update({
@@ -170,6 +173,7 @@ export async function updateEvent(id: string, input: EventInput) {
                 totalCost: totalCost || null,
                 clubSubsidy: clubSubsidy || null,
                 isTba: isTba || false,
+                category: category || null,
                 program: {
                     deleteMany: {},
                     createMany: program ? {

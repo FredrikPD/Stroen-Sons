@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/Avatar";
+import { getCategoryColorClasses } from "@/lib/category-colors";
 
 // Types
 type Attendee = {
@@ -44,6 +45,7 @@ type EventDetail = {
     totalCost?: number | null;
     clubSubsidy?: number | null;
     coverImage: string | null;
+    category: string | null;
     hasPassed: boolean;
     program?: PlanItem[];
 };
@@ -56,9 +58,10 @@ type EventDetailViewProps = {
     attendeeCount: number;
     photos: Photo[];
     totalPhotoCount: number;
+    categoryColor?: string;
 };
 
-export default function EventDetailView({ event, attendees, currentUserIsAttending, attendeeCount, photos, totalPhotoCount }: EventDetailViewProps) {
+export default function EventDetailView({ event, attendees, currentUserIsAttending, attendeeCount, photos, totalPhotoCount, categoryColor = "blue" }: EventDetailViewProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [showAttendees, setShowAttendees] = useState(false);
@@ -122,6 +125,13 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             ) : (
                                 <span className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
                                     Påmelding åpen
+                                </span>
+                            )}
+
+                            {/* Category Badge */}
+                            {event.category && (
+                                <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm border ${getCategoryColorClasses(categoryColor).bg} ${getCategoryColorClasses(categoryColor).text} ${getCategoryColorClasses(categoryColor).border}`}>
+                                    {event.category}
                                 </span>
                             )}
                         </div>

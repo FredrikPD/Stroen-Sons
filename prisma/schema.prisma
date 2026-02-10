@@ -50,6 +50,7 @@ model Event {
   id          String  @id @default(cuid())
   title       String
   description String?
+  category    String?
 
   program              PlanItem[] // Relations
   coverImage           String?
@@ -76,6 +77,14 @@ model Event {
   paymentRequests PaymentRequest[]
 
   @@index([startAt])
+}
+
+model EventCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String   @default("blue")
+  createdAt   DateTime @default(now())
 }
 
 model PlanItem {
@@ -167,6 +176,7 @@ model Category {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
+  color       String   @default("blue")
   createdAt   DateTime @default(now())
 }
 

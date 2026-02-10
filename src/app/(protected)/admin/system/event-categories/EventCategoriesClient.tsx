@@ -2,23 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CategoryWithCount, createCategory, updateCategory, deleteCategory, getCategories } from "@/server/actions/categories";
+import { EventCategoryWithCount, createEventCategory, updateEventCategory, deleteEventCategory, getEventCategories } from "@/server/actions/event-categories";
 import { useModal } from "@/components/providers/ModalContext";
 import { toast } from "sonner";
 import { CATEGORY_COLORS, getCategoryColorClasses } from "@/lib/category-colors";
 
 interface Props {
-    initialCategories: CategoryWithCount[];
+    initialCategories: EventCategoryWithCount[];
 }
 
-export function CategoriesClient({ initialCategories }: Props) {
-    const [categories, setCategories] = useState<CategoryWithCount[]>(initialCategories);
-    const { openConfirm, openAlert } = useModal(); // Assuming ModalContext provides these
+export function EventCategoriesClient({ initialCategories }: Props) {
+    const [categories, setCategories] = useState<EventCategoryWithCount[]>(initialCategories);
+    const { openConfirm, openAlert } = useModal();
     const router = useRouter();
 
-    // Local state for modal visibility (simple local modal for creating/editing)
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<CategoryWithCount | null>(null);
+    const [editingCategory, setEditingCategory] = useState<EventCategoryWithCount | null>(null);
     const [formData, setFormData] = useState({ name: "", description: "", color: "blue" });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +27,7 @@ export function CategoriesClient({ initialCategories }: Props) {
         setIsModalOpen(true);
     };
 
-    const handleOpenEdit = (category: CategoryWithCount) => {
+    const handleOpenEdit = (category: EventCategoryWithCount) => {
         setEditingCategory(category);
         setFormData({ name: category.name, description: category.description || "", color: category.color || "blue" });
         setIsModalOpen(true);
@@ -46,16 +45,15 @@ export function CategoriesClient({ initialCategories }: Props) {
         try {
             let res;
             if (editingCategory) {
-                res = await updateCategory(editingCategory.id, formData);
+                res = await updateEventCategory(editingCategory.id, formData);
             } else {
-                res = await createCategory(formData);
+                res = await createEventCategory(formData);
             }
 
             if (res.success) {
                 toast.success(editingCategory ? "Kategori oppdatert" : "Kategori opprettet");
                 handleCloseModal();
-                // Refresh categories list
-                const refreshed = await getCategories();
+                const refreshed = await getEventCategories();
                 if (refreshed.success && refreshed.data) setCategories(refreshed.data);
             } else {
                 toast.error(res.error || "Noe gikk galt");
@@ -67,7 +65,7 @@ export function CategoriesClient({ initialCategories }: Props) {
         }
     };
 
-    const handleDelete = async (category: CategoryWithCount) => {
+    const handleDelete = async (category: EventCategoryWithCount) => {
         const confirmed = await openConfirm({
             title: "Slett kategori",
             message: `Er du sikker på at du vil slette "${category.name}"?`,
@@ -78,10 +76,10 @@ export function CategoriesClient({ initialCategories }: Props) {
         if (!confirmed) return;
 
         try {
-            const res = await deleteCategory(category.id);
+            const res = await deleteEventCategory(category.id);
             if (res.success) {
                 toast.success("Kategori slettet");
-                const refreshed = await getCategories();
+                const refreshed = await getEventCategories();
                 if (refreshed.success && refreshed.data) setCategories(refreshed.data);
             } else {
                 await openAlert({
@@ -99,8 +97,8 @@ export function CategoriesClient({ initialCategories }: Props) {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Kategorier</h1>
-                    <p className="text-gray-500">Administrer kategorier for innlegg og innhold.</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Arrangementskategorier</h1>
+                    <p className="text-gray-500">Administrer kategorier for arrangementer og aktiviteter.</p>
                 </div>
                 <button
                     onClick={handleOpenCreate}
@@ -117,7 +115,7 @@ export function CategoriesClient({ initialCategories }: Props) {
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Navn</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Beskrivelse</th>
-                            <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Innlegg</th>
+                            <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Arrangementer</th>
                             <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Handlinger</th>
                         </tr>
                     </thead>
@@ -141,9 +139,9 @@ export function CategoriesClient({ initialCategories }: Props) {
                                         <div className="text-sm text-gray-500">{category.description || "-"}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${category._count.posts > 0 ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${category._count.events > 0 ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"
                                             }`}>
-                                            {category._count.posts}
+                                            {category._count.events}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -193,7 +191,7 @@ export function CategoriesClient({ initialCategories }: Props) {
                                     id="name"
                                     required
                                     className="block w-full rounded-lg border-gray-300 border bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    placeholder="F.eks. Nyheter"
+                                    placeholder="F.eks. Fest"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 />

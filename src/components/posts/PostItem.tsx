@@ -15,7 +15,7 @@ export type PostWithDetails = {
     id: string;
     title: string;
     content: string;
-    category: "EVENT" | "NYHET" | "REFERAT" | "SOSIALT";
+    category: string;
     isPinned: boolean;
     createdAt: string;
     author: {
@@ -37,22 +37,14 @@ export type PostWithDetails = {
     }[];
 };
 
-export default function PostItem({ post, isAdmin, onDelete }: { post: PostWithDetails, isAdmin: boolean, onDelete?: (id: string) => void }) {
+export default function PostItem({ post, isAdmin, onDelete, categoryColorMap = {} }: { post: PostWithDetails, isAdmin: boolean, onDelete?: (id: string) => void, categoryColorMap?: Record<string, string> }) {
     // Fallback for name
     const authorName = [post.author.firstName, post.author.lastName]
         .filter(Boolean)
         .join(" ") || post.author.email;
 
 
-    const getCategoryStyle = (category: string) => {
-        switch (category) {
-            case "EVENT": return "bg-red-50 text-red-600 border-red-100";
-            case "REFERAT": return "bg-amber-50 text-amber-700 border-amber-100";
-            case "SOSIALT": return "bg-emerald-50 text-emerald-700 border-emerald-100";
-            case "NYHET":
-            default: return "bg-blue-50 text-blue-600 border-blue-100";
-        }
-    };
+    const categoryStyle = categoryColorMap[post.category] || "bg-blue-50 text-blue-600 border-blue-100";
 
     const [isTruncated, setIsTruncated] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -77,7 +69,7 @@ export default function PostItem({ post, isAdmin, onDelete }: { post: PostWithDe
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-gray-900">{authorName}</span>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${categoryStyle}`}>
                                     {post.category}
                                 </span>
                                 <span className="text-[10px] text-gray-400">•</span>

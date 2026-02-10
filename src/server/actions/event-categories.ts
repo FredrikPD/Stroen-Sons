@@ -5,69 +5,66 @@ import { ensureMember } from "@/server/auth/ensureMember";
 import { Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-export type CategoryWithCount = {
+export type EventCategoryWithCount = {
     id: string;
     name: string;
     description: string | null;
     color: string;
     createdAt: Date;
     _count: {
-        posts: number;
+        events: number;
     }
 };
 
-export async function getCategories() {
+export async function getEventCategories() {
     try {
         const member = await ensureMember();
         if (member.role !== Role.ADMIN && member.role !== Role.MODERATOR) {
             throw new Error("Unauthorized");
         }
 
-        // Fetch categories
-        const categories = await db.category.findMany({
+        const categories = await db.eventCategory.findMany({
             orderBy: { name: 'asc' }
         });
 
-        const counts = await db.post.groupBy({
+        // Count events per category
+        const counts = await db.event.groupBy({
             by: ['category'],
-            _count: {
-                _all: true
-            }
+            _count: { _all: true }
         });
 
         const countMap = new Map<string, number>();
-        // Fix TS error with explicit cast
-        (counts as unknown as { category: string, _count: { _all: number } }[]).forEach(c => {
+        (counts as unknown as { category: string | null, _count: { _all: number } }[]).forEach(c => {
             if (c.category) countMap.set(c.category, c._count._all);
         });
 
-        const data: CategoryWithCount[] = categories.map(c => ({
+        const data: EventCategoryWithCount[] = categories.map(c => ({
             ...c,
             _count: {
-                posts: countMap.get(c.name) || 0
+                events: countMap.get(c.name) || 0
             }
         }));
 
         return { success: true, data };
     } catch (error) {
-        console.error("Failed to get categories:", error);
+        console.error("Failed to get event categories:", error);
         return { success: false, error: "Kunne ikke hente kategorier" };
     }
 }
 
-export async function createCategory(data: { name: string; description?: string; color?: string }) {
+export async function createEventCategory(data: { name: string; description?: string; color?: string }) {
     try {
         const member = await ensureMember();
         if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
 
         if (!data.name) return { success: false, error: "Navn er påkrevd" };
 
-        const existing = await db.category.findUnique({ where: { name: data.name } });
+        const existing = await db.eventCategory.findUnique({ where: { name: data.name } });
         if (existing) {
             return { success: false, error: "Kategorien finnes allerede" };
         }
 
-        await db.category.create({
+        await db.eventCategory.create({
             data: {
                 name: data.name,
                 description: data.description,
@@ -75,28 +72,24 @@ export async function createCategory(data: { name: string; description?: string;
             }
         });
 
-        revalidatePath("/admin/system/categories");
+        revalidatePath("/admin/system/event-categories");
         return { success: true };
     } catch (error) {
-        console.error("Failed to create category:", error);
+        console.error("Failed to create event category:", error);
         return { success: false, error: "Kunne ikke opprette kategori" };
     }
 }
 
-export async function updateCategory(id: string, data: { name: string; description?: string; color?: string }) {
+export async function updateEventCategory(id: string, data: { name: string; description?: string; color?: string }) {
     try {
         const member = await ensureMember();
         if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
 
-        const category = await db.category.findUnique({ where: { id } });
+        const category = await db.eventCategory.findUnique({ where: { id } });
         if (!category) return { success: false, error: "Fant ikke kategori" };
 
-        // If name changes, we should update all posts with that category?
-        // Yes, ensuring referential integrity manually since we use string.
-
         await db.$transaction(async (tx) => {
-            // Update category
-            await tx.category.update({
+            await tx.eventCategory.update({
                 where: { id },
                 data: {
                     name: data.name,
@@ -105,44 +98,42 @@ export async function updateCategory(id: string, data: { name: string; descripti
                 }
             });
 
-            // Update posts if name changed
+            // Update events if name changed
             if (data.name !== category.name) {
-                await tx.post.updateMany({
+                await tx.event.updateMany({
                     where: { category: category.name },
                     data: { category: data.name }
                 });
             }
         });
 
-        revalidatePath("/admin/system/categories");
+        revalidatePath("/admin/system/event-categories");
         return { success: true };
-
     } catch (error) {
-        console.error("Failed to update category:", error);
+        console.error("Failed to update event category:", error);
         return { success: false, error: "Kunne ikke oppdatere kategori" };
     }
 }
 
-export async function deleteCategory(id: string) {
+export async function deleteEventCategory(id: string) {
     try {
         const member = await ensureMember();
         if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
 
-        const category = await db.category.findUnique({ where: { id } });
+        const category = await db.eventCategory.findUnique({ where: { id } });
         if (!category) return { success: false, error: "Fant ikke kategori" };
 
-        // Check if used
-        const count = await db.post.count({ where: { category: category.name } });
+        const count = await db.event.count({ where: { category: category.name } });
         if (count > 0) {
-            return { success: false, error: `Kan ikke slette kategori som er i bruk av ${count} innlegg.` };
+            return { success: false, error: `Kan ikke slette kategori som er i bruk av ${count} arrangementer.` };
         }
 
-        await db.category.delete({ where: { id } });
+        await db.eventCategory.delete({ where: { id } });
 
-        revalidatePath("/admin/system/categories");
+        revalidatePath("/admin/system/event-categories");
         return { success: true };
     } catch (error) {
-        console.error("Failed to delete category:", error);
+        console.error("Failed to delete event category:", error);
         return { success: false, error: "Kunne ikke slette kategori" };
     }
 }

@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import PostItem, { PostWithDetails } from "./PostItem";
 import { getPosts } from "@/server/actions/posts";
+import { getCategoryStyleString } from "@/lib/category-colors";
 
 interface PostListProps {
     isAdmin: boolean;
-    categories?: { id: string; name: string }[];
+    categories?: { id: string; name: string; color: string }[];
 }
 
 export default function PostList({ isAdmin, categories = [] }: PostListProps) {
+    // Build a map of category name -> color style string
+    const categoryColorMap = useMemo(() => {
+        const map: Record<string, string> = {};
+        categories.forEach(cat => { map[cat.name] = getCategoryStyleString(cat.color); });
+        return map;
+    }, [categories]);
     const [posts, setPosts] = useState<PostWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -139,7 +146,7 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
                 {posts.map((post, index) => {
                     return (
                         <div key={post.id} ref={posts.length === index + 1 ? lastPostElementRef : undefined}>
-                            <PostItem post={post} isAdmin={isAdmin} onDelete={handleDeletePost} />
+                            <PostItem post={post} isAdmin={isAdmin} onDelete={handleDeletePost} categoryColorMap={categoryColorMap} />
                         </div>
                     );
                 })}

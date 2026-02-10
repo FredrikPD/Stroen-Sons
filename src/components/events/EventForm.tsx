@@ -18,6 +18,7 @@ interface EventFormProps {
     isEditMode?: boolean;
     onSuccess?: () => void;
     redirectOnSuccess?: string;
+    categories?: { id: string; name: string; color: string }[];
 }
 
 // Form input type where startAt is a string for the input field
@@ -34,9 +35,10 @@ type EventFormInput = Omit<EventInput, "startAt" | "endAt" | "registrationDeadli
     }[];
     isTba?: boolean;
     isSameDay?: boolean;
+    category?: string;
 };
 
-export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode = false, onSuccess, redirectOnSuccess }: EventFormProps) {
+export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode = false, onSuccess, redirectOnSuccess, categories = [] }: EventFormProps) {
     const { openAlert } = useModal();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +69,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
         defaultValues: {
             title: initialData?.title || "",
             description: initialData?.description || "",
+            category: initialData?.category || "",
             startAt: initialData?.startAt ? formatDateForInput(initialData.startAt) : "",
             endAt: initialData?.endAt ? formatDateForInput(initialData.endAt) : "",
             registrationDeadline: initialData?.registrationDeadline ? formatDateForInput(initialData.registrationDeadline) : "",
@@ -193,6 +196,21 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                     placeholder="Eks: Sommerfest 2025"
                                 />
                                 {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Kategori</label>
+                                <select
+                                    {...register("category")}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                                >
+                                    <option value="">Ingen kategori</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.name}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="flex-1 flex flex-col">
@@ -521,7 +539,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             {...register("startAt")}
                             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
                         />
-                        {errors.startAt && <p className="text-red-500 text-xs mt-1">{errors.startAt.message}</p>}
+                        {errors.startAt && <p className="text-red-500 text-xs mt-1">{errors.startAt?.message}</p>}
                     </div>
 
                     <div>
@@ -548,7 +566,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 : "border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] text-gray-900"
                                 }`}
                         />
-                        {errors.endAt && <p className="text-red-500 text-xs mt-1">{errors.endAt.message}</p>}
+                        {errors.endAt && <p className="text-red-500 text-xs mt-1">{errors.endAt?.message}</p>}
                     </div>
 
                     <div>
@@ -558,7 +576,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             {...register("registrationDeadline")}
                             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
                         />
-                        {errors.registrationDeadline && <p className="text-red-500 text-xs mt-1">{errors.registrationDeadline.message}</p>}
+                        {errors.registrationDeadline && <p className="text-red-500 text-xs mt-1">{errors.registrationDeadline?.message}</p>}
                     </div>
 
                     <div>
@@ -570,7 +588,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             placeholder="Ubegrenset hvis tomt"
                             min="1"
                         />
-                        {errors.maxAttendees && <p className="text-red-500 text-xs mt-1">{errors.maxAttendees.message}</p>}
+                        {errors.maxAttendees && <p className="text-red-500 text-xs mt-1">{errors.maxAttendees?.message}</p>}
                     </div>
 
                     {/* Location & Cost Row */}

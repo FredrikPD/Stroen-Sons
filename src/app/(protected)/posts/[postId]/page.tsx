@@ -5,6 +5,7 @@ import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 import { Avatar } from "@/components/Avatar";
 import ReactMarkdown from "react-markdown";
 import { ensureMember } from "@/server/auth/ensureMember";
+import { getCategoryStyleString } from "@/lib/category-colors";
 
 // Force dynamic rendering since we are fetching specific post
 export const dynamic = "force-dynamic";
@@ -50,16 +51,9 @@ export default async function PostDetailPage({ params }: PageProps) {
         year: "numeric",
     });
 
-    // Helper for category style
-    const getCategoryStyle = (category: string) => {
-        switch (category) {
-            case "EVENT": return "bg-red-50 text-red-600 border-red-100";
-            case "REFERAT": return "bg-amber-50 text-amber-700 border-amber-100";
-            case "SOSIALT": return "bg-emerald-50 text-emerald-700 border-emerald-100";
-            case "NYHET":
-            default: return "bg-blue-50 text-blue-600 border-blue-100";
-        }
-    };
+    // Look up category color from DB
+    const categoryRecord = await prisma.category.findUnique({ where: { name: post.category } });
+    const categoryStyle = getCategoryStyleString(categoryRecord?.color || "blue");
 
     const authorName = [post.author.firstName, post.author.lastName]
         .filter(Boolean)
@@ -95,7 +89,7 @@ export default async function PostDetailPage({ params }: PageProps) {
                                 </div>
                             </div>
                         </div>
-                        <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${getCategoryStyle(post.category)}`}>
+                        <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${categoryStyle}`}>
                             {post.category}
                         </span>
                     </div>

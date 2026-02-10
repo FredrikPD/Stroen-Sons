@@ -217,6 +217,19 @@ export default function AdminSystemClientPage() {
                         </div>
                     </Link>
 
+                    {/* Administrer arrangementskategorier */}
+                    <Link href="/admin/system/event-categories" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-xl">event_upcoming</span>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 mb-1">Arrangementer kategorier</h3>
+                            <p className="text-sm text-gray-500 leading-snug">
+                                Administrer kategorier for arrangementer.
+                            </p>
+                        </div>
+                    </Link>
+
                     {/* Bildeinnstillinger */}
                     <Link href="/admin/system/photos" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
                         <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">

@@ -25,7 +25,7 @@ export default async function AboutPage() {
                     <div className="w-16 h-1 bg-[#FBBF24] mb-6 rounded-full" />
                     <p className="max-w-xl text-gray-200 text-sm leading-relaxed">
                         Strøen Søns er en gutteklubb etablert i 2025 bestående av 18 barndomsvenner fra Snarøya og Strand (og én fra Jar).
-                        Klubben ble etablert av Trym, Georg, Fredrik og Jan August som dannet det første styret.
+                        Strøen Søns ble grunnlagt av Trym, Georg, Fredrik og Jan August, som også utgjorde det første styret.
                     </p>
                 </div>
             </div>

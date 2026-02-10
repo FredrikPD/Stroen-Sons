@@ -6,7 +6,7 @@ import { createEvent } from "@/server/actions/events";
 import { EventForm } from "@/components/events/EventForm";
 import { EventInput } from "@/lib/validators/events";
 
-export default function CreateEventClientPage() {
+export default function CreateEventClientPage({ categories = [] }: { categories?: any[] }) {
     const router = useRouter();
 
     const handleSubmit = async (data: EventInput) => {
@@ -27,6 +27,7 @@ export default function CreateEventClientPage() {
                 onSubmit={handleSubmit}
                 submitButtonText="Opprett Arrangement"
                 redirectOnSuccess="/admin/events"
+                categories={categories}
             />
         </div>
     );

@@ -73,6 +73,7 @@ export default async function EventDetailPage({ params }: Props) {
         clubSubsidy: event.clubSubsidy,
         isTba: event.isTba,
         coverImage: event.coverImage,
+        category: event.category,
         program: event.program.map((p: any) => ({
             ...p,
             date: p.date ? p.date.toISOString() : null,
@@ -81,16 +82,25 @@ export default async function EventDetailPage({ params }: Props) {
         photos: event.photos,
     };
 
+    let categoryColor = "blue";
+    if (event.category) {
+        const cat = await prisma.eventCategory.findFirst({
+            where: { name: event.category }
+        });
+        if (cat) categoryColor = cat.color;
+    }
+
     return (
         <>
             <PageTitleUpdater title={event.title} />
             <EventDetailView
-                event={serializedEvent}
+                event={serializedEvent as any}
                 attendees={event.attendees}
                 currentUserIsAttending={isAttending}
                 attendeeCount={event._count.attendees}
                 photos={event.photos}
                 totalPhotoCount={event._count.photos}
+                categoryColor={categoryColor}
             />
         </>
     );

@@ -45,6 +45,15 @@ export default async function EventsPage() {
 
     const events = await getEvents() as any;
 
+    const categories = await prisma.eventCategory.findMany({
+        select: { name: true, color: true }
+    });
+
+    const categoryColorMap = categories.reduce((acc, cat) => {
+        acc[cat.name] = cat.color;
+        return acc;
+    }, {} as Record<string, string>);
+
     const serializedEvents = events.map((event: any) => ({
         ...event,
         startAt: new Date(event.startAt).toISOString(),
@@ -54,7 +63,7 @@ export default async function EventsPage() {
 
     return (
         <div className="w-full bg-white min-h-full">
-            <EventsView initialEvents={serializedEvents as any} />
+            <EventsView initialEvents={serializedEvents as any} categoryColorMap={categoryColorMap} />
         </div>
     );
 }
