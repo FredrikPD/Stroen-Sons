@@ -55,7 +55,7 @@ export default async function AccountPage() {
             {/* Top Row: Profile & Role */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Card (Larger) */}
-                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-4">
+                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-4 flex items-center">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-80" />
 
                     <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-4">
@@ -72,7 +72,6 @@ export default async function AccountPage() {
 
                             <div className="flex gap-4 justify-center md:justify-start mb-2">
                                 <div className="flex items-center gap-2 text-xs text-gray-400">
-                                    <span className="material-symbols-outlined text-sm">calendar_month</span>
                                     Medlem siden {new Date(profile.createdAt).getFullYear()}
                                 </div>
                             </div>
@@ -82,23 +81,49 @@ export default async function AccountPage() {
                     </div>
                 </div>
 
-                {/* Role Card (Smaller) */}
-                <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 text-white rounded-2xl p-4 shadow-md relative overflow-hidden group flex flex-col justify-between min-h-[100px]">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                {/* Member Card */}
+                <div className="flex flex-col items-center justify-center relative">
+                    {/* The Card */}
+                    <div className="w-full h-full bg-gray-900 text-white rounded-2xl p-6 relative overflow-hidden shadow-2xl">
 
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div>
-                            <p className="text-zinc-400 text-xs uppercase tracking-wider font-bold mb-1">Din Rolle</p>
-                            <h3 className="text-2xl font-bold">{profile.userRole?.name || profile.role}</h3>
-                        </div>
-                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
-                            <span className="material-symbols-outlined text-2xl">verified_user</span>
-                        </div>
-                    </div>
+                        {/* Decorative Background Elements */}
+                        <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
+                        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
 
-                    <div className="relative z-10 mt-2 flex items-center gap-2 text-zinc-400 text-sm">
-                        <span className={`w-2 h-2 rounded-full ${isAccountActive ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
-                        {isAccountActive ? 'Kontoen er aktiv' : 'Kontoen er inaktiv'}
+                        {/* Card Content */}
+                        <div className="relative z-10 flex flex-col justify-between h-full">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Medlemskort</p>
+                                    <h3 className="text-lg font-bold mt-1 tracking-wide">STRØEN SØNS</h3>
+                                </div>
+                                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-base">verified</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 mt-4">
+                                <div className="flex justify-between items-end border-t border-white/10 pt-4">
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
+                                        <span className="text-sm font-semibold tracking-wide mt-1 block">
+                                            {profile.userRole?.name || profile.role}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Medlemstype</p>
+                                        <p className="text-sm font-semibold tracking-wide mt-1">{profile.membershipType || "Standard"}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Status</p>
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isAccountActive ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
+                                            <span className="text-sm font-semibold tracking-wide">{isAccountActive ? "Aktiv" : "Inaktiv"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
