@@ -59,15 +59,19 @@ export default function EventCard({ event, color = "blue" }: { event: EventWithD
                     </div>
 
                     {/* Status & Category Badges */}
-                    <div className="absolute top-3 right-3 flex flex-row-reverse items-center gap-2">
-                        {isUpcoming && (
-                            <div className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide backdrop-blur-sm">
-                                Påmelding åpen
-                            </div>
-                        )}
+                    <div className="absolute top-3 right-3 flex items-center gap-2">
                         {event.category && (
                             <div className={`px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider border backdrop-blur-md ${getCategoryColorClasses(color).bg} ${getCategoryColorClasses(color).text} ${getCategoryColorClasses(color).border}`}>
                                 {event.category}
+                            </div>
+                        )}
+                        {isUpcoming ? (
+                            <div className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide backdrop-blur-sm">
+                                Påmelding åpen
+                            </div>
+                        ) : (
+                            <div className="bg-emerald-500/90 text-white px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide backdrop-blur-md shadow-sm">
+                                ✓ Gjennomført
                             </div>
                         )}
                     </div>
