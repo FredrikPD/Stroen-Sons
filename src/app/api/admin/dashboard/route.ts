@@ -27,7 +27,7 @@ export async function GET() {
     const now = new Date();
     const period = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}`;
 
-    const [nextEvent, memberCount, treasurySum, paidCount] = await Promise.all([
+    const [nextEvent, memberCount, treasurySum, totalMembershipRequests, paidMembershipRequests] = await Promise.all([
         prisma.event.findFirst({
             where: { startAt: { gte: new Date() } },
             orderBy: { startAt: "asc" },
@@ -36,15 +36,20 @@ export async function GET() {
         prisma.transaction.aggregate({
             _sum: { amount: true },
         }),
-        prisma.payment.count({
+        prisma.paymentRequest.count({
+            where: { category: "MEMBERSHIP_FEE" }
+        }),
+        prisma.paymentRequest.count({
             where: {
-                period: period,
+                category: "MEMBERSHIP_FEE",
                 status: "PAID",
             }
         })
     ]);
 
-    const unpaidCount = Math.max(0, memberCount - paidCount);
+    // If no membership fee requests exist, return -1 to signal "No Invoices"
+    // Otherwise, return the number of unpaid (pending) membership fee requests
+    const unpaidCount = totalMembershipRequests === 0 ? -1 : (totalMembershipRequests - paidMembershipRequests);
 
     return NextResponse.json({
         firstName: member.firstName,

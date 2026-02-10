@@ -114,7 +114,27 @@ export default async function DashboardPage() {
   })).filter(e => e.displayImage); // Double check we have an image
 
   const firstName = member.firstName ?? member.email.split("@")[0];
-  const paymentStatus = payment?.status ?? "UNPAID";
+
+  // Determine payment status using PaymentRequest (invoices)
+  const membershipRequest = paymentRequestsRes.success && paymentRequestsRes.data
+    ? paymentRequestsRes.data.find(r => r.category === "MEMBERSHIP_FEE" && r.status === "PENDING")
+    : null;
+
+  let paymentStatus: "PAID" | "NO_INVOICE" | "UNPAID_ACTIVE" | "UNPAID_OVERDUE";
+  if (!membershipRequest) {
+    // No pending membership fee request — either none created or already paid
+    const paidRequest = paymentRequestsRes.success && paymentRequestsRes.data
+      ? paymentRequestsRes.data.find(r => r.category === "MEMBERSHIP_FEE" && r.status === "PAID")
+      : null;
+    paymentStatus = paidRequest ? "PAID" : "NO_INVOICE";
+  } else {
+    // Pending membership fee request exists — check deadline
+    if (membershipRequest.dueDate && new Date() > new Date(membershipRequest.dueDate)) {
+      paymentStatus = "UNPAID_OVERDUE";
+    } else {
+      paymentStatus = "UNPAID_ACTIVE";
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -258,7 +278,7 @@ export default async function DashboardPage() {
                     <span className="material-symbols-outlined text-lg">article</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between mb-0.5">
+                    <div className="flex items-baseline justify-between">
                       <h4 className="font-bold text-sm text-gray-900 truncate pr-4 group-hover:text-[#4F46E5] transition-colors">{post.title}</h4>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                         {post.createdAt.toLocaleDateString("nb-NO", { month: 'short', day: 'numeric' })}
@@ -279,26 +299,28 @@ export default async function DashboardPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Medlemsstatus</h4>
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${paymentStatus === "PAID"
-                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                : "bg-red-50 border-red-100 text-red-700"
+              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${paymentStatus === "UNPAID_OVERDUE"
+                ? "bg-red-50 border-red-100 text-red-700"
+                : "bg-emerald-50 border-emerald-100 text-emerald-700"
                 }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${paymentStatus === "PAID" ? "bg-emerald-500" : "bg-red-500"}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${paymentStatus === "UNPAID_OVERDUE" ? "bg-red-500" : "bg-emerald-500"
+                  }`} />
                 <span className="text-[9px] font-bold uppercase tracking-wide">
-                  {paymentStatus === "PAID" ? "Betalt" : "Ubetalt"}
+                  {paymentStatus === "PAID" ? "Aktivt" : paymentStatus === "NO_INVOICE" ? "Aktivt" : paymentStatus === "UNPAID_ACTIVE" ? "Inaktivt" : "Inaktivt"}
                 </span>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-lg material-symbols-outlined text-lg">
-                  payments
+                <div className={`p-2.5 rounded-lg material-symbols-outlined text-lg ${paymentStatus === "UNPAID_OVERDUE" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
+                  }`}>
+                  {paymentStatus === "PAID" ? "check_circle" : paymentStatus === "NO_INVOICE" ? "receipt_long" : paymentStatus === "UNPAID_ACTIVE" ? "schedule" : "warning"}
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-medium mb-0.5">Kontigent {period}</p>
+                  <p className="text-xs text-gray-500 font-medium">Kontigent {period}</p>
                   <p className="text-gray-900 font-bold text-lg">
-                    {paymentStatus === "PAID" ? "Betalt" : "Ikke betalt"}
+                    {paymentStatus === "PAID" ? "Betalt" : paymentStatus === "NO_INVOICE" ? "Ingen faktura" : paymentStatus === "UNPAID_ACTIVE" ? "Ikke betalt" : "Forfalt"}
                   </p>
                 </div>
               </div>
@@ -308,7 +330,7 @@ export default async function DashboardPage() {
                   verified
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-medium mb-0.5">Medlem siden</p>
+                  <p className="text-xs text-gray-500 font-medium">Medlem siden</p>
                   <p className="text-gray-900 font-bold text-lg">
                     {member.createdAt.toLocaleDateString("nb-NO", { month: 'short', year: 'numeric' })}
                   </p>

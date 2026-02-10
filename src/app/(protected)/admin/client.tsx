@@ -107,19 +107,53 @@ export default function AdminDashboardClientPage() {
                 </div>
 
                 {/* Unpaid Fees Card */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="material-symbols-outlined text-red-500 text-lg">warning</span>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ubetalt ({new Date().toLocaleString('nb-NO', { month: 'long' })})</span>
+                {data?.unpaidCount === -1 ? (
+                    // Case: No Invoices Generated
+                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-500/5 to-transparent pointer-events-none" />
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="material-symbols-outlined text-gray-400 text-lg">receipt_long</span>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Faktura ({new Date().toLocaleString('nb-NO', { month: 'long' })})</span>
+                        </div>
+                        <div>
+                            <p className="text-xl font-bold text-gray-900">Ingen faktura</p>
+                            <p className="text-xs text-gray-500 mt-1">Ikke generert enda</p>
+                        </div>
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
+                            <span className="material-symbols-outlined text-7xl text-gray-400">receipt_long</span>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-3xl font-bold text-gray-900">{data?.unpaidCount ?? 0} stk</p>
+                ) : (data?.unpaidCount ?? 0) === 0 ? (
+                    // Case: All Paid
+                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="material-symbols-outlined text-emerald-500 text-lg">check_circle</span>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ubetalt ({new Date().toLocaleString('nb-NO', { month: 'long' })})</span>
+                        </div>
+                        <div>
+                            <p className="text-3xl font-bold text-gray-900">Alle betalt</p>
+                        </div>
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
+                            <span className="material-symbols-outlined text-7xl text-emerald-500">check_circle</span>
+                        </div>
                     </div>
-                    <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
-                        <span className="material-symbols-outlined text-7xl text-red-500">money_off</span>
+                ) : (
+                    // Case: Unpaid Invoices exist
+                    <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="material-symbols-outlined text-red-500 text-lg">warning</span>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ubetalt ({new Date().toLocaleString('nb-NO', { month: 'long' })})</span>
+                        </div>
+                        <div>
+                            <p className="text-3xl font-bold text-gray-900">{data?.unpaidCount ?? 0} stk</p>
+                        </div>
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
+                            <span className="material-symbols-outlined text-7xl text-red-500">money_off</span>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Quick Actions Section */}

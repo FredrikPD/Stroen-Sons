@@ -1,4 +1,5 @@
 import { getProfile } from "@/server/actions/account";
+import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
 import { Metadata } from "next";
 import AccountClient from "./AccountClient";
 
@@ -37,6 +38,17 @@ export default async function AccountPage() {
         (profile.firstName?.charAt(0) || "") +
         (profile.lastName?.charAt(0) || "")
     ).toUpperCase();
+
+    // Determine account active/inactive status using PaymentRequest
+    const paymentRequestsRes = await getMemberPaymentRequests(profile.id);
+    const membershipRequest = paymentRequestsRes.success && paymentRequestsRes.data
+        ? paymentRequestsRes.data.find(r => r.category === "MEMBERSHIP_FEE" && r.status === "PENDING")
+        : null;
+
+    let isAccountActive = true;
+    if (membershipRequest?.dueDate && new Date() > new Date(membershipRequest.dueDate)) {
+        isAccountActive = false;
+    }
 
     return (
         <div className="space-y-8">
@@ -85,8 +97,8 @@ export default async function AccountPage() {
                     </div>
 
                     <div className="relative z-10 mt-2 flex items-center gap-2 text-zinc-400 text-sm">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Kontoen er aktiv
+                        <span className={`w-2 h-2 rounded-full ${isAccountActive ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
+                        {isAccountActive ? 'Kontoen er aktiv' : 'Kontoen er inaktiv'}
                     </div>
                 </div>
             </div>
