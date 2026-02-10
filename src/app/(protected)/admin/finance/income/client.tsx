@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { Avatar } from "@/components/Avatar";
-import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus, deleteMonthlyFees, deleteSingleInvoice } from "@/server/actions/finance";
+import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus, deleteMonthlyFees, deleteSingleInvoice, markMonthlyFeesAsPaid } from "@/server/actions/finance";
 import Link from "next/link";
 import { RequestStatus } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
@@ -209,6 +209,47 @@ export default function IncomePage() {
         }
     };
 
+    const handleMarkAllPaid = async () => {
+        if (!stats) return;
+
+        const confirmed = await openConfirm({
+            title: "Registrer alle som betalt",
+            message: `Er du sikker på at du vil registrere ALLE gjenværende krav for ${getMonthName(selectedMonth - 1)} ${selectedYear} som betalt? Dette vil generere transaksjoner for alle.`,
+            type: "warning",
+            confirmText: "Registrer alle",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setGenerating(true);
+        try {
+            const res = await markMonthlyFeesAsPaid(selectedYear, selectedMonth);
+            if (res.success) {
+                await fetchData();
+                await openAlert({
+                    title: "Suksess",
+                    message: `Registrerte ${res.count} krav som betalt.`,
+                    type: "success"
+                });
+            } else {
+                await openAlert({
+                    title: "Feil",
+                    message: typeof res.error === 'string' ? res.error : "Ukjent feil",
+                    type: "error"
+                });
+            }
+        } catch (e) {
+            await openAlert({
+                title: "Feil",
+                message: "En feil oppstod.",
+                type: "error"
+            });
+        } finally {
+            setGenerating(false);
+        }
+    };
+
     // Helper to format the Title into something short for the header
     const formatTitle = (title: string) => {
         // "Medlemskontingent 2025-12" -> "Desember"
@@ -340,7 +381,17 @@ export default function IncomePage() {
 
                             {/* Delete Button (Only if requests exist) */}
                             {stats && stats.totalCount > 0 && (
-                                <div className="mt-4 flex justify-end">
+                                <div className="mt-4 flex justify-between items-center">
+                                    <button
+                                        onClick={handleMarkAllPaid}
+                                        disabled={generating || stats.missing === 0}
+                                        className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.missing === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:text-emerald-800'
+                                            }`}
+                                    >
+                                        <span className="material-symbols-outlined text-[1.2rem]">done_all</span>
+                                        Registrer alle som betalt
+                                    </button>
+
                                     <button
                                         onClick={handleDeleteFees}
                                         disabled={generating} // Re-use generating state or add deleting state

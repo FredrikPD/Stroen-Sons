@@ -123,12 +123,112 @@ export async function deleteMonthlyFees(year: number, month: number) {
             }
         });
 
-        revalidatePath("/admin/finance/income");
+        // ... existing code ...
         return { success: true, count: result.count };
 
     } catch (error) {
         console.error("Failed to delete fees:", error);
         return { success: false, error: "Kunne ikke slette krav" };
+    }
+}
+
+/**
+ * Mark ALL monthly fee requests for a specific month as PAID.
+ * Skips already PAID requests.
+ */
+export async function markMonthlyFeesAsPaid(year: number, month: number) {
+    try {
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const title = getFeeTitle(year, month);
+
+        // 1. Get all PENDING requests for this month
+        const pendingRequests = await prisma.paymentRequest.findMany({
+            where: {
+                title,
+                category: PaymentCategory.MEMBERSHIP_FEE,
+                status: RequestStatus.PENDING
+            },
+            include: { member: true }
+        });
+
+        if (pendingRequests.length === 0) {
+            return { success: true, count: 0, message: "Ingen ubetalte krav funnet." };
+        }
+
+        // 2. Process all in a transaction
+        // We iterate and update individually to ensure all side-effects (Transactions, Balances, Payment records) are handled correctly.
+        // A bulk update wouldn't easily allow creating individual Transaction records with correct member IDs.
+        await prisma.$transaction(async (tx) => {
+            const date = new Date();
+            const period = `${year}-${String(month).padStart(2, '0')}`;
+
+            for (const req of pendingRequests) {
+                // Create Transaction
+                const transaction = await tx.transaction.create({
+                    data: {
+                        amount: req.amount,
+                        description: req.title,
+                        category: req.category.toString(),
+                        date: date,
+                        memberId: req.memberId,
+                        // eventId: req.eventId, // Usually null for fees
+                        paymentRequest: {
+                            connect: { id: req.id }
+                        }
+                    }
+                });
+
+                // Update Request
+                await tx.paymentRequest.update({
+                    where: { id: req.id },
+                    data: {
+                        status: RequestStatus.PAID,
+                        transactionId: transaction.id
+                    }
+                });
+
+                // Update Member Balance
+                await tx.member.update({
+                    where: { id: req.memberId },
+                    data: {
+                        balance: {
+                            increment: req.amount
+                        }
+                    }
+                });
+
+                // Update Payment Record (Simplified View)
+                await tx.payment.upsert({
+                    where: {
+                        memberId_period: {
+                            memberId: req.memberId,
+                            period: period
+                        }
+                    },
+                    update: {
+                        status: "PAID",
+                        paidAt: date,
+                        amount: req.amount
+                    },
+                    create: {
+                        memberId: req.memberId,
+                        period: period,
+                        status: "PAID",
+                        paidAt: date,
+                        amount: req.amount
+                    }
+                });
+            }
+        });
+
+        revalidatePath("/admin/finance/income");
+        return { success: true, count: pendingRequests.length };
+
+    } catch (error) {
+        console.error("Failed to mark all as paid:", error);
+        return { success: false, error: "Kunne ikke oppdatere betalinger" };
     }
 }
 
