@@ -344,7 +344,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         </div>
 
                         {/* Map Placeholder */}
-                        {((event.location || event.address) && !event.isTba) && (
+                        {(event.address && !event.isTba) && (
                             <div className="h-32 w-full bg-gray-100 rounded-lg overflow-hidden relative">
                                 <iframe
                                     width="100%"
@@ -353,7 +353,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     scrolling="no"
                                     marginHeight={0}
                                     marginWidth={0}
-                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(event.address || event.location || "")}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(event.address || "")}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                                     className="filter grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
                                 ></iframe>
                             </div>

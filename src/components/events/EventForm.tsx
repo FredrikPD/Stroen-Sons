@@ -661,6 +661,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                         <div key={field.id} className="flex gap-4 items-start bg-gray-50/50 p-4 rounded-xl border border-gray-200">
                             <div className="w-32 flex-shrink-0">
                                 <input
+                                    type="time"
                                     {...register(`program.${index}.time` as const)}
                                     className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4F46E5] outline-none text-sm"
                                     placeholder="00:00"
@@ -673,7 +674,11 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 <input
                                     type="date"
                                     {...register(`program.${index}.date` as const)}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4F46E5] outline-none text-sm"
+                                    readOnly={isSameDay}
+                                    className={`w-full px-3 py-2 rounded-lg border transition-all outline-none text-sm ${isSameDay
+                                        ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                                        : "border-gray-200 focus:border-[#4F46E5]"
+                                        }`}
                                 />
                             </div>
                             <div className="flex-grow space-y-2">
