@@ -10,7 +10,7 @@ export async function getAuthContext(): Promise<null | { userId: string; email: 
   const user = await currentUser();
   if (!user) return null;
 
-  const email = user.emailAddresses?.[0]?.emailAddress;
+  const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase();
   if (!email) throw new Error("Missing email");
 
   const firstName = user.firstName;

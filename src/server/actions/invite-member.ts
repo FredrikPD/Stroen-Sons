@@ -43,7 +43,8 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
         };
     }
 
-    const { firstName, lastName, email, roleId, membershipType } = validatedFields.data;
+    const { firstName, lastName, email: rawEmail, roleId, membershipType } = validatedFields.data;
+    const email = rawEmail.toLowerCase();
 
     // 1. Check if user already exists in DB
     const existingMember = await db.member.findUnique({

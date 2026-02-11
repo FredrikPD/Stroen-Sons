@@ -9,7 +9,7 @@ export async function ensureMember() {
   const user = await currentUser();
   if (!user) throw new Error("Unauthorized");
 
-  const email = user.emailAddresses?.[0]?.emailAddress;
+  const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase();
   if (!email) throw new Error("Missing email");
 
   // Read first (fastest)

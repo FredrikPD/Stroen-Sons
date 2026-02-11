@@ -156,7 +156,7 @@ export default function AdminSystemClientPage() {
                         </div>
                     </Link>
                     {/* Slett Bruker */}
-                    <Link href="/admin/users/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
+                    <Link href="/admin/system/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
                         <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">person_remove</span>
                         </div>
