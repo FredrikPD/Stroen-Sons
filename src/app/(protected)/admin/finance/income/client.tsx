@@ -260,9 +260,9 @@ export default function IncomePage() {
         return getMonthName(parseInt(m) - 1);
     };
 
-    // Generate period options (next 6 months + last 12 months)
+    // Generate period options (+/- 9 months)
     const periodOptions = [];
-    for (let i = -6; i < 6; i++) {
+    for (let i = -9; i <= 9; i++) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
         periodOptions.push({
