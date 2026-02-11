@@ -89,7 +89,11 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                             <h2 className="text-xl font-bold text-gray-900 mb-3 ml-1">{year}</h2>
                             <div className="flex flex-col gap-4">
                                 {albumsByYear[year].map(album => (
-                                    <div key={album.id} className="bg-white rounded-xl p-0 shadow-sm border border-gray-200/60 overflow-hidden flex flex-col lg:flex-row group hover:shadow-md transition-shadow">
+                                    <Link
+                                        key={album.id}
+                                        href={`/gallery/${album.id}`}
+                                        className="bg-white rounded-xl p-0 shadow-sm border border-gray-200/60 overflow-hidden flex flex-col lg:flex-row group hover:shadow-md transition-shadow"
+                                    >
                                         {/* Image */}
                                         <div className="lg:w-[240px] h-48 lg:h-auto overflow-hidden relative flex-shrink-0">
                                             <img
@@ -124,13 +128,13 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                                                     {album.description || "Ingen beskrivelse tilgjengelig for dette arrangementet."}
                                                 </p>
 
-                                                <Link href={`/gallery/${album.id}`} className="text-[#4F46E5] font-bold text-xs flex items-center gap-1 whitespace-nowrap flex-shrink-0 mb-0.5 group">
+                                                <div className="text-[#4F46E5] font-bold text-xs flex items-center gap-1 whitespace-nowrap flex-shrink-0 mb-0.5">
                                                     <span className="group-hover:underline">Se bilder</span>
                                                     <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                                                </Link>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         </div>
