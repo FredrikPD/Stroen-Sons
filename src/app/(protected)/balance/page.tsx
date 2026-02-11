@@ -91,7 +91,7 @@ export default async function BalancePage() {
                             {Math.abs(data.transactions
                                 .filter(t => t.amount > 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
                                 .reduce((acc, curr) => acc + curr.amount, 0)
-                            ).toLocaleString('no-NO', { maximumFractionDigits: 2 })}
+                            ).toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>
@@ -112,7 +112,7 @@ export default async function BalancePage() {
                             {Math.abs(data.transactions
                                 .filter(t => t.amount < 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
                                 .reduce((acc, curr) => acc + curr.amount, 0)
-                            ).toLocaleString('no-NO', { maximumFractionDigits: 2 })}
+                            ).toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>
@@ -133,7 +133,7 @@ export default async function BalancePage() {
                             {data.paymentRequests
                                 .filter(req => req.status === 'PENDING')
                                 .reduce((acc, curr) => acc + curr.amount, 0)
-                                .toLocaleString('no-NO', { maximumFractionDigits: 2 })}
+                                .toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>
@@ -144,7 +144,7 @@ export default async function BalancePage() {
             </div>
 
             {/* Transaction History */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden p-4">
+            <div className="mt-8 pt-8 border-t border-gray-200">
                 <UserTransactions transactions={data.transactions.map(tx => ({
                     ...tx,
                     amount: Number(tx.amount)

@@ -368,7 +368,7 @@ export default async function DashboardPage() {
                   transactions.map((tx) => {
                     const isPositive = Number(tx.amount) > 0;
                     return (
-                      <div key={tx.id} className="flex items-center justify-between text-xs group p-1.5 hover:bg-gray-50 rounded-lg transition-colors -mx-1.5">
+                      <Link key={tx.id} href={`/balance/transactions/${tx.id}`} className="flex items-center justify-between text-xs group p-1.5 hover:bg-gray-50 rounded-lg transition-colors -mx-1.5 cursor-pointer">
                         <div className="flex items-center gap-2">
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center ${isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                             <span className="material-symbols-outlined text-sm">
@@ -384,9 +384,9 @@ export default async function DashboardPage() {
                         </div>
                         <span className={`font-mono font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
                           {isPositive ? "+" : ""}
-                          {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(tx.amount))}
+                          {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(Number(tx.amount))}
                         </span>
-                      </div>
+                      </Link>
                     );
                   })
                 ) : (
