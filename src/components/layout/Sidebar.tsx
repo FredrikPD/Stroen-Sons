@@ -36,7 +36,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
   const router = useRouter();
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col border-r border-[#1e293b]/50 h-screen sticky top-0 font-sans text-slate-400 shadow-xl z-50 transition-colors duration-200" style={{ backgroundColor: '#0d1419' }}>
+    <aside className="hidden lg:flex w-72 flex-col border-r border-[#1e293b]/50 h-full font-sans text-slate-400 shadow-xl z-50 transition-colors duration-200" style={{ backgroundColor: '#0d1419' }}>
 
       {/* Header / Logo */}
       <div className="h-14 flex items-center px-6 shrink-0 border-b border-white/[0.05] gap-3 group w-full">
@@ -54,10 +54,10 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
       </div>
 
       {/* Scrollable Nav Area */}
-      <div className="flex-1 overflow-y-auto px-3 py-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-4">
 
         {/* Main Nav */}
-        <div className="mb-6">
+        <div>
           <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Meny</h3>
           <div className="flex flex-col gap-0.5">
             {MAIN_NAV.map((item) => (
@@ -67,7 +67,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
         </div>
 
         {/* Account Nav */}
-        <div className="mb-6">
+        <div>
           <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Min Konto</h3>
           <div className="flex flex-col gap-0.5">
             {ACCOUNT_NAV.map((item) => (
@@ -78,7 +78,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
 
         {/* Admin Nav */}
         {(isAdmin || role === "MODERATOR" || (userRole?.allowedPaths && userRole.allowedPaths.length > 0)) && (
-          <div className="mb-6">
+          <div>
             <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Admin</h3>
             <div className="flex flex-col gap-0.5">
               {/* Admin Dashboard Link explicitly */}
@@ -109,7 +109,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
       </div>
 
       {/* Bottom Section: Footer Links + Profile */}
-      <div className="p-3 mt-auto border-t border-slate-800/50">
+      <div className="p-2 mt-auto border-t border-slate-800/50">
         <button
           onClick={() => signOut(() => router.push('/sign-in'))}
           className="flex w-full items-center gap-3 p-2.5 rounded-xl transition-colors hover:bg-white/5 group relative overflow-hidden text-left outline-none cursor-pointer"
