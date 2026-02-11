@@ -68,7 +68,7 @@ export async function createPost(data: PostInput) {
         }
 
         revalidatePath("/posts");
-        revalidatePath("/admin");
+        revalidatePath("/admin/dashboard");
         return { success: true };
     } catch (error) {
         console.error("Failed to create post:", error);
@@ -88,7 +88,7 @@ export async function deletePost(postId: string) {
         });
 
         revalidatePath("/posts");
-        revalidatePath("/admin");
+        revalidatePath("/admin/dashboard");
         return { success: true };
     } catch (error) {
         console.error("Failed to delete post:", error);
@@ -134,7 +134,7 @@ export async function updatePost(postId: string, data: PostInput) {
 
         revalidatePath("/posts");
         revalidatePath(`/posts/${postId}`);
-        revalidatePath("/admin");
+        revalidatePath("/admin/dashboard");
         revalidatePath("/admin/posts");
         revalidatePath("/admin/posts");
 

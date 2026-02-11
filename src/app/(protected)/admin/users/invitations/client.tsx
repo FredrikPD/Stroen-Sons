@@ -7,7 +7,6 @@ import { Role } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { revokeInvitation, type Invitation } from "@/server/actions/invitations";
 import { inviteMember } from "@/server/actions/invite-member"; // We can reuse the action, but might need a form
-import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 
 interface Props {
     initialInvitations: Invitation[];
@@ -82,7 +81,7 @@ export default function InvitationsClientPage({ initialInvitations, initialError
 
     return (
         <div className="space-y-6">
-            <PageTitleUpdater title="Invitasjoner" backHref="/admin/system" backLabel="Systeminnstillinger" />
+
 
             <div className="flex justify-between items-center">
                 <div>

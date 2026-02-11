@@ -1,5 +1,6 @@
 import RolesManager from "@/components/admin/roles-manager";
 import Link from "next/link";
+import { SetHeader } from "@/components/layout/SetHeader";
 
 export const metadata = {
     title: "Roller",
@@ -12,6 +13,7 @@ export default async function MemberRolesPage() {
     await ensureRole([Role.ADMIN]);
     return (
         <div className="space-y-6">
+            <SetHeader backHref="/admin/users" backLabel="Brukere" />
 
 
             <div>

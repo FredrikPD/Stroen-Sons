@@ -1,13 +1,6 @@
-import { ensureRole } from "@/server/auth/ensureRole";
-import { Role } from "@prisma/client";
-import AdminDashboardClientPage from "./client";
 
-export const metadata = {
-    title: "Admin Dashboard",
-};
+import { redirect } from "next/navigation";
 
-export default async function AdminDashboardPage() {
-    await ensureRole([Role.ADMIN, Role.MODERATOR]);
-
-    return <AdminDashboardClientPage />;
+export default function AdminRedirect() {
+    redirect("/admin/dashboard");
 }

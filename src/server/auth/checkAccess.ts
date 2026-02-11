@@ -18,8 +18,8 @@ export function checkAccess(role: UserRole | null | undefined, path: string): bo
     if (!role.allowedPaths || role.allowedPaths.length === 0) return false;
 
     // Special case for the main Admin Dashboard link
-    // If user requests "/admin", allow if they have access to ANY path starting with "/admin"
-    if (path === "/admin") {
+    // If user requests "/admin" or "/admin/dashboard", allow if they have access to ANY path starting with "/admin"
+    if (path === "/admin" || path === "/admin/dashboard") {
         return role.allowedPaths.some(pattern => pattern.startsWith("/admin") || pattern === "*" || pattern === "/admin");
     }
 

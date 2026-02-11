@@ -107,7 +107,7 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
                                             // Check dynamic permissions
                                             if (userRole?.allowedPaths && userRole.allowedPaths.length > 0) {
                                                 // Special case for main Admin link
-                                                if (item.href === "/admin") {
+                                                if (item.href === "/admin/dashboard") {
                                                     return userRole.allowedPaths.some((pattern: string) => pattern.startsWith("/admin") || pattern === "*" || pattern === "/admin");
                                                 }
 
@@ -120,7 +120,7 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
 
                                             // Fallback for Moderators
                                             if (role === "MODERATOR") {
-                                                return ["/admin", "/admin/events", "/admin/posts", "/admin/photos"].includes(item.href);
+                                                return ["/admin/dashboard", "/admin/events", "/admin/posts", "/admin/photos"].includes(item.href);
                                             }
                                             return false;
                                         })

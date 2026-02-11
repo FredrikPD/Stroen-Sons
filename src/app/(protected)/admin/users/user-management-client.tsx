@@ -34,7 +34,7 @@ const QUICK_ACTIONS = [
         title: "Endre Medlemsroller",
         description: "Oppdater tilganger",
         icon: "admin_panel_settings",
-        href: "/admin/system/user-roles",
+        href: "/admin/users/roles",
         colorClass: "text-purple-500 bg-purple-500/10 group-hover:bg-purple-500 group-hover:text-white",
         hoverBorder: "hover:border-purple-500/50"
     },
@@ -42,7 +42,7 @@ const QUICK_ACTIONS = [
         title: "Håndter invitasjoner",
         description: "Administrer invitasjoner",
         icon: "send",
-        href: "/admin/system/invitations",
+        href: "/admin/users/invitations",
         colorClass: "text-amber-500 bg-amber-500/10 group-hover:bg-amber-500 group-hover:text-white",
         hoverBorder: "hover:border-amber-500/50"
     }

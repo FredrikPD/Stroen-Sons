@@ -15,7 +15,7 @@ export default function AdminSystemClientPage() {
 
     useEffect(() => {
         if (data && data.role !== "ADMIN") {
-            router.push("/admin");
+            router.push("/admin/dashboard");
         }
     }, [data, router]);
 

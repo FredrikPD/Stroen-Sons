@@ -15,7 +15,7 @@ export default function ResourceManagerClient() {
         const checkAuth = async () => {
             const member = await getCurrentMember();
             if (!member || member.role !== "ADMIN") {
-                router.push("/admin");
+                router.push("/admin/dashboard");
             }
         };
         checkAuth();

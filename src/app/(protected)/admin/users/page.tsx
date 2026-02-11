@@ -1,5 +1,7 @@
 import { db } from "@/server/db";
+import Link from "next/link";
 import UserManagementClient from "./user-management-client";
+import { SetHeader } from "@/components/layout/SetHeader";
 import { Role } from "@prisma/client";
 import { ensureRole } from "@/server/auth/ensureRole";
 
@@ -92,6 +94,7 @@ export default async function UserManagementPage() {
 
     return (
         <div className="space-y-8">
+            <SetHeader backHref="/admin/dashboard" backLabel="Dashboard" />
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold text-gray-900">Brukeradministrasjon</h1>

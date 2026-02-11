@@ -76,7 +76,7 @@ export async function createEvent(input: CreateEventInput) {
             },
         });
 
-        revalidatePath("/admin");
+        revalidatePath("/admin/dashboard");
         revalidatePath("/events");
         revalidatePath("/dashboard");
 
@@ -186,7 +186,7 @@ export async function updateEvent(id: string, input: EventInput) {
             },
         });
 
-        revalidatePath("/admin");
+        revalidatePath("/admin/dashboard");
         revalidatePath("/events");
         revalidatePath(`/admin/events/${id}/edit`);
         revalidatePath("/dashboard");
@@ -245,7 +245,7 @@ export async function deleteEvent(id: string) {
             where: { id },
         });
 
-        revalidatePath("/admin");
+        revalidatePath("/admin/dashboard");
         revalidatePath("/events");
         revalidatePath("/dashboard");
 

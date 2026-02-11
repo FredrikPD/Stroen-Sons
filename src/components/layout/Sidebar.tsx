@@ -82,11 +82,11 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
             <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Admin</h3>
             <div className="flex flex-col gap-0.5">
               {/* Admin Dashboard Link explicitly */}
-              <SidebarLink item={{ href: "/admin", label: "Dashboard", icon: "admin_panel_settings" }} />
+              <SidebarLink item={{ href: "/admin/dashboard", label: "Dashboard", icon: "admin_panel_settings" }} />
 
               {ADMIN_NAV
                 .filter(item => {
-                  if (item.href === "/admin") return false;
+                  if (item.href === "/admin/dashboard") return false;
                   if (isAdmin) return true;
                   if (userRole?.allowedPaths && userRole.allowedPaths.length > 0) {
                     return userRole.allowedPaths.some((pattern: string) => {
