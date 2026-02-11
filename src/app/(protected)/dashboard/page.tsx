@@ -249,6 +249,32 @@ export default async function DashboardPage() {
             </div>
           )}
 
+          {/* Siste Nytt (News Feed) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-900">Siste Nytt</h3>
+              <Link href="/posts" className="text-[#4F46E5] text-xs font-semibold hover:underline">Se alle</Link>
+            </div>
+
+            <div className="grid gap-3">
+              {posts.map(post => (
+                <Link key={post.id} href={`/posts/${post.id}`} className="bg-white border border-gray-200 p-4 rounded-xl flex items-start gap-3 hover:border-[#4F46E5]/50 transition-all cursor-pointer group shadow-sm hover:shadow-md block">
+                  <div className="bg-gray-50 p-2.5 rounded-lg text-gray-400 group-hover:text-[#4F46E5] group-hover:bg-[#4F46E5]/10 transition-colors">
+                    <span className="material-symbols-outlined text-lg">article</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between">
+                      <h4 className="font-bold text-sm text-gray-900 truncate pr-4 group-hover:text-[#4F46E5] transition-colors">{post.title}</h4>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                        {post.createdAt.toLocaleDateString("nb-NO", { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">{post.content}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
           {/* Nylige Minner */}
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -282,34 +308,9 @@ export default async function DashboardPage() {
               )}
             </div>
           </div>
-
-          {/* Siste Nytt (News Feed) */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900">Siste Nytt</h3>
-              <Link href="/posts" className="text-[#4F46E5] text-xs font-semibold hover:underline">Se alle</Link>
-            </div>
-
-            <div className="grid gap-3">
-              {posts.map(post => (
-                <Link key={post.id} href={`/posts/${post.id}`} className="bg-white border border-gray-200 p-4 rounded-xl flex items-start gap-3 hover:border-[#4F46E5]/50 transition-all cursor-pointer group shadow-sm hover:shadow-md block">
-                  <div className="bg-gray-50 p-2.5 rounded-lg text-gray-400 group-hover:text-[#4F46E5] group-hover:bg-[#4F46E5]/10 transition-colors">
-                    <span className="material-symbols-outlined text-lg">article</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between">
-                      <h4 className="font-bold text-sm text-gray-900 truncate pr-4 group-hover:text-[#4F46E5] transition-colors">{post.title}</h4>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {post.createdAt.toLocaleDateString("nb-NO", { month: 'short', day: 'numeric' })}
-                      </span>
-                    </div>
-                    <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">{post.content}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
+
+
 
         {/* RIGHT COLUMN (Sidebar) */}
         <div className="space-y-6">

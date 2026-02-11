@@ -33,7 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="flex h-screen w-full bg-background-main text-text-main overflow-hidden">
+    <div className="flex h-[100dvh] w-full bg-background-main text-text-main overflow-hidden">
       <Sidebar role={member?.role} userRole={member?.userRole} />
 
       <MobileMenu
