@@ -13,8 +13,8 @@ function SidebarLink({ item }: { item: NavItem }) {
   return (
     <Link
       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${isActive
-        ? "bg-[#1A1A1A] text-white shadow-sm border border-white/5"
-        : "hover:bg-white/5 text-white/60 hover:text-white"
+        ? "bg-white/15 text-white shadow-sm font-semibold"
+        : "hover:bg-white/5 text-white/50 hover:text-white"
         }`}
       href={item.href}
     >
@@ -30,7 +30,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
   const router = useRouter();
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col border-r border-white/5 bg-background-sidebar flex-shrink-0 text-white/50">
+    <aside className="hidden lg:flex w-72 flex-col border-r border-white/5 bg-[#050b14] flex-shrink-0 text-white/50">
       {/* Top: logo/title */}
       <div className="p-2">
         <div className="flex items-center gap-3">

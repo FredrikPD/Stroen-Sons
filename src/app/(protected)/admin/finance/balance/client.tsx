@@ -246,6 +246,12 @@ export default function MemberBalancePage() {
 
                             <div className="flex items-center gap-8">
                                 <div className="text-right min-w-[80px]">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo</p>
+                                    <p className={`font-bold ${member.balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        {formatCurrency(member.balance)}
+                                    </p>
+                                </div>
+                                <div className="text-right min-w-[80px]">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ubetalte</p>
                                     <p className={`font-bold ${member.unpaidCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
                                         {member.unpaidCount}

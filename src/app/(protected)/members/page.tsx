@@ -53,10 +53,35 @@ function MemberCard({ member }: { member: any }) {
                         {member.firstName} {member.lastName}
                     </h3>
                     <p className="text-sm text-gray-500">{member.email}</p>
+
+                    <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <span className="material-symbols-outlined text-[14px] text-gray-400">call</span>
+                            {member.phoneNumber ? (
+                                <span>{member.phoneNumber}</span>
+                            ) : (
+                                <span className="text-gray-400 italic">Ikke registrert</span>
+                            )}
+                        </div>
+
+                        {(member.address || member.city) ? (
+                            <div className="flex items-start gap-2 text-xs text-gray-600">
+                                <span className="material-symbols-outlined text-[14px] text-gray-400 mt-0.5">location_on</span>
+                                <span className="" title={`${member.address || ''}, ${member.zipCode || ''} ${member.city || ''}`}>
+                                    {[member.address, member.zipCode, member.city].filter(Boolean).join(", ")}
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <span className="material-symbols-outlined text-[14px] text-gray-400">location_on</span>
+                                <span className="text-gray-400 italic">Ikke registrert</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <div className={`absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none`}>
-                    <span className="material-symbols-outlined text-7xl text-gray-900">
+                <div className={`absolute top-28 right-6 opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none z-0`}>
+                    <span className="material-symbols-outlined text-6xl text-gray-900">
                         {isAdmin ? "shield_person" : "person"}
                     </span>
                 </div>

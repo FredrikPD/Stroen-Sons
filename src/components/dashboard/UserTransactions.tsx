@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 
 type Transaction = {
     id: string;
@@ -89,7 +90,7 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
                                         {txs.map(tx => {
                                             const isPositive = Number(tx.amount) > 0;
                                             return (
-                                                <div key={tx.id} className="flex items-center justify-between text-sm group px-4 py-3 hover:bg-gray-50 transition-colors">
+                                                <Link key={tx.id} href={`/balance/transactions/${tx.id}`} className="flex items-center justify-between text-sm group px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
                                                     <div className="flex items-center gap-3 overflow-hidden">
                                                         <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                                                             <span className="material-symbols-outlined text-sm">
@@ -105,11 +106,16 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <span className={`font-mono font-bold whitespace-nowrap ml-2 ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
-                                                        {isPositive ? "+" : ""}
-                                                        {formatCurrency(Number(tx.amount))}
-                                                    </span>
-                                                </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`font-mono font-bold whitespace-nowrap ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                            {isPositive ? "+" : ""}
+                                                            {formatCurrency(Number(tx.amount))}
+                                                        </span>
+                                                        <span className="material-symbols-outlined text-gray-300 text-base opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            chevron_right
+                                                        </span>
+                                                    </div>
+                                                </Link>
                                             );
                                         })}
                                         {/* Year Footer Summary */}

@@ -34,8 +34,11 @@ export default function InvoicesPage() {
         );
     }
 
+    const activeGroups = groups.filter(g => g.paidCount < g.totalCount);
+    const completedGroups = groups.filter(g => g.paidCount === g.totalCount);
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-10">
             <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Fakturaoversikt</h1>
@@ -51,48 +54,97 @@ export default function InvoicesPage() {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-                {groups.length === 0 ? (
-                    <div className="text-center py-10 bg-gray-50 rounded-xl border border-gray-200">
-                        <p className="text-gray-500">Ingen fakturaer opprettet enda.</p>
-                    </div>
-                ) : (
-                    groups.map((group) => (
-                        <Link
-                            href={`/admin/finance/invoices/${encodeURIComponent(group.title)}`}
-                            key={group.title}
-                            className="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                            <div className="flex justify-between items-center mb-4">
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900">{group.title}</h3>
-                                    <p className="text-xs text-gray-500">
-                                        Opprettet {new Date(group.createdAt).toLocaleDateString()}
-                                    </p>
+            {/* Incomplete / Active Invoices */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-amber-500">pending</span>
+                    Aktive Fakturaer
+                </h2>
+                <div className="grid grid-cols-1 gap-4">
+                    {activeGroups.length === 0 ? (
+                        <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-500">
+                            Ingen aktive fakturaer under behandling.
+                        </div>
+                    ) : (
+                        activeGroups.map((group) => (
+                            <Link
+                                href={`/admin/finance/invoices/${encodeURIComponent(group.title)}`}
+                                key={group.title}
+                                className="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer"
+                            >
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900">{group.title}</h3>
+                                        <p className="text-xs text-gray-500">
+                                            Opprettet {new Date(group.createdAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-600">{group.totalAmount.toLocaleString()} NOK</p>
+                                        <span className="text-xs px-2 py-1 bg-amber-50 text-amber-700 rounded-full font-medium">
+                                            {group.paidCount} / {group.totalCount} betalt
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-semibold text-gray-600">{group.totalAmount.toLocaleString()} NOK</p>
-                                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                                        {group.paidCount} / {group.totalCount} betalt
-                                    </span>
+
+                                {/* Simple Progress Bar */}
+                                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                                    <div
+                                        className="bg-indigo-500 h-2 transition-all duration-500"
+                                        style={{ width: `${(group.paidCount / group.totalCount) * 100}%` }}
+                                    ></div>
                                 </div>
-                            </div>
 
-                            {/* Simple Progress Bar */}
-                            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                                <div
-                                    className="bg-indigo-500 h-2 transition-all duration-500"
-                                    style={{ width: `${(group.paidCount / group.totalCount) * 100}%` }}
-                                ></div>
-                            </div>
+                                <div className="mt-4 pt-4 border-t border-gray-50 text-xs text-gray-400">
+                                    {group.totalCount - group.paidCount} manglende betalinger.
+                                </div>
+                            </Link>
+                        ))
+                    )}
+                </div>
+            </div>
 
-                            {/* Maybe verify simple list of missing payers? */}
-                            <div className="mt-4 pt-4 border-t border-gray-50 text-xs text-gray-400">
-                                {group.totalCount - group.paidCount} manglende betalinger.
-                            </div>
-                        </Link>
-                    ))
-                )}
+            {/* Completed / Archived Invoices */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 opacity-75">
+                    <span className="material-symbols-outlined text-emerald-500">check_circle</span>
+                    Arkiv / Ferdige
+                </h2>
+                <div className="grid grid-cols-1 gap-4 opacity-75 hover:opacity-100 transition-opacity">
+                    {completedGroups.length === 0 ? (
+                        <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-500">
+                            Ingen ferdigbehandlede fakturaer.
+                        </div>
+                    ) : (
+                        completedGroups.map((group) => (
+                            <Link
+                                href={`/admin/finance/invoices/${encodeURIComponent(group.title)}`}
+                                key={group.title}
+                                className="block bg-gray-50 border border-gray-200 rounded-xl p-6 hover:bg-white hover:shadow-sm transition-all cursor-pointer"
+                            >
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-700">{group.title}</h3>
+                                        <p className="text-xs text-gray-400">
+                                            Opprettet {new Date(group.createdAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-500">{group.totalAmount.toLocaleString()} NOK</p>
+                                        <span className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-medium">
+                                            Ferdigstilt
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Full Progress Bar */}
+                                <div className="w-full bg-emerald-100 rounded-full h-2 overflow-hidden">
+                                    <div className="bg-emerald-500 h-2 w-full"></div>
+                                </div>
+                            </Link>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -13,6 +13,10 @@ export async function getMembers() {
                 role: true,
                 membershipType: true,
                 createdAt: true,
+                address: true,
+                zipCode: true,
+                city: true,
+                phoneNumber: true,
             },
             orderBy: [
                 { firstName: 'asc' },

@@ -564,12 +564,14 @@ export async function registerExpense(data: {
     date: Date;
     eventId?: string;
     splitMemberIds: string[];
+    receiptUrl?: string;
+    receiptKey?: string;
 }) {
     try {
         const member = await ensureMember();
         if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
 
-        const { amount, description, category, date, eventId, splitMemberIds } = data;
+        const { amount, description, category, date, eventId, splitMemberIds, receiptUrl, receiptKey } = data;
         const totalAmount = Math.abs(amount);
 
         if (splitMemberIds.length === 0) {
@@ -579,7 +581,9 @@ export async function registerExpense(data: {
                     description,
                     category,
                     date,
-                    eventId: eventId || null
+                    eventId: eventId || null,
+                    receiptUrl: receiptUrl || null,
+                    receiptKey: receiptKey || null
                 }
             });
         }
@@ -596,6 +600,8 @@ export async function registerExpense(data: {
                                 category,
                                 date,
                                 eventId: eventId || null,
+                                receiptUrl: receiptUrl || null,
+                                receiptKey: receiptKey || null,
                                 memberId
                             }
                         }),
@@ -741,6 +747,89 @@ export async function getAllTransactions() {
     } catch (error) {
         console.error("Failed to fetch all transactions:", error);
         return { success: false, error: "Kunne ikke hente transaksjoner" };
+    }
+}
+
+export async function getTransactionDetails(transactionId: string) {
+    try {
+        const member = await ensureMember();
+
+        // 1. Fetch the target transaction first to get key details
+        const targetTx = await prisma.transaction.findUnique({
+            where: { id: transactionId },
+            include: {
+                member: { select: { firstName: true, lastName: true, id: true, email: true } },
+                event: { select: { title: true, id: true } }
+            }
+        });
+
+        if (!targetTx) {
+            return { success: false, error: "Transaksjon ikke funnet" };
+        }
+
+        // Allow admins OR the transaction's owner
+        const isOwner = targetTx.memberId === member.id;
+        if (member.role !== 'ADMIN' && !isOwner) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        // 2. Identify if it's potentially a split transaction
+        // Split transactions share: Date (exact), Category, and Description contains " (Splittet)" or is base
+        const isSplit = targetTx.description.includes("(Splittet)");
+        const baseDescription = targetTx.description.replace(" (Splittet)", "").trim();
+
+        let relatedTransactions = [targetTx];
+
+        if (isSplit) {
+            // Fetch siblings
+            relatedTransactions = await prisma.transaction.findMany({
+                where: {
+                    date: targetTx.date,
+                    category: targetTx.category,
+                    description: { contains: baseDescription }, // Contains base
+                },
+                include: {
+                    member: { select: { firstName: true, lastName: true, id: true, email: true } },
+                    event: { select: { title: true, id: true } }
+                }
+            });
+        }
+
+        // 3. Aggregate Data
+        const totalAmount = relatedTransactions.reduce((sum, tx) => sum + Number(tx.amount), 0);
+
+        // Members involved / Allocations
+        const allocations = relatedTransactions.map(tx => ({
+            id: tx.id,
+            amount: Number(tx.amount),
+            member: tx.member ? {
+                id: tx.member.id,
+                name: `${tx.member.firstName} ${tx.member.lastName}`,
+                email: tx.member.email
+            } : null
+        }));
+
+        return {
+            success: true,
+            data: {
+                id: targetTx.id, // Use the requested ID as primary ref
+                date: targetTx.date,
+                description: baseDescription,
+                category: targetTx.category,
+                totalAmount,
+                type: totalAmount > 0 ? "INNTEKT" : "UTGIFT",
+                event: targetTx.event,
+                allocations,
+                isSplit: relatedTransactions.length > 1,
+                createdAt: targetTx.createdAt,
+                receiptUrl: targetTx.receiptUrl,
+                receiptKey: targetTx.receiptKey,
+            }
+        };
+
+    } catch (error) {
+        console.error("Failed to get transaction details:", error);
+        return { success: false, error: "Kunne ikke hente detaljer" };
     }
 }
 

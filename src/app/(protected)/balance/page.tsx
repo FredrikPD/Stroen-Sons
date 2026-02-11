@@ -51,7 +51,7 @@ export default async function BalancePage() {
                             <h2 className="text-white/60 font-medium uppercase tracking-wider text-xs mb-1">Din Balanse</h2>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-4xl font-bold tracking-tight">
-                                    {data.balance.toLocaleString('no-NO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    {data.balance.toLocaleString('no-NO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                                 </span>
                                 <span className="text-lg text-white/60">NOK</span>
                             </div>
@@ -91,7 +91,7 @@ export default async function BalancePage() {
                             {Math.abs(data.transactions
                                 .filter(t => t.amount > 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
                                 .reduce((acc, curr) => acc + curr.amount, 0)
-                            ).toLocaleString('no-NO')}
+                            ).toLocaleString('no-NO', { maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>
@@ -112,7 +112,7 @@ export default async function BalancePage() {
                             {Math.abs(data.transactions
                                 .filter(t => t.amount < 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
                                 .reduce((acc, curr) => acc + curr.amount, 0)
-                            ).toLocaleString('no-NO')}
+                            ).toLocaleString('no-NO', { maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>
@@ -133,7 +133,7 @@ export default async function BalancePage() {
                             {data.paymentRequests
                                 .filter(req => req.status === 'PENDING')
                                 .reduce((acc, curr) => acc + curr.amount, 0)
-                                .toLocaleString('no-NO')}
+                                .toLocaleString('no-NO', { maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-lg text-gray-500"> NOK</span>
                     </div>

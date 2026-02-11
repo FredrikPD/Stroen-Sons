@@ -63,7 +63,7 @@ export default function AllTransactionsPage() {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(amount);
     };
 
     // Filter transactions FIRST
@@ -175,7 +175,7 @@ export default function AllTransactionsPage() {
                             {!isCollapsed && (
                                 <div className="divide-y divide-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
                                     {txs.map(tx => (
-                                        <div key={tx.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors group">
+                                        <Link href={`/admin/finance/transactions/${tx.id}`} key={tx.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors group cursor-pointer block">
                                             {/* Date */}
                                             <div className="col-span-12 sm:col-span-2 flex items-center gap-2">
                                                 <span className="text-sm text-gray-500">{new Date(tx.date).getDate()}. {new Date(tx.date).toLocaleString('nb-NO', { month: 'short' })}</span>
@@ -209,7 +209,7 @@ export default function AllTransactionsPage() {
                                                     {tx.type === 'INNTEKT' ? '+' : ''} {formatCurrency(tx.amount)}
                                                 </span>
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                     {/* Month Footer Summary */}
                                     <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-end items-center text-xs font-medium text-gray-500">

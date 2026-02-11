@@ -95,6 +95,21 @@ export const ourFileRouter = {
         .onUploadComplete(async ({ file }) => {
             return { url: file.ufsUrl, name: file.name, size: file.size, type: file.type };
         }),
+
+    expenseReceipt: f({
+        image: { maxFileSize: "16MB", maxFileCount: 1 },
+        pdf: { maxFileSize: "16MB", maxFileCount: 1 }
+    })
+        .middleware(async () => {
+            const user = await currentUser();
+            if (!user) throw new UploadThingError("Unauthorized");
+            const member = await db.member.findUnique({ where: { clerkId: user.id } });
+            if (!member || member.role !== "ADMIN") throw new UploadThingError("Admin access required");
+            return { userId: user.id };
+        })
+        .onUploadComplete(async ({ file }) => {
+            return { url: file.ufsUrl, key: file.key, name: file.name, size: file.size, type: file.type };
+        }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

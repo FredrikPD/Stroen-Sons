@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 import { getMembersAndEvents, registerExpense, getCurrentMember } from "@/server/actions/finance";
 import { Avatar } from "@/components/Avatar";
+import { useUploadThing } from "@/utils/uploadthing";
+import { toast } from "sonner";
+import { deleteFile } from "@/server/actions/files";
 
 type Member = {
     id: string;
@@ -18,6 +20,13 @@ type Event = {
     id: string;
     title: string;
     startAt: Date;
+};
+
+type ReceiptFile = {
+    url: string;
+    key: string;
+    name: string;
+    size: number;
 };
 
 export default function ExpensesPage() {
@@ -45,11 +54,16 @@ export default function ExpensesPage() {
     const [submitting, setSubmitting] = useState(false);
 
     // Form State
-    const [amount, setAmount] = useState<string>("");
+    const [amountWhole, setAmountWhole] = useState<string>("");
+    const [amountDecimals, setAmountDecimals] = useState<string>("00");
     const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("Mat & Drikke");
     const [selectedEventId, setSelectedEventId] = useState<string>("");
+
+    // Receipt Upload State
+    const [receiptFile, setReceiptFile] = useState<ReceiptFile | null>(null);
+    const { startUpload, isUploading } = useUploadThing("expenseReceipt");
 
     // Split State
     const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
@@ -87,17 +101,35 @@ export default function ExpensesPage() {
         }
     };
 
+    const handleRemoveReceipt = async () => {
+        if (!receiptFile) return;
+        try {
+            const res = await deleteFile(receiptFile.key);
+            if (res.success) {
+                toast.success("Kvittering fjernet");
+            } else {
+                toast.error("Kunne ikke slette filen fra serveren");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+        setReceiptFile(null);
+    };
+
     const handleSubmit = async () => {
-        if (!amount || !description) return;
+        if (!amountWhole || !description) return;
         setSubmitting(true);
 
+        const combinedAmount = Number(amountWhole) + Number(amountDecimals || "0") / 100;
         const res = await registerExpense({
-            amount: Number(amount),
+            amount: combinedAmount,
             date: new Date(date),
             description,
             category,
             eventId: selectedEventId || undefined,
-            splitMemberIds: selectedMemberIds
+            splitMemberIds: selectedMemberIds,
+            receiptUrl: receiptFile?.url,
+            receiptKey: receiptFile?.key,
         });
 
         if (res.success) {
@@ -115,7 +147,7 @@ export default function ExpensesPage() {
     });
 
     // Derived stats
-    const totalAmount = Number(amount) || 0;
+    const totalAmount = (Number(amountWhole) || 0) + (Number(amountDecimals || "0")) / 100;
     const splitCount = selectedMemberIds.length;
     const amountPerPerson = splitCount > 0 ? totalAmount / splitCount : 0;
 
@@ -151,15 +183,38 @@ export default function ExpensesPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Beløp (NOK)</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm font-medium rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                                        placeholder="0"
-                                    />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-xs">kr</span>
+                                <div className="flex items-center gap-0">
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="number"
+                                            value={amountWhole}
+                                            onChange={(e) => setAmountWhole(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm font-medium rounded-l-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                            placeholder="0"
+                                            min="0"
+                                        />
+                                    </div>
+                                    <span className="text-gray-400 font-bold text-lg select-none bg-gray-50 border-y border-gray-200 py-[7px] px-1">,</span>
+                                    <div className="relative w-16">
+                                        <input
+                                            type="number"
+                                            value={amountDecimals}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                                                setAmountDecimals(val);
+                                            }}
+                                            onBlur={() => {
+                                                // Pad to 2 digits on blur (e.g. "5" -> "50")
+                                                if (amountDecimals.length === 1) setAmountDecimals(amountDecimals + "0");
+                                                if (amountDecimals.length === 0) setAmountDecimals("00");
+                                            }}
+                                            className="w-full bg-gray-50 border border-gray-200 border-l-0 text-gray-900 text-sm font-medium rounded-r-lg px-2 py-2.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                            placeholder="00"
+                                            min="0"
+                                            max="99"
+                                        />
+                                    </div>
+                                    <span className="ml-2 text-gray-400 font-medium text-xs">kr</span>
                                 </div>
                             </div>
                             <div>
@@ -215,13 +270,75 @@ export default function ExpensesPage() {
                             </select>
                         </div>
 
-                        {/* Upload Placeholder */}
+                        {/* Receipt Upload */}
                         <div>
                             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Last opp kvittering (Valgfritt)</label>
-                            <div className="border border-dashed border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center text-gray-400 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group">
-                                <span className="material-symbols-outlined text-2xl mb-1 group-hover:scale-110 transition-transform">upload_file</span>
-                                <span className="text-[10px] font-medium">Klikk eller dra fil hit</span>
-                            </div>
+
+                            {receiptFile ? (
+                                <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl group hover:border-indigo-200 transition-colors">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="w-8 h-8 bg-white border border-gray-200 text-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <span className="material-symbols-outlined text-lg">
+                                                {receiptFile.name.toLowerCase().endsWith('.pdf') ? 'picture_as_pdf' : 'image'}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-xs font-bold text-gray-900 truncate">{receiptFile.name}</span>
+                                            <span className="text-[10px] text-gray-500">{(receiptFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveReceipt}
+                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="border border-dashed border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center text-gray-400 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group relative">
+                                    <input
+                                        type="file"
+                                        accept="image/*,.pdf"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        onChange={async (e) => {
+                                            const files = Array.from(e.target.files || []);
+                                            if (files.length === 0) return;
+
+                                            try {
+                                                const res = await startUpload(files);
+                                                if (res && res.length > 0) {
+                                                    const uploaded = res[0];
+                                                    setReceiptFile({
+                                                        url: uploaded.ufsUrl,
+                                                        key: uploaded.key,
+                                                        name: uploaded.name,
+                                                        size: uploaded.size,
+                                                    });
+                                                    toast.success("Kvittering lastet opp!");
+                                                }
+                                            } catch (error: any) {
+                                                console.error("Upload failed:", error);
+                                                toast.error("Feil ved opplasting: " + (error.message || "Ukjent feil"));
+                                            }
+
+                                            e.target.value = "";
+                                        }}
+                                    />
+                                    <span className="material-symbols-outlined text-2xl mb-1 group-hover:scale-110 transition-transform">upload_file</span>
+                                    <span className="text-[10px] font-medium">Klikk eller dra fil hit</span>
+                                    <span className="text-[10px] text-gray-300 mt-0.5">Bilde eller PDF (Maks 16MB)</span>
+
+                                    {isUploading && (
+                                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 backdrop-blur-sm rounded-lg">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-100 border-t-indigo-600"></div>
+                                                <span className="text-[10px] font-bold text-indigo-600">Laster opp...</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -301,11 +418,11 @@ export default function ExpensesPage() {
                             <div className="pt-3 border-t border-gray-200">
                                 <div className="flex justify-between items-end mb-3">
                                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">TOTAL PER PERS</span>
-                                    <span className="text-2xl font-bold text-gray-900">{new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amountPerPerson)}</span>
+                                    <span className="text-2xl font-bold text-gray-900">{new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(amountPerPerson)}</span>
                                 </div>
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={submitting || !amount || selectedMemberIds.length === 0}
+                                    disabled={submitting || !amountWhole || selectedMemberIds.length === 0}
                                     className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed rounded-lg font-bold text-sm text-white transition-all shadow-lg hover:shadow-indigo-500/25 active:scale-95"
                                 >
                                     {submitting ? "Lagrer..." : "Bokfør Utgift"}
