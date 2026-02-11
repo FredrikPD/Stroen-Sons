@@ -157,14 +157,16 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
             return { success: true, count: 0, message: "Ingen ubetalte krav funnet." };
         }
 
-        // 2. Process all in a transaction
-        // We iterate and update individually to ensure all side-effects (Transactions, Balances, Payment records) are handled correctly.
-        // A bulk update wouldn't easily allow creating individual Transaction records with correct member IDs.
-        await prisma.$transaction(async (tx) => {
-            const date = new Date();
-            const period = `${year}-${String(month).padStart(2, '0')}`;
+        // 2. Process each request in its own transaction
+        // This avoids "Transaction API error: A query cannot be executed on an expired transaction"
+        // when processing many members.
+        const date = new Date();
+        const period = `${year}-${String(month).padStart(2, '0')}`;
 
-            for (const req of pendingRequests) {
+        // We process sequentially to avoid connection pool exhaustion if there are hundreds of members,
+        // though Promise.all with concurrency limit could be faster. For now, safety first.
+        for (const req of pendingRequests) {
+            await prisma.$transaction(async (tx) => {
                 // Create Transaction
                 const transaction = await tx.transaction.create({
                     data: {
@@ -220,8 +222,8 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
                         amount: req.amount
                     }
                 });
-            }
-        });
+            });
+        }
 
         revalidatePath("/admin/finance/income");
         return { success: true, count: pendingRequests.length };

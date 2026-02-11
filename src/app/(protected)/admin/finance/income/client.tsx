@@ -56,6 +56,7 @@ export default function IncomePage() {
     const [loadingData, setLoadingData] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
     const [generating, setGenerating] = useState(false);
+    const [markingPaid, setMarkingPaid] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     // Fetch Data
@@ -222,7 +223,7 @@ export default function IncomePage() {
 
         if (!confirmed) return;
 
-        setGenerating(true);
+        setMarkingPaid(true);
         try {
             const res = await markMonthlyFeesAsPaid(selectedYear, selectedMonth);
             if (res.success) {
@@ -246,7 +247,7 @@ export default function IncomePage() {
                 type: "error"
             });
         } finally {
-            setGenerating(false);
+            setMarkingPaid(false);
         }
     };
 
@@ -384,12 +385,21 @@ export default function IncomePage() {
                                 <div className="mt-4 flex justify-between items-center">
                                     <button
                                         onClick={handleMarkAllPaid}
-                                        disabled={generating || stats.missing === 0}
+                                        disabled={generating || markingPaid || stats.missing === 0}
                                         className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.missing === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:text-emerald-800'
                                             }`}
                                     >
-                                        <span className="material-symbols-outlined text-[1.2rem]">done_all</span>
-                                        Registrer alle som betalt
+                                        {markingPaid ? (
+                                            <>
+                                                <span className="material-symbols-outlined text-[1.2rem] animate-spin">refresh</span>
+                                                Behandler...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="material-symbols-outlined text-[1.2rem]">done_all</span>
+                                                Registrer alle som betalt
+                                            </>
+                                        )}
                                     </button>
 
                                     <button
