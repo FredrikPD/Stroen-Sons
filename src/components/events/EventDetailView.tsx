@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/Avatar";
 import { getCategoryColorClasses } from "@/lib/category-colors";
-
+import AddToCalendarButton from "./AddToCalendarButton";
 
 // Types
 type Attendee = {
@@ -360,6 +360,9 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 ></iframe>
                             </div>
                         )}
+                        <div className="pt-2 border-t border-gray-100">
+                            <AddToCalendarButton event={event} />
+                        </div>
                     </div>
 
                     {/* Economy Card */}
