@@ -90,12 +90,14 @@ export default async function DashboardPage() {
   ]);
 
   const invoices = paymentRequestsRes.success && paymentRequestsRes.data
-    ? paymentRequestsRes.data.map(r => ({
-      ...r,
-      dueDate: r.dueDate ? r.dueDate.toISOString() : null,
-      category: r.category.toString(),
-      amount: Number(r.amount)
-    }))
+    ? paymentRequestsRes.data
+      .filter((r) => r.status === "PENDING")
+      .map(r => ({
+        ...r,
+        dueDate: r.dueDate ? r.dueDate.toISOString() : null,
+        category: r.category.toString(),
+        amount: Number(r.amount)
+      }))
     : [];
 
   // Restore Date objects from cache serialization
