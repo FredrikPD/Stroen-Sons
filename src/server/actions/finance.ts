@@ -13,6 +13,27 @@ const getFeeTitle = (year: number, month: number) => {
     return `Medlemskontingent ${year}-${pad(month)}`;
 };
 
+const EXPENSE_SPLIT_SUFFIX = " (Splittet)";
+
+const normalizeExpenseDescription = (description: string) => {
+    const trimmed = description.trim();
+    if (trimmed.endsWith(EXPENSE_SPLIT_SUFFIX)) {
+        return trimmed.slice(0, -EXPENSE_SPLIT_SUFFIX.length).trim();
+    }
+    return trimmed;
+};
+
+const roundToTwoDecimals = (value: number) =>
+    Math.round((value + Number.EPSILON) * 100) / 100;
+
+const splitAmountIntoShares = (totalAmount: number, count: number) => {
+    if (count <= 0) return [];
+    const totalCents = Math.round(totalAmount * 100);
+    const baseCents = Math.floor(totalCents / count);
+    const remainder = totalCents - (baseCents * count);
+    return Array.from({ length: count }, (_, i) => (baseCents + (i < remainder ? 1 : 0)) / 100);
+};
+
 /**
  * Generate (or ensure existence of) monthly fee requests for all active members.
  */
@@ -576,13 +597,23 @@ export async function registerExpense(data: {
         if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
 
         const { amount, description, category, date, eventId, splitMemberIds, receiptUrl, receiptKey } = data;
-        const totalAmount = Math.abs(amount);
+        const totalAmount = roundToTwoDecimals(Math.abs(amount));
+        const cleanDescription = description.trim();
+        const uniqueSplitMemberIds = Array.from(new Set(splitMemberIds.filter(Boolean)));
 
-        if (splitMemberIds.length === 0) {
+        if (!cleanDescription) {
+            return { success: false, error: "Beskrivelse må fylles ut" };
+        }
+
+        if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+            return { success: false, error: "Beløp må være større enn 0" };
+        }
+
+        if (uniqueSplitMemberIds.length === 0) {
             await prisma.transaction.create({
                 data: {
                     amount: -totalAmount,
-                    description,
+                    description: cleanDescription,
                     category,
                     date,
                     eventId: eventId || null,
@@ -592,15 +623,16 @@ export async function registerExpense(data: {
             });
         }
         else {
-            const splitAmount = totalAmount / splitMemberIds.length;
+            const shares = splitAmountIntoShares(totalAmount, uniqueSplitMemberIds.length);
 
             await prisma.$transaction(async (tx) => {
-                await Promise.all(splitMemberIds.map(async (memberId) => {
+                await Promise.all(uniqueSplitMemberIds.map(async (memberId, index) => {
+                    const share = shares[index] ?? 0;
                     return Promise.all([
                         tx.transaction.create({
                             data: {
-                                amount: -splitAmount,
-                                description: `${description} (Splittet)`,
+                                amount: -share,
+                                description: `${cleanDescription}${EXPENSE_SPLIT_SUFFIX}`,
                                 category,
                                 date,
                                 eventId: eventId || null,
@@ -613,7 +645,7 @@ export async function registerExpense(data: {
                             where: { id: memberId },
                             data: {
                                 balance: {
-                                    decrement: splitAmount
+                                    decrement: share
                                 }
                             }
                         })
@@ -621,12 +653,13 @@ export async function registerExpense(data: {
                 }));
 
                 // Notify members
-                await Promise.all(splitMemberIds.map(async (memberId) => {
+                await Promise.all(uniqueSplitMemberIds.map(async (memberId, index) => {
+                    const share = shares[index] ?? 0;
                     await createNotification({
                         memberId,
                         type: "BALANCE_WITHDRAWAL",
                         title: "Ny belastning",
-                        message: `Din konto har blitt belastet med ${splitAmount.toFixed(0)} kr for: ${description}`,
+                        message: `Din konto har blitt belastet med ${share.toFixed(2)} kr for: ${cleanDescription}`,
                         link: "/dashboard"
                     });
                 }));
@@ -639,6 +672,446 @@ export async function registerExpense(data: {
     } catch (error) {
         console.error("Failed to register expense:", error);
         return { success: false, error: "Kunne ikke registrere utgift" };
+    }
+}
+
+const buildExpenseGroupWhere = (tx: {
+    date: Date;
+    category: string;
+    description: string;
+    eventId: string | null;
+    receiptKey: string | null;
+}): Prisma.TransactionWhereInput => {
+    const baseDescription = normalizeExpenseDescription(tx.description);
+    return {
+        amount: { lt: 0 },
+        date: tx.date,
+        category: tx.category,
+        eventId: tx.eventId,
+        receiptKey: tx.receiptKey,
+        OR: [
+            { description: baseDescription },
+            { description: `${baseDescription}${EXPENSE_SPLIT_SUFFIX}` }
+        ]
+    };
+};
+
+type ExpenseTransaction = Prisma.TransactionGetPayload<{
+    include: {
+        member: { select: { id: true, firstName: true, lastName: true } },
+        event: { select: { id: true, title: true } }
+    }
+}>;
+
+const getExpenseGroupKey = (tx: {
+    date: Date;
+    category: string;
+    description: string;
+    eventId: string | null;
+    receiptKey: string | null;
+}) => {
+    const baseDescription = normalizeExpenseDescription(tx.description);
+    return [
+        tx.date.toISOString(),
+        baseDescription,
+        tx.category,
+        tx.eventId || "",
+        tx.receiptKey || ""
+    ].join("::");
+};
+
+const groupExpenseTransactions = (transactions: ExpenseTransaction[], orderedGroupKeys: string[]) => {
+    const includedKeys = new Set(orderedGroupKeys);
+    const grouped = new Map<string, {
+        id: string;
+        date: string;
+        description: string;
+        category: string;
+        totalAmount: number;
+        splitCount: number;
+        memberIds: string[];
+        members: { id: string; name: string }[];
+        eventId: string | null;
+        eventTitle: string | null;
+        receiptUrl: string | null;
+        receiptKey: string | null;
+        transactionIds: string[];
+        createdAt: string;
+    }>();
+
+    for (const tx of transactions) {
+        const key = getExpenseGroupKey(tx);
+        if (!includedKeys.has(key)) continue;
+
+        if (!grouped.has(key)) {
+            grouped.set(key, {
+                id: tx.id,
+                date: tx.date.toISOString(),
+                description: normalizeExpenseDescription(tx.description),
+                category: tx.category,
+                totalAmount: 0,
+                splitCount: 0,
+                memberIds: [],
+                members: [],
+                eventId: tx.eventId,
+                eventTitle: tx.event?.title || null,
+                receiptUrl: tx.receiptUrl || null,
+                receiptKey: tx.receiptKey || null,
+                transactionIds: [],
+                createdAt: tx.createdAt.toISOString()
+            });
+        }
+
+        const group = grouped.get(key)!;
+        group.totalAmount = roundToTwoDecimals(group.totalAmount + Math.abs(Number(tx.amount)));
+        group.transactionIds.push(tx.id);
+
+        if (tx.memberId && tx.member && !group.memberIds.includes(tx.memberId)) {
+            group.memberIds.push(tx.memberId);
+            group.members.push({
+                id: tx.memberId,
+                name: `${tx.member.firstName || ""} ${tx.member.lastName || ""}`.trim() || "Ukjent medlem"
+            });
+        }
+    }
+
+    return orderedGroupKeys
+        .map((key) => grouped.get(key))
+        .filter((group): group is NonNullable<typeof group> => Boolean(group))
+        .map((group) => ({
+            ...group,
+            splitCount: group.memberIds.length
+        }));
+};
+
+export async function getAdminExpenses(data?: {
+    cursor?: string | null;
+    limit?: number;
+    query?: string;
+    category?: string;
+}) {
+    try {
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const limit = Math.min(Math.max(data?.limit ?? 20, 1), 50);
+        const trimmedQuery = data?.query?.trim() || "";
+        const selectedCategory = data?.category?.trim();
+        const batchSize = Math.max(limit * 6, 60);
+
+        const seedWhere: Prisma.TransactionWhereInput = {
+            amount: { lt: 0 },
+            ...(selectedCategory && selectedCategory !== "ALL" ? { category: selectedCategory } : {}),
+            ...(trimmedQuery ? {
+                OR: [
+                    { description: { contains: trimmedQuery } },
+                    { category: { contains: trimmedQuery } },
+                    {
+                        event: {
+                            is: {
+                                title: { contains: trimmedQuery }
+                            }
+                        }
+                    },
+                    {
+                        member: {
+                            is: {
+                                OR: [
+                                    { firstName: { contains: trimmedQuery } },
+                                    { lastName: { contains: trimmedQuery } }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            } : {})
+        };
+
+        const groupSeedMap = new Map<string, ExpenseTransaction>();
+        let cursor = data?.cursor || null;
+        let nextCursor: string | null = null;
+        let exhausted = false;
+
+        while (!nextCursor && !exhausted) {
+            const batch = (await prisma.transaction.findMany({
+                where: seedWhere,
+                orderBy: [{ date: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+                take: batchSize + 1,
+                ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+                include: {
+                    member: { select: { id: true, firstName: true, lastName: true } },
+                    event: { select: { id: true, title: true } }
+                }
+            })) as ExpenseTransaction[];
+
+            if (batch.length === 0) {
+                exhausted = true;
+                break;
+            }
+
+            const hasMoreRows = batch.length > batchSize;
+            const pageRows = hasMoreRows ? batch.slice(0, batchSize) : batch;
+            let previousRowId: string | null = cursor;
+
+            for (const tx of pageRows) {
+                const key = getExpenseGroupKey(tx);
+                if (!groupSeedMap.has(key)) {
+                    groupSeedMap.set(key, tx);
+                    if (groupSeedMap.size === limit + 1) {
+                        nextCursor = previousRowId;
+                        break;
+                    }
+                }
+                previousRowId = tx.id;
+            }
+
+            if (nextCursor) break;
+
+            if (!hasMoreRows) {
+                exhausted = true;
+                break;
+            }
+
+            cursor = pageRows[pageRows.length - 1]?.id ?? null;
+        }
+
+        const orderedGroupKeys = Array.from(groupSeedMap.keys()).slice(0, limit);
+        if (orderedGroupKeys.length === 0) {
+            return { success: true, expenses: [], nextCursor: null, hasMore: false };
+        }
+
+        const fullGroupWhere = orderedGroupKeys
+            .map((key) => groupSeedMap.get(key))
+            .filter((tx): tx is ExpenseTransaction => Boolean(tx))
+            .map((tx) =>
+                buildExpenseGroupWhere({
+                    date: tx.date,
+                    category: tx.category,
+                    description: tx.description,
+                    eventId: tx.eventId,
+                    receiptKey: tx.receiptKey
+                })
+            );
+
+        const fullGroupTransactions = (await prisma.transaction.findMany({
+            where: {
+                amount: { lt: 0 },
+                OR: fullGroupWhere
+            },
+            orderBy: [{ date: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+            include: {
+                member: { select: { id: true, firstName: true, lastName: true } },
+                event: { select: { id: true, title: true } }
+            }
+        })) as ExpenseTransaction[];
+
+        const expenses = groupExpenseTransactions(fullGroupTransactions, orderedGroupKeys);
+
+        return { success: true, expenses, nextCursor, hasMore: Boolean(nextCursor) };
+    } catch (error) {
+        console.error("Failed to fetch expenses:", error);
+        return { success: false, error: "Kunne ikke hente utgifter" };
+    }
+}
+
+const getExpenseTransactionsForMutation = async (data: {
+    expenseId: string;
+    transactionIds?: string[];
+}) => {
+    const explicitIds = Array.from(new Set((data.transactionIds || []).filter(Boolean)));
+
+    if (explicitIds.length > 0) {
+        const ids = Array.from(new Set([data.expenseId, ...explicitIds]));
+        const relatedTransactions = await prisma.transaction.findMany({
+            where: {
+                id: { in: ids },
+                amount: { lt: 0 }
+            },
+            select: { id: true, amount: true, memberId: true }
+        });
+
+        if (relatedTransactions.length !== ids.length) {
+            return { error: "Fant ikke alle transaksjoner i denne utgiften", relatedTransactions: [] };
+        }
+
+        return { error: null, relatedTransactions };
+    }
+
+    const targetTx = await prisma.transaction.findUnique({
+        where: { id: data.expenseId },
+        select: { id: true, date: true, category: true, description: true, eventId: true, receiptKey: true }
+    });
+
+    if (!targetTx) {
+        return { error: "Fant ikke utgift", relatedTransactions: [] };
+    }
+
+    const relatedTransactions = await prisma.transaction.findMany({
+        where: buildExpenseGroupWhere(targetTx),
+        select: { id: true, amount: true, memberId: true }
+    });
+
+    if (relatedTransactions.length === 0) {
+        return { error: "Fant ingen transaksjoner i denne utgiften", relatedTransactions: [] };
+    }
+
+    return { error: null, relatedTransactions };
+};
+
+export async function updateExpense(data: {
+    expenseId: string;
+    transactionIds?: string[];
+    amount: number;
+    description: string;
+    category: string;
+    date: Date;
+    eventId?: string | null;
+    splitMemberIds: string[];
+    receiptUrl?: string | null;
+    receiptKey?: string | null;
+}) {
+    try {
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const normalizedAmount = roundToTwoDecimals(Math.abs(data.amount));
+        const description = data.description.trim();
+        const splitMemberIds = Array.from(new Set(data.splitMemberIds.filter(Boolean)));
+
+        if (!description) return { success: false, error: "Beskrivelse må fylles ut" };
+        if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+            return { success: false, error: "Beløp må være større enn 0" };
+        }
+
+        const { error, relatedTransactions } = await getExpenseTransactionsForMutation({
+            expenseId: data.expenseId,
+            transactionIds: data.transactionIds
+        });
+
+        if (error) return { success: false, error };
+
+        await prisma.$transaction(async (tx) => {
+            // Revert previous balance impact
+            await Promise.all(
+                relatedTransactions
+                    .filter((entry) => entry.memberId)
+                    .map((entry) =>
+                        tx.member.update({
+                            where: { id: entry.memberId! },
+                            data: {
+                                balance: {
+                                    decrement: entry.amount
+                                }
+                            }
+                        })
+                    )
+            );
+
+            // Remove old group
+            await tx.transaction.deleteMany({
+                where: { id: { in: relatedTransactions.map((entry) => entry.id) } }
+            });
+
+            const eventId = data.eventId || null;
+            const receiptUrl = data.receiptUrl || null;
+            const receiptKey = data.receiptKey || null;
+
+            if (splitMemberIds.length === 0) {
+                await tx.transaction.create({
+                    data: {
+                        amount: -normalizedAmount,
+                        description,
+                        category: data.category,
+                        date: data.date,
+                        eventId,
+                        receiptUrl,
+                        receiptKey
+                    }
+                });
+                return;
+            }
+
+            const shares = splitAmountIntoShares(normalizedAmount, splitMemberIds.length);
+            await Promise.all(splitMemberIds.map(async (memberId, index) => {
+                const share = shares[index] ?? 0;
+                await Promise.all([
+                    tx.transaction.create({
+                        data: {
+                            amount: -share,
+                            description: `${description}${EXPENSE_SPLIT_SUFFIX}`,
+                            category: data.category,
+                            date: data.date,
+                            eventId,
+                            receiptUrl,
+                            receiptKey,
+                            memberId
+                        }
+                    }),
+                    tx.member.update({
+                        where: { id: memberId },
+                        data: {
+                            balance: {
+                                decrement: share
+                            }
+                        }
+                    })
+                ]);
+            }));
+        });
+
+        revalidatePath("/admin/finance");
+        revalidatePath("/admin/finance/expenses");
+        revalidatePath("/admin/finance/transactions");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update expense:", error);
+        return { success: false, error: "Kunne ikke oppdatere utgift" };
+    }
+}
+
+export async function deleteExpense(data: {
+    expenseId: string;
+    transactionIds?: string[];
+}) {
+    try {
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const { error, relatedTransactions } = await getExpenseTransactionsForMutation({
+            expenseId: data.expenseId,
+            transactionIds: data.transactionIds
+        });
+
+        if (error) return { success: false, error };
+
+        await prisma.$transaction(async (tx) => {
+            await Promise.all(
+                relatedTransactions
+                    .filter((entry) => entry.memberId)
+                    .map((entry) =>
+                        tx.member.update({
+                            where: { id: entry.memberId! },
+                            data: {
+                                balance: {
+                                    decrement: entry.amount
+                                }
+                            }
+                        })
+                    )
+            );
+
+            await tx.transaction.deleteMany({
+                where: { id: { in: relatedTransactions.map((entry) => entry.id) } }
+            });
+        });
+
+        revalidatePath("/admin/finance");
+        revalidatePath("/admin/finance/expenses");
+        revalidatePath("/admin/finance/transactions");
+        return { success: true, count: relatedTransactions.length };
+    } catch (error) {
+        console.error("Failed to delete expense:", error);
+        return { success: false, error: "Kunne ikke slette utgift" };
     }
 }
 
