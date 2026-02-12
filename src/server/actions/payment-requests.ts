@@ -3,7 +3,7 @@
 import { db } from "@/server/db";
 import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { createNotification } from "@/server/actions/notifications";
+import { createNotification, createNotificationsForMembers } from "@/server/actions/notifications";
 import { ensureMember } from "@/server/auth/ensureMember";
 
 const roundToTwo = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
@@ -47,7 +47,7 @@ export async function createPaymentRequest(data: {
             type: "INVOICE_CREATED",
             title: `Ny ${categoryLabel}: ${data.title}`,
             message: `Du har mottatt et krav på ${formatNok(normalizedAmount)} kr.`,
-            link: "/dashboard"
+            link: `/invoices/${request.id}`
         });
 
         revalidatePath("/admin/finance/income");
@@ -77,8 +77,13 @@ export async function createBulkPaymentRequests(data: {
             return { success: false, error: "Beløp må være et gyldig tall på minst 0,00" };
         }
 
+        const uniqueMemberIds = Array.from(new Set(data.memberIds.filter(Boolean)));
+        if (uniqueMemberIds.length === 0) {
+            return { success: false, error: "Du må velge minst én mottaker" };
+        }
+
         const batchCreatedAt = new Date();
-        const requests = data.memberIds.map((memberId) => ({
+        const requests = uniqueMemberIds.map((memberId) => ({
             title: data.title,
             description: data.description,
             amount: normalizedAmount,
@@ -94,21 +99,18 @@ export async function createBulkPaymentRequests(data: {
             data: requests,
         });
 
-        // Notify all members
+        // Create all "new invoice" notifications first, then push in one batched dispatch.
         const categoryLabel = data.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' : 'Faktura';
-
-        await Promise.all(data.memberIds.map(async (memberId) => {
-            await createNotification({
-                memberId: memberId,
-                type: "INVOICE_CREATED",
-                title: `Ny ${categoryLabel}: ${data.title}`,
-                message: `Du har mottatt et krav på ${formatNok(normalizedAmount)} kr.`,
-                link: "/dashboard"
-            });
-        }));
+        const notificationResult = await createNotificationsForMembers({
+            memberIds: uniqueMemberIds,
+            type: "INVOICE_CREATED",
+            title: `Ny ${categoryLabel}: ${data.title}`,
+            message: `Du har mottatt et krav på ${formatNok(normalizedAmount)} kr.`,
+            link: "/invoices"
+        });
 
         revalidatePath("/admin/finance/income");
-        return { success: true, count: requests.length };
+        return { success: true, count: requests.length, notifications: notificationResult };
     } catch (error) {
         console.error("Failed to create bulk requests:", error);
         return { success: false, error: "Failed to create bulk requests" };

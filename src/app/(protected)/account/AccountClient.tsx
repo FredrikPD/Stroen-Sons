@@ -307,22 +307,22 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
             </div>
 
             {/* Right Column: Password Reset */}
-            <div className="space-y-6">
-                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm h-full">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <div className="flex flex-col gap-4 lg:h-full">
+                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col lg:flex-1">
+                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <span className="material-symbols-outlined text-indigo-600">lock_reset</span>
                         Bytt passord
                     </h2>
 
                     {passwordStep === "initial" && (
-                        <div className="space-y-4">
-                            <p className="text-gray-600 text-sm">
-                                For å bytte passord må vi først bekrefte din identitet. Klikk på knappen under for å sende en bekreftelseskode til din e-post.
+                        <div className="space-y-3">
+                            <p className="text-gray-600 text-sm leading-snug">
+                                Send en bekreftelseskode til e-post for å oppdatere passordet.
                             </p>
                             <button
                                 onClick={handleStartVerification}
                                 disabled={loading}
-                                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {loading ? "Sender..." : "Send bekreftelseskode"}
                             </button>
@@ -330,12 +330,12 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                     )}
 
                     {passwordStep === "ready" && (
-                        <div className="space-y-4">
-                            <p className="text-gray-600 text-sm mb-4">
+                        <div className="space-y-3">
+                            <p className="text-gray-600 text-sm">
                                 En bekreftelseskode er sendt til <strong>{user.primaryEmailAddress?.emailAddress}</strong>.
                             </p>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     Bekreftelseskode
                                 </label>
@@ -344,11 +344,11 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
                                     placeholder="Skriv inn 6-sifret kode"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-mono tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-mono tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                                 />
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     Nytt passord
                                 </label>
@@ -357,14 +357,14 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="Skriv inn nytt passord"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                                 />
                             </div>
 
                             <button
                                 onClick={handleVerifyAndUpdate}
                                 disabled={loading || code.length < 6 || newPassword.length < 8}
-                                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {loading ? "Oppdaterer..." : "Oppdater passord"}
                             </button>
@@ -383,11 +383,11 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                     )}
 
                     {passwordStep === "success" && (
-                        <div className="flex flex-col items-center justify-center text-center py-8 space-y-4">
-                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2">
-                                <span className="material-symbols-outlined text-3xl">check</span>
+                        <div className="flex flex-col items-center justify-center text-center py-2 space-y-3">
+                            <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                <span className="material-symbols-outlined text-2xl">check</span>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">Suksess!</h3>
+                            <h3 className="text-base font-bold text-gray-900">Suksess!</h3>
                             <p className="text-gray-500 text-sm">Ditt passord er oppdatert.</p>
                             <button
                                 onClick={() => {
@@ -395,7 +395,7 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                                     setCode("");
                                     setNewPassword("");
                                 }}
-                                className="mt-4 px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-bold text-sm transition-colors"
+                                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-bold text-sm transition-colors"
                             >
                                 Ferdig
                             </button>
@@ -403,7 +403,7 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                     )}
                 </div>
 
-                <PushNotificationSettings />
+                <PushNotificationSettings className="flex flex-col lg:flex-1" />
             </div>
         </div>
     );

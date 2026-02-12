@@ -52,6 +52,12 @@ type CreateNotificationInput = {
     memberId: string;
 };
 
+type CreateNotificationsForMembersInput = Omit<CreateNotificationInput, "memberId"> & {
+    memberIds: string[];
+};
+
+type CreateManyNotificationsInput = CreateNotificationInput[];
+
 // Internal helper - not exposed as a server action directly unless needed
 export async function createNotification(data: CreateNotificationInput) {
     try {
@@ -74,22 +80,80 @@ export async function createNotification(data: CreateNotificationInput) {
     }
 }
 
-export async function broadcastNotification(data: Omit<CreateNotificationInput, "memberId">) {
+export async function createManyNotifications(notifications: CreateManyNotificationsInput) {
     try {
-        const allMembers = await db.member.findMany({ select: { id: true } });
+        if (notifications.length === 0) {
+            return { created: 0, pushed: 0, removed: 0 };
+        }
 
-        // Create notifications in batches if necessary, but loop is fine for now
+        const normalized = notifications
+            .filter((item) => Boolean(item.memberId))
+            .map((item) => ({
+                memberId: item.memberId,
+                type: item.type,
+                title: item.title,
+                message: item.message,
+                link: item.link,
+            }));
+
+        if (normalized.length === 0) {
+            return { created: 0, pushed: 0, removed: 0 };
+        }
+
         await db.notification.createMany({
-            data: allMembers.map(m => ({
-                memberId: m.id,
+            data: normalized,
+        });
+
+        const uniqueMemberIds = Array.from(new Set(normalized.map((item) => item.memberId)));
+        const pushResult = await sendPushSignalToMembers(uniqueMemberIds);
+
+        return {
+            created: normalized.length,
+            pushed: pushResult.pushed,
+            removed: pushResult.removed,
+        };
+    } catch (error) {
+        console.error("Failed to create many notifications:", error);
+        return { created: 0, pushed: 0, removed: 0 };
+    }
+}
+
+export async function createNotificationsForMembers(data: CreateNotificationsForMembersInput) {
+    try {
+        const uniqueMemberIds = Array.from(new Set(data.memberIds.filter(Boolean)));
+        if (uniqueMemberIds.length === 0) {
+            return { created: 0, pushed: 0, removed: 0 };
+        }
+
+        await db.notification.createMany({
+            data: uniqueMemberIds.map((memberId) => ({
+                memberId,
                 type: data.type,
                 title: data.title,
                 message: data.message,
                 link: data.link,
-            }))
+            })),
         });
 
-        await sendPushSignalToMembers(allMembers.map((member) => member.id));
+        const pushResult = await sendPushSignalToMembers(uniqueMemberIds);
+        return {
+            created: uniqueMemberIds.length,
+            pushed: pushResult.pushed,
+            removed: pushResult.removed,
+        };
+    } catch (error) {
+        console.error("Failed to create notifications for members:", error);
+        return { created: 0, pushed: 0, removed: 0 };
+    }
+}
+
+export async function broadcastNotification(data: Omit<CreateNotificationInput, "memberId">) {
+    try {
+        const allMembers = await db.member.findMany({ select: { id: true } });
+        await createNotificationsForMembers({
+            ...data,
+            memberIds: allMembers.map((member) => member.id),
+        });
 
     } catch (error) {
         console.error("Failed to broadcast notification:", error);
@@ -132,7 +196,6 @@ export async function sendInvoiceDeadlineReminders() {
                         gte: startInThreeDays,
                         lt: startInFourDays,
                     },
-                    dueSoonReminderSentAt: null,
                 },
                 select: {
                     id: true,
@@ -148,7 +211,6 @@ export async function sendInvoiceDeadlineReminders() {
                         gte: startOfToday,
                         lt: startOfTomorrow,
                     },
-                    dueTodayReminderSentAt: null,
                 },
                 select: {
                     id: true,
@@ -162,38 +224,49 @@ export async function sendInvoiceDeadlineReminders() {
         const dueSoonDateLabel = startInThreeDays.toLocaleDateString("nb-NO");
         const dueTodayDateLabel = startOfToday.toLocaleDateString("nb-NO");
 
-        await Promise.all(dueSoon.map((request) =>
-            createNotification({
-                memberId: request.memberId,
-                type: NotificationType.INVOICE_CREATED,
-                title: "Faktura forfaller snart",
-                message: `"${request.title}" forfaller ${dueSoonDateLabel}.`,
-                link: `/invoices/${request.id}`,
-            })
-        ));
+        const dueSoonPayloads = dueSoon.map((request) => ({
+            memberId: request.memberId,
+            type: NotificationType.INVOICE_CREATED,
+            title: "Faktura forfaller snart",
+            message: `"${request.title}" forfaller ${dueSoonDateLabel}.`,
+            link: `/invoices/${request.id}`,
+        }));
 
-        await Promise.all(dueToday.map((request) =>
-            createNotification({
-                memberId: request.memberId,
-                type: NotificationType.INVOICE_CREATED,
-                title: "Faktura forfaller i dag",
-                message: `"${request.title}" forfaller ${dueTodayDateLabel}.`,
-                link: `/invoices/${request.id}`,
-            })
-        ));
+        const dueTodayPayloads = dueToday.map((request) => ({
+            memberId: request.memberId,
+            type: NotificationType.INVOICE_CREATED,
+            title: "Faktura forfaller i dag",
+            message: `"${request.title}" forfaller ${dueTodayDateLabel}.`,
+            link: `/invoices/${request.id}`,
+        }));
 
-        if (dueSoon.length > 0) {
-            await db.paymentRequest.updateMany({
-                where: { id: { in: dueSoon.map((request) => request.id) } },
-                data: { dueSoonReminderSentAt: now },
+        const candidateNotifications = [...dueSoonPayloads, ...dueTodayPayloads];
+
+        if (candidateNotifications.length > 0) {
+            const relevantMemberIds = Array.from(new Set(candidateNotifications.map((item) => item.memberId)));
+            const relevantLinks = candidateNotifications.map((item) => item.link).filter((link): link is string => Boolean(link));
+
+            const existingToday = await db.notification.findMany({
+                where: {
+                    memberId: { in: relevantMemberIds },
+                    type: NotificationType.INVOICE_CREATED,
+                    title: { in: ["Faktura forfaller snart", "Faktura forfaller i dag"] },
+                    link: { in: relevantLinks },
+                    createdAt: { gte: startOfToday },
+                },
+                select: { memberId: true, title: true, link: true },
             });
-        }
 
-        if (dueToday.length > 0) {
-            await db.paymentRequest.updateMany({
-                where: { id: { in: dueToday.map((request) => request.id) } },
-                data: { dueTodayReminderSentAt: now },
+            const existingKeys = new Set(
+                existingToday.map((item) => `${item.memberId}::${item.title}::${item.link || ""}`)
+            );
+
+            const toCreate = candidateNotifications.filter((item) => {
+                const key = `${item.memberId}::${item.title}::${item.link || ""}`;
+                return !existingKeys.has(key);
             });
+
+            await createManyNotifications(toCreate);
         }
 
         return {

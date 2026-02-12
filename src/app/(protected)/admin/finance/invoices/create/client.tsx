@@ -85,9 +85,14 @@ export default function CreateInvoicePage() {
             });
 
             if (res.success) {
+                const pushedCount = res.notifications?.pushed ?? 0;
+                const pushSummary = pushedCount > 0
+                    ? ` Push-signal sendt til ${pushedCount} enhet${pushedCount === 1 ? "" : "er"}.`
+                    : " Ingen aktive push-enheter funnet for mottakerne.";
+
                 await openAlert({
                     title: "Fakturaer opprettet",
-                    message: `Opprettet ${res.count} krav. Betalingskravene er nå sendt til mottakerne.`,
+                    message: `Opprettet ${res.count} krav. Betalingskravene er nå sendt til mottakerne.${pushSummary}`,
                     type: "success",
                     confirmText: "OK"
                 });

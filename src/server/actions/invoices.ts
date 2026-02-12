@@ -3,7 +3,7 @@
 import { db } from "@/server/db";
 import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { createNotification } from "@/server/actions/notifications";
+import { createNotificationsForMembers } from "@/server/actions/notifications";
 
 const roundToTwo = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
 
@@ -209,18 +209,13 @@ export async function updateInvoiceGroup(groupIdOrTitle: string, data: {
                     }))
                 });
 
-                // Notify new members
-                // We do this in a loop or Promise.all because createNotification is per-user
-                // Or we can createMany notifications if we had a helper, but looping createNotification is safe enough for small batches
-                await Promise.all(toAdd.map(async (mId) => {
-                    await createNotification({
-                        memberId: mId,
-                        type: "INVOICE_CREATED",
-                        title: `Ny betalingsforespørsel: ${group.title}`,
-                        message: `Du har mottatt en ny forespørsel på ${formatNok(finalAmount)} kr.`,
-                        link: "/dashboard" // Or specific invoice page if we had one for members
-                    });
-                }));
+                await createNotificationsForMembers({
+                    memberIds: toAdd,
+                    type: "INVOICE_CREATED",
+                    title: `Ny betalingsforespørsel: ${group.title}`,
+                    message: `Du har mottatt en ny forespørsel på ${formatNok(finalAmount)} kr.`,
+                    link: "/invoices"
+                });
             }
 
             // Perform Removes (Only DELETE if NOT PAID)

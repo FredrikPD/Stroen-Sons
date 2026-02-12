@@ -222,8 +222,6 @@ model PaymentRequest {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  dueSoonReminderSentAt DateTime?
-  dueTodayReminderSentAt DateTime?
 }
 
 model Photo {

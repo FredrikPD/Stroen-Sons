@@ -38,7 +38,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
             // Notify about new photos
             if (selectedEventId) {
-                notifyNewPhotos(selectedEventId);
+                void notifyNewPhotos(selectedEventId);
             }
 
             router.refresh();

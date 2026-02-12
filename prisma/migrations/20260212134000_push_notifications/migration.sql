@@ -1,11 +1,6 @@
 -- Add push and transaction notification type
 ALTER TYPE "NotificationType" ADD VALUE 'BALANCE_DEPOSIT';
 
--- Track invoice deadline reminders to avoid duplicate sends
-ALTER TABLE "PaymentRequest"
-ADD COLUMN "dueSoonReminderSentAt" TIMESTAMP(3),
-ADD COLUMN "dueTodayReminderSentAt" TIMESTAMP(3);
-
 -- Store browser push subscriptions per member/device
 CREATE TABLE "PushSubscription" (
     "id" TEXT NOT NULL,

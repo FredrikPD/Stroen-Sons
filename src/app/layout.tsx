@@ -7,6 +7,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { ModalProvider } from "@/components/providers/ModalContext";
 import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
+import { Toaster } from "sonner";
 
 import { Metadata, Viewport } from 'next';
 
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body className="bg-background-main text-text-main font-display">
           <RegisterServiceWorker />
+          <Toaster position="top-right" richColors />
           <NextTopLoader color="#4F46E5" showSpinner={false} />
           <NextSSRPlugin
             /**

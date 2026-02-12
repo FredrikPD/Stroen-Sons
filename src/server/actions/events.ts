@@ -84,7 +84,7 @@ export async function createEvent(input: CreateEventInput) {
         await broadcastNotification({
             type: "EVENT_CREATED",
             title: "Nytt arrangement",
-            message: `"${title}" har blitt lagt til i kalenderen.`,
+            message: `"${title}" har blitt publisert.`,
             link: `/events/${event.id}`,
         });
 

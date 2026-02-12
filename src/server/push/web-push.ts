@@ -89,15 +89,27 @@ const sendPushSignalToEndpoint = async (endpoint: string): Promise<PushResult> =
         const audience = `${endpointUrl.protocol}//${endpointUrl.host}`;
         const jwt = createVapidJwt(audience, config);
 
-        const response = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-                Authorization: `vapid t=${jwt}, k=${config.publicKey}`,
-                "Crypto-Key": `p256ecdsa=${config.publicKey}`,
-                TTL: "60",
-                Urgency: "high",
-            },
-        });
+        const trySend = async (authorization: string) => {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    Authorization: authorization,
+                    "Crypto-Key": `p256ecdsa=${config.publicKey}`,
+                    TTL: "60",
+                    Urgency: "high",
+                    "Content-Length": "0",
+                },
+            });
+            return response;
+        };
+
+        // RFC 8292 format
+        let response = await trySend(`vapid t=${jwt}, k=${config.publicKey}`);
+
+        // Compatibility fallback for some push services.
+        if (!response.ok && [400, 401, 403].includes(response.status)) {
+            response = await trySend(`WebPush ${jwt}`);
+        }
 
         return {
             success: response.ok,
@@ -133,6 +145,21 @@ export async function sendPushSignalToMembers(memberIds: string[]) {
         if (result.success) {
             successfulIds.push(subscription.id);
             return;
+        }
+
+        if (!result.success) {
+            const endpointHost = (() => {
+                try {
+                    return new URL(subscription.endpoint).host;
+                } catch {
+                    return "unknown-host";
+                }
+            })();
+            console.warn("[push] Failed delivery", {
+                host: endpointHost,
+                status: result.status,
+                error: result.error,
+            });
         }
 
         if (result.status === 404 || result.status === 410) {

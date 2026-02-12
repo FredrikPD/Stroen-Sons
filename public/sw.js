@@ -1,4 +1,4 @@
-const CACHE_NAME = "stroen-sons-pwa-v1";
+const CACHE_NAME = "stroen-sons-pwa-v3";
 const OFFLINE_URL = "/offline";
 const PUSH_META_CACHE_NAME = "stroen-sons-pwa-push-meta-v1";
 const PUSH_SEEN_KEY = "/__push_seen_notifications";
@@ -42,12 +42,29 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const shouldCacheAsset =
+  const isCriticalAsset =
     request.destination === "style" ||
     request.destination === "script" ||
-    request.destination === "image" ||
-    request.destination === "font" ||
     url.pathname.startsWith("/_next/static/");
+
+  if (isCriticalAsset) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  const shouldCacheAsset =
+    request.destination === "image" ||
+    request.destination === "font";
 
   if (!shouldCacheAsset) return;
 
@@ -94,22 +111,53 @@ const setSeenNotificationIds = async (ids) => {
 self.addEventListener("push", (event) => {
   event.waitUntil((async () => {
     try {
-      const response = await fetch("/api/push/latest", {
-        credentials: "include",
+      const subscription = await self.registration.pushManager.getSubscription();
+      const endpoint = subscription?.endpoint;
+
+      if (!endpoint) {
+        await self.registration.showNotification("Ny varsling", {
+          body: "Du har en ny oppdatering i Strøen Søns.",
+          icon: "/pwa-192x192.png",
+          badge: "/pwa-192x192.png",
+          data: { url: "/dashboard" },
+          tag: "notification-generic",
+        });
+        return;
+      }
+
+      const response = await fetch("/api/push/latest-by-subscription", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ endpoint }),
         cache: "no-store",
       });
 
-      if (!response.ok) return;
+      if (!response.ok) {
+        await self.registration.showNotification("Ny varsling", {
+          body: "Du har en ny oppdatering i Strøen Søns.",
+          icon: "/pwa-192x192.png",
+          badge: "/pwa-192x192.png",
+          data: { url: "/dashboard" },
+          tag: "notification-generic",
+        });
+        return;
+      }
 
       const payload = await response.json();
       const notifications = Array.isArray(payload.notifications) ? payload.notifications : [];
       if (notifications.length === 0) return;
 
+      const sortedNotifications = [...notifications].sort((a, b) => {
+        const aTs = new Date(a.createdAt || 0).getTime();
+        const bTs = new Date(b.createdAt || 0).getTime();
+        return bTs - aTs;
+      });
+
       const seenIds = await getSeenNotificationIds();
 
-      const candidate =
-        notifications.find((item) => !seenIds.includes(item.id) && item.read === false) ||
-        notifications.find((item) => !seenIds.includes(item.id));
+      const candidate = sortedNotifications.find(
+        (item) => item.read === false && !seenIds.includes(item.id)
+      );
 
       if (!candidate) return;
 

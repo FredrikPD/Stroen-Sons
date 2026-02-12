@@ -5,13 +5,15 @@ import { ensureMember } from "@/server/auth/ensureMember";
 import { revalidatePath } from "next/cache";
 import { PaymentCategory, RequestStatus, Prisma } from "@prisma/client";
 import { markRequestAsPaid } from "./payment-requests";
-import { createNotification } from "@/server/actions/notifications";
+import { createManyNotifications, createNotification } from "@/server/actions/notifications";
 
 // Helper to format consistent titles
 const getFeeTitle = (year: number, month: number) => {
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `Medlemskontingent ${year}-${pad(month)}`;
 };
+
+const getMonthEndDate = (year: number, month: number) => new Date(year, month, 0);
 
 const EXPENSE_SPLIT_SUFFIX = " (Splittet)";
 
@@ -51,7 +53,7 @@ export async function generateMonthlyFees(year: number, month: number) {
         if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
 
         const title = getFeeTitle(year, month);
-        const dueDate = new Date(year, month - 1, 1); // Due date 1st of the month
+        const dueDate = getMonthEndDate(year, month); // Due date is end of month
 
         // 1. Get all active members
         const members = await prisma.member.findMany({
@@ -97,16 +99,13 @@ export async function generateMonthlyFees(year: number, month: number) {
                 data: newRequests
             });
 
-            // Notify members about new monthly fee
-            await Promise.all(newRequests.map(async (req) => {
-                await createNotification({
-                    memberId: req.memberId,
-                    type: "INVOICE_CREATED",
-                    title: `Ny Medlemskontingent: ${req.title}`,
-                    message: `Din faktura for ${month}/${year} er nå tilgjengelig. Beløp: ${req.amount} kr.`,
-                    link: "/dashboard"
-                });
-            }));
+            await createManyNotifications(newRequests.map((req) => ({
+                memberId: req.memberId,
+                type: "INVOICE_CREATED" as const,
+                title: `${req.title}`,
+                message: `Din faktura for ${month}/${year} er nå tilgjengelig. Beløp: ${formatNok(Number(req.amount))} kr.`,
+                link: "/invoices"
+            })));
         }
 
         revalidatePath("/admin/finance/income");
@@ -189,6 +188,13 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
         // when processing many members.
         const date = new Date();
         const period = `${year}-${String(month).padStart(2, '0')}`;
+        const depositNotifications: Array<{
+            memberId: string;
+            type: "BALANCE_DEPOSIT";
+            title: string;
+            message: string;
+            link: string;
+        }> = [];
 
         // We process sequentially to avoid connection pool exhaustion if there are hundreds of members,
         // though Promise.all with concurrency limit could be faster. For now, safety first.
@@ -252,7 +258,7 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
                 });
             });
 
-            await createNotification({
+            depositNotifications.push({
                 memberId: req.memberId,
                 type: "BALANCE_DEPOSIT",
                 title: "Innbetaling registrert",
@@ -260,6 +266,8 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
                 link: "/balance"
             });
         }
+
+        await createManyNotifications(depositNotifications);
 
         revalidatePath("/admin/finance/income");
         return { success: true, count: pendingRequests.length };
@@ -399,7 +407,7 @@ export async function createFutureMonthlyFees(memberId: string, startYear: numbe
             const m = d.getMonth() + 1; // 1-indexed
 
             const title = getFeeTitle(y, m);
-            const dueDate = new Date(y, m - 1, 1);
+            const dueDate = getMonthEndDate(y, m);
 
             // Check existence
             const existing = await prisma.paymentRequest.findFirst({
@@ -438,7 +446,7 @@ export async function createFutureMonthlyFees(memberId: string, startYear: numbe
                 type: "INVOICE_CREATED",
                 title: `Ny Medlemskontingent: ${title}`,
                 message: `Din faktura for ${m}/${y} er nå tilgjengelig. Beløp: ${amount} kr.`,
-                link: "/dashboard"
+                link: "/invoices"
             }).catch(e => console.error("Notification failed", e));
 
             createdCount++;
@@ -474,22 +482,39 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
         const titles = periods.map(p => p.title);
 
 
-        type MemberWithPayments = Prisma.MemberGetPayload<{
-            include: { paymentRequests: true }
-        }>;
-
         // Fetch members with their requests for these 3 periods
-        const members = (await prisma.member.findMany({
+        const members = ((await prisma.member.findMany({
             orderBy: { firstName: 'asc' },
-            include: {
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                membershipType: true,
                 paymentRequests: {
                     where: {
                         title: { in: titles },
                         category: PaymentCategory.MEMBERSHIP_FEE
-                    }
+                    },
+                    select: {
+                        id: true,
+                        title: true,
+                        amount: true,
+                        status: true,
+                    },
                 }
             }
-        })) as unknown as MemberWithPayments[];
+        }) as unknown) as Array<{
+            id: string;
+            firstName: string | null;
+            lastName: string | null;
+            membershipType: string;
+            paymentRequests: Array<{
+                id: string;
+                title: string;
+                amount: number | Prisma.Decimal;
+                status: RequestStatus;
+            }>;
+        }>);
 
         // Calculate stats for CURRENT period (index 0)
         let totalCollected = 0;
@@ -676,6 +701,13 @@ export async function setInvoiceGroupPaymentStatus(data: {
         }
 
         let updatedCount = 0;
+        const depositNotifications: Array<{
+            memberId: string;
+            type: "BALANCE_DEPOSIT";
+            title: string;
+            message: string;
+            link: string;
+        }> = [];
         for (const request of requestsToToggle) {
             if (data.targetStatus === "PAID") {
                 await prisma.$transaction(async (tx) => {
@@ -737,7 +769,7 @@ export async function setInvoiceGroupPaymentStatus(data: {
                     }
                 });
 
-                await createNotification({
+                depositNotifications.push({
                     memberId: request.memberId,
                     type: "BALANCE_DEPOSIT",
                     title: "Innbetaling registrert",
@@ -786,6 +818,10 @@ export async function setInvoiceGroupPaymentStatus(data: {
                 });
             }
             updatedCount++;
+        }
+
+        if (depositNotifications.length > 0) {
+            await createManyNotifications(depositNotifications);
         }
 
         revalidatePath("/admin/finance");
@@ -914,19 +950,18 @@ export async function registerExpense(data: {
                         })
                     ]);
                 }));
-
-                // Notify members
-                await Promise.all(uniqueSplitMemberIds.map(async (memberId, index) => {
-                    const share = shares[index] ?? 0;
-                    await createNotification({
-                        memberId,
-                        type: "BALANCE_WITHDRAWAL",
-                        title: "Ny belastning",
-                        message: `Din konto har blitt belastet med ${share.toFixed(2)} kr for: ${cleanDescription}`,
-                        link: "/dashboard"
-                    });
-                }));
             });
+
+            await createManyNotifications(uniqueSplitMemberIds.map((memberId, index) => {
+                const share = shares[index] ?? 0;
+                return {
+                    memberId,
+                    type: "BALANCE_WITHDRAWAL" as const,
+                    title: "Ny belastning",
+                    message: `Din konto har blitt belastet med ${share.toFixed(2)} kr for: ${cleanDescription}`,
+                    link: "/dashboard"
+                };
+            }));
         }
 
         revalidatePath("/admin/finance");
