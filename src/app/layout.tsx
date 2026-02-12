@@ -15,6 +15,15 @@ export const metadata: Metadata = {
     default: 'Strøen Søns',
   },
   description: 'Foreningen for gentlemen',
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
+  appleWebApp: {
+    title: "Strøen Søns",
+    capable: true,
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
