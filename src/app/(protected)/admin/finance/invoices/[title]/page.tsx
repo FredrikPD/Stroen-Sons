@@ -8,11 +8,8 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { title } = await params;
-    const decodedTitle = decodeURIComponent(title);
-
     return {
-        title: `Fakturagruppe: ${decodedTitle}`,
+        title: "Fakturagruppe",
     };
 }
 

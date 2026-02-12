@@ -620,19 +620,29 @@ export async function togglePaymentStatus(requestId: string) {
 }
 
 export async function setInvoiceGroupPaymentStatus(data: {
-    title: string;
+    groupId: string;
     targetStatus: "PAID" | "PENDING";
 }) {
     try {
         const user = await ensureMember();
         if (user.role !== "ADMIN") return { success: false, error: "Unauthorized" };
 
+        const invoiceGroup = await prisma.paymentRequest.findUnique({
+            where: { id: data.groupId },
+            select: { id: true, title: true, createdAt: true }
+        });
+
+        if (!invoiceGroup) {
+            return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
+        }
+
         const sourceStatus =
             data.targetStatus === "PAID" ? RequestStatus.PENDING : RequestStatus.PAID;
 
         const requestsToToggle = await prisma.paymentRequest.findMany({
             where: {
-                title: data.title,
+                title: invoiceGroup.title,
+                createdAt: invoiceGroup.createdAt,
                 status: sourceStatus
             },
             select: {
@@ -759,7 +769,7 @@ export async function setInvoiceGroupPaymentStatus(data: {
         revalidatePath("/admin/finance");
         revalidatePath("/admin/finance/income");
         revalidatePath("/admin/finance/invoices");
-        revalidatePath(`/admin/finance/invoices/${encodeURIComponent(data.title)}`);
+        revalidatePath(`/admin/finance/invoices/${encodeURIComponent(data.groupId)}`);
 
         return {
             success: true,

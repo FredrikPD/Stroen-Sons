@@ -22,15 +22,16 @@ export async function getInvoiceGroups() {
             include: {
                 member: { select: { id: true, firstName: true, lastName: true } }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: [{ createdAt: 'desc' }, { id: 'asc' }]
         });
         const requests = rawRequests.map((request) => ({
             ...request,
             amount: Number(request.amount)
         }));
 
-        // Group by Title (e.g. "Hytte tur 2025")
+        // Group by batch key (title + createdAt) so same title can be reused safely.
         const groups: Record<string, {
+            id: string;
             title: string;
             category: PaymentCategory;
             createdAt: Date;
@@ -41,8 +42,10 @@ export async function getInvoiceGroups() {
         }> = {};
 
         for (const req of requests) {
-            if (!groups[req.title]) {
-                groups[req.title] = {
+            const groupKey = `${req.title}__${req.createdAt.toISOString()}`;
+            if (!groups[groupKey]) {
+                groups[groupKey] = {
+                    id: req.id,
                     title: req.title,
                     category: req.category,
                     createdAt: req.createdAt,
@@ -52,7 +55,7 @@ export async function getInvoiceGroups() {
                     requests: []
                 };
             }
-            const g = groups[req.title];
+            const g = groups[groupKey];
             g.totalAmount += req.amount;
             g.totalCount++;
             if (req.status === 'PAID') g.paidCount++;
@@ -68,11 +71,34 @@ export async function getInvoiceGroups() {
     }
 }
 
+const buildInvoiceGroupWhere = (group: { title: string; createdAt: Date }) => ({
+    title: group.title,
+    createdAt: group.createdAt
+});
 
-export async function getInvoiceGroupDetails(title: string) {
+const resolveInvoiceGroup = async (groupIdOrTitle: string) => {
+    const byId = await db.paymentRequest.findUnique({
+        where: { id: groupIdOrTitle },
+        select: { id: true, title: true, createdAt: true }
+    });
+
+    if (byId) return byId;
+
+    // Backward-compat fallback for old URLs that still pass title
+    return db.paymentRequest.findFirst({
+        where: { title: groupIdOrTitle },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        select: { id: true, title: true, createdAt: true }
+    });
+};
+
+export async function getInvoiceGroupDetails(groupIdOrTitle: string) {
     try {
+        const group = await resolveInvoiceGroup(groupIdOrTitle);
+        if (!group) return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
+
         const requests = await db.paymentRequest.findMany({
-            where: { title: title }, // Title is exact match
+            where: buildInvoiceGroupWhere(group),
             include: {
                 member: { select: { id: true, firstName: true, lastName: true } },
                 transaction: true, // To see when it was paid
@@ -90,7 +116,12 @@ export async function getInvoiceGroupDetails(title: string) {
             } : null
         }));
 
-        return { success: true, requests: safeRequests };
+        return {
+            success: true,
+            groupId: group.id,
+            title: group.title,
+            requests: safeRequests
+        };
     } catch (error) {
         console.error("Failed to fetch invoice details:", error);
         return { success: false, error: "Kunne ikke hente fakturadetaljer" };
@@ -119,7 +150,7 @@ export async function getInvoiceFormData() {
     return { members, events };
 }
 
-export async function updateInvoiceGroup(oldTitle: string, data: {
+export async function updateInvoiceGroup(groupIdOrTitle: string, data: {
     description?: string;
     amount?: number;
     dueDate?: Date;
@@ -132,8 +163,11 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
 
 
         // 1. Fetch existing requests for this group to know state and usage as template
+        const group = await resolveInvoiceGroup(groupIdOrTitle);
+        if (!group) return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
+
         const existingRequests = await db.paymentRequest.findMany({
-            where: { title: oldTitle },
+            where: buildInvoiceGroupWhere(group),
             select: { id: true, memberId: true, status: true, amount: true, description: true, dueDate: true, category: true, eventId: true }
         });
 
@@ -163,7 +197,8 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
                 // Batch create requests
                 await db.paymentRequest.createMany({
                     data: toAdd.map(mId => ({
-                        title: oldTitle, // Keep same title to stay in group
+                        title: group.title, // Keep same title to stay in group
+                        createdAt: group.createdAt, // Keep same batch key
                         memberId: mId,
                         amount: finalAmount,
                         description: finalDescription,
@@ -181,7 +216,7 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
                     await createNotification({
                         memberId: mId,
                         type: "INVOICE_CREATED",
-                        title: `Ny betalingsforespørsel: ${oldTitle}`,
+                        title: `Ny betalingsforespørsel: ${group.title}`,
                         message: `Du har mottatt en ny forespørsel på ${formatNok(finalAmount)} kr.`,
                         link: "/dashboard" // Or specific invoice page if we had one for members
                     });
@@ -223,13 +258,13 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
 
         if (Object.keys(updateData).length > 0) {
             await db.paymentRequest.updateMany({
-                where: { title: oldTitle },
+                where: buildInvoiceGroupWhere(group),
                 data: updateData
             });
         }
 
         revalidatePath("/admin/finance/invoices");
-        revalidatePath(`/admin/finance/invoices/${encodeURIComponent(oldTitle)}`); // Revalidate specific page
+        revalidatePath(`/admin/finance/invoices/${encodeURIComponent(group.id)}`); // Revalidate specific page
 
         return { success: true };
     } catch (error) {
@@ -238,12 +273,15 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
     }
 }
 
-export async function deleteInvoiceGroup(title: string) {
+export async function deleteInvoiceGroup(groupIdOrTitle: string) {
     try {
+        const group = await resolveInvoiceGroup(groupIdOrTitle);
+        if (!group) return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
+
         // 1. Find all pending requests in this group
         const requests = await db.paymentRequest.findMany({
             where: {
-                title: title,
+                ...buildInvoiceGroupWhere(group),
                 status: RequestStatus.PENDING
             },
             select: { id: true }
@@ -251,7 +289,7 @@ export async function deleteInvoiceGroup(title: string) {
 
         if (requests.length === 0) {
             // Check if there are ANY requests (maybe all satisfied?)
-            const total = await db.paymentRequest.count({ where: { title: title } });
+            const total = await db.paymentRequest.count({ where: buildInvoiceGroupWhere(group) });
             if (total > 0) {
                 // Logic change: If we are here, it means we found NO PENDING requests, but there ARE requests total.
                 // This implies ALL requests are PAID (or some other non-pending status if added later).
@@ -264,7 +302,7 @@ export async function deleteInvoiceGroup(title: string) {
         // Check if there are ANY paid requests in this group at all
         const paidCount = await db.paymentRequest.count({
             where: {
-                title: title,
+                ...buildInvoiceGroupWhere(group),
                 status: RequestStatus.PAID
             }
         });
@@ -281,6 +319,7 @@ export async function deleteInvoiceGroup(title: string) {
         });
 
         revalidatePath("/admin/finance/invoices");
+        revalidatePath(`/admin/finance/invoices/${encodeURIComponent(group.id)}`);
         return { success: true, count: requests.length };
     } catch (error) {
         console.error("Failed to delete invoice group:", error);

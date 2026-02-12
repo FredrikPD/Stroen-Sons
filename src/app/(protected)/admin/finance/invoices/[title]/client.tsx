@@ -27,8 +27,8 @@ export default function InvoiceDetailPage() {
     const params = useParams();
     const router = useRouter();
     const { openConfirm, openAlert } = useModal();
-    const encodedTitle = params?.title as string;
-    const title = decodeURIComponent(encodedTitle);
+    const encodedGroupId = params?.title as string;
+    const groupId = decodeURIComponent(encodedGroupId);
 
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -46,9 +46,10 @@ export default function InvoiceDetailPage() {
         dueDate: ''
     });
     const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
+    const displayTitle = requests[0]?.title || "Fakturagruppe";
 
     const reloadRequests = async () => {
-        const resDetails = await getInvoiceGroupDetails(title);
+        const resDetails = await getInvoiceGroupDetails(groupId);
         if (resDetails.success && resDetails.requests) {
             setRequests(resDetails.requests);
             setSelectedMemberIds(resDetails.requests.map((r: any) => r.memberId));
@@ -56,10 +57,10 @@ export default function InvoiceDetailPage() {
     };
 
     useEffect(() => {
-        if (!title) return;
+        if (!groupId) return;
 
         Promise.all([
-            getInvoiceGroupDetails(title),
+            getInvoiceGroupDetails(groupId),
             getInvoiceFormData()
         ]).then(([resDetails, resForm]) => {
             if (resDetails.success && resDetails.requests) {
@@ -81,11 +82,11 @@ export default function InvoiceDetailPage() {
             }
             setLoading(false);
         });
-    }, [title]);
+    }, [groupId]);
 
     const handleSave = async () => {
         setUpdatingId('group');
-        const res = await updateInvoiceGroup(title, {
+        const res = await updateInvoiceGroup(groupId, {
             description: editForm.description,
             amount: editForm.amount,
             dueDate: editForm.dueDate ? new Date(editForm.dueDate) : undefined
@@ -117,7 +118,7 @@ export default function InvoiceDetailPage() {
         if (!confirmed) return;
 
         setUpdatingId('group_delete');
-        const res = await deleteInvoiceGroup(title);
+        const res = await deleteInvoiceGroup(groupId);
 
         if (res.success) {
             router.push("/admin/finance/invoices");
@@ -172,7 +173,7 @@ export default function InvoiceDetailPage() {
 
         setUpdatingId(markAsPaid ? "group_mark_all_paid" : "group_unmark_all_paid");
         const res = await setInvoiceGroupPaymentStatus({
-            title,
+            groupId,
             targetStatus
         });
 
@@ -231,7 +232,7 @@ export default function InvoiceDetailPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div className="flex justify-between items-center">
-                    <PageTitleUpdater title={title} backHref="/admin/finance/invoices" backLabel="Fakturaer" />
+                    <PageTitleUpdater title={displayTitle} backHref="/admin/finance/invoices" backLabel="Fakturaer" />
                 </div>
             </div>
 
@@ -392,7 +393,7 @@ export default function InvoiceDetailPage() {
                                         <span className="material-symbols-outlined">receipt_long</span>
                                     </div>
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                                        <h1 className="text-2xl font-bold text-gray-900">{displayTitle}</h1>
                                         <p className="text-xs text-gray-500 font-mono uppercase tracking-wider">
                                             {requests[0]?.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' :
                                                 requests[0]?.category === 'EVENT' ? 'Arrangement' : 'Faktura'}
@@ -495,7 +496,7 @@ export default function InvoiceDetailPage() {
                     <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
                         <tr>
                             <th className="px-6 py-4 text-left">Medlem</th>
-                            <th className="px-6 py-4 w-32 text-left">Beløp</th>
+                            <th className="px-6 py-4 w-48 text-left">Beløp</th>
                             <th className="px-6 py-4 w-32 text-left">Status</th>
                             <th className="px-6 py-4 w-48 text-right">Handling</th>
                         </tr>
@@ -511,7 +512,7 @@ export default function InvoiceDetailPage() {
                                         Forfall: {req.dueDate ? new Date(req.dueDate).toLocaleDateString() : 'Ingen'}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 font-mono text-sm text-gray-600">
+                                <td className="px-6 py-4 w-48 font-mono text-sm text-gray-600">
                                     {formatNok(Number(req.amount))} kr
                                 </td>
                                 <td className="px-6 py-4">

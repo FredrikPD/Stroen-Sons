@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getInvoiceGroups } from "@/server/actions/invoices";
 
 type InvoiceGroup = {
+    id: string;
     title: string;
     totalAmount: number;
     paidCount: number;
@@ -74,8 +75,8 @@ export default function InvoicesPage() {
                     ) : (
                         activeGroups.map((group) => (
                             <Link
-                                href={`/admin/finance/invoices/${encodeURIComponent(group.title)}`}
-                                key={group.title}
+                                href={`/admin/finance/invoices/${encodeURIComponent(group.id)}`}
+                                key={group.id}
                                 className="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer"
                             >
                                 <div className="flex justify-between items-center mb-4">
@@ -124,8 +125,8 @@ export default function InvoicesPage() {
                     ) : (
                         completedGroups.map((group) => (
                             <Link
-                                href={`/admin/finance/invoices/${encodeURIComponent(group.title)}`}
-                                key={group.title}
+                                href={`/admin/finance/invoices/${encodeURIComponent(group.id)}`}
+                                key={group.id}
                                 className="block bg-gray-50 border border-gray-200 rounded-xl p-6 hover:bg-white hover:shadow-sm transition-all cursor-pointer"
                             >
                                 <div className="flex justify-between items-center mb-4">

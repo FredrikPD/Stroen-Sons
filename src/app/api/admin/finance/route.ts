@@ -74,16 +74,25 @@ export async function GET() {
                 status: { not: RequestStatus.WAIVED },
                 OR: [
                     {
+                        createdAt: {
+                            gte: startOfYear,
+                            lt: startOfNextYear
+                        }
+                    },
+                    {
                         dueDate: {
                             gte: startOfYear,
                             lt: startOfNextYear
                         }
                     },
                     {
-                        dueDate: null,
-                        createdAt: {
-                            gte: startOfYear,
-                            lt: startOfNextYear
+                        transaction: {
+                            is: {
+                                date: {
+                                    gte: startOfYear,
+                                    lt: startOfNextYear
+                                }
+                            }
                         }
                     }
                 ]

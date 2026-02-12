@@ -77,6 +77,7 @@ export async function createBulkPaymentRequests(data: {
             return { success: false, error: "Beløp må være et gyldig tall på minst 0,00" };
         }
 
+        const batchCreatedAt = new Date();
         const requests = data.memberIds.map((memberId) => ({
             title: data.title,
             description: data.description,
@@ -86,6 +87,7 @@ export async function createBulkPaymentRequests(data: {
             category: data.category,
             eventId: data.eventId,
             status: RequestStatus.PENDING,
+            createdAt: batchCreatedAt,
         }));
 
         await db.paymentRequest.createMany({
