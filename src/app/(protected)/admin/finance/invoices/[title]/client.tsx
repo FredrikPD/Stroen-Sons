@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import { getInvoiceGroupDetails, updateInvoiceGroup, getInvoiceFormData, deleteInvoiceGroup } from "@/server/actions/invoices";
-import { togglePaymentStatus } from "@/server/actions/finance";
+import { setInvoiceGroupPaymentStatus, togglePaymentStatus } from "@/server/actions/finance";
 import { deletePaymentRequest } from "@/server/actions/payment-requests";
-import { RequestStatus } from "@prisma/client";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
 import { Toggle } from "@/components/ui/Toggle";
@@ -47,6 +46,14 @@ export default function InvoiceDetailPage() {
         dueDate: ''
     });
     const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
+
+    const reloadRequests = async () => {
+        const resDetails = await getInvoiceGroupDetails(title);
+        if (resDetails.success && resDetails.requests) {
+            setRequests(resDetails.requests);
+            setSelectedMemberIds(resDetails.requests.map((r: any) => r.memberId));
+        }
+    };
 
     useEffect(() => {
         if (!title) return;
@@ -143,6 +150,44 @@ export default function InvoiceDetailPage() {
         setUpdatingId(null);
     };
 
+    const handleBulkUpdateStatus = async (targetStatus: "PAID" | "PENDING") => {
+        const markAsPaid = targetStatus === "PAID";
+        const matchingCount = requests.filter((req) =>
+            markAsPaid ? req.status === "PENDING" : req.status === "PAID"
+        ).length;
+
+        if (matchingCount === 0) return;
+
+        const confirmed = await openConfirm({
+            title: markAsPaid ? "Registrer alle som betalt" : "Registrer alle som ubetalt",
+            message: markAsPaid
+                ? `Mark ${matchingCount} invoices as paid in this group?`
+                : `Unmark ${matchingCount} paid invoices in this group?`,
+            type: "warning",
+            confirmText: markAsPaid ? "Registrer alle som betalt" : "Registrer alle som ubetalt",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setUpdatingId(markAsPaid ? "group_mark_all_paid" : "group_unmark_all_paid");
+        const res = await setInvoiceGroupPaymentStatus({
+            title,
+            targetStatus
+        });
+
+        if (!res.success) {
+            await openAlert({
+                title: "Feil",
+                message: res.error || "Kunne ikke oppdatere alle fakturaer i gruppen.",
+                type: "error"
+            });
+        }
+
+        await reloadRequests();
+        setUpdatingId(null);
+    };
+
     const handleDelete = async (req: any) => {
         const confirmed = await openConfirm({
             title: "Slett faktura",
@@ -180,6 +225,7 @@ export default function InvoiceDetailPage() {
     const totalAmount = requests.reduce((sum, r) => sum + Number(r.amount), 0);
     const paidAmount = requests.reduce((sum, r) => r.status === 'PAID' ? sum + Number(r.amount) : sum, 0);
     const paidCount = requests.filter(r => r.status === 'PAID').length;
+    const pendingCount = requests.filter(r => r.status === 'PENDING').length;
 
     return (
         <div className="space-y-6">
@@ -389,6 +435,25 @@ export default function InvoiceDetailPage() {
                                         )}
                                     </div>
                                 </div>
+
+                                <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row gap-2 max-w-xl">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleBulkUpdateStatus("PAID")}
+                                        disabled={pendingCount === 0 || updatingId !== null}
+                                        className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    >
+                                        {updatingId === "group_mark_all_paid" ? "Oppdaterer..." : "Registrer alle som betalt"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleBulkUpdateStatus("PENDING")}
+                                        disabled={paidCount === 0 || updatingId !== null}
+                                        className="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 text-xs font-bold hover:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                    >
+                                        {updatingId === "group_unmark_all_paid" ? "Oppdaterer..." : "Registrer alle som ubetalt"}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Status Sidebar */}
@@ -417,6 +482,7 @@ export default function InvoiceDetailPage() {
                                         <span className="text-xs text-gray-500">Utestående</span>
                                         <span className="text-base font-medium text-red-500">{formatNok(totalAmount - paidAmount)} kr</span>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -460,7 +526,7 @@ export default function InvoiceDetailPage() {
                                             <Toggle
                                                 checked={req.status === 'PAID'}
                                                 onChange={() => handleToggle(req)}
-                                                disabled={updatingId === req.id}
+                                                disabled={updatingId !== null}
                                                 loading={updatingId === req.id}
                                             />
                                             <span className={`text-sm font-medium w-14 text-center inline-block ${req.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'}`}>

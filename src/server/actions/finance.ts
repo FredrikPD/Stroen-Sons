@@ -257,6 +257,84 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
 }
 
 /**
+ * Mark ALL monthly fee requests for a specific month as UNPAID.
+ * Skips already PENDING requests.
+ */
+export async function markMonthlyFeesAsUnpaid(year: number, month: number) {
+    try {
+        const member = await ensureMember();
+        if (member.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const title = getFeeTitle(year, month);
+        const period = `${year}-${String(month).padStart(2, '0')}`;
+
+        const paidRequests = await prisma.paymentRequest.findMany({
+            where: {
+                title,
+                category: PaymentCategory.MEMBERSHIP_FEE,
+                status: RequestStatus.PAID
+            },
+            select: {
+                id: true,
+                memberId: true,
+                amount: true,
+                transactionId: true
+            }
+        });
+
+        if (paidRequests.length === 0) {
+            return { success: true, count: 0, message: "Ingen betalte krav funnet." };
+        }
+
+        for (const req of paidRequests) {
+            await prisma.$transaction(async (tx) => {
+                if (req.transactionId) {
+                    await tx.transaction.delete({
+                        where: { id: req.transactionId }
+                    });
+                }
+
+                await tx.paymentRequest.update({
+                    where: { id: req.id },
+                    data: {
+                        status: RequestStatus.PENDING,
+                        transactionId: null
+                    }
+                });
+
+                await tx.member.update({
+                    where: { id: req.memberId },
+                    data: {
+                        balance: {
+                            decrement: req.amount
+                        }
+                    }
+                });
+
+                await tx.payment.updateMany({
+                    where: {
+                        memberId: req.memberId,
+                        period
+                    },
+                    data: {
+                        status: "UNPAID",
+                        amount: null,
+                        paidAt: null
+                    }
+                });
+            });
+        }
+
+        revalidatePath("/admin/finance");
+        revalidatePath("/admin/finance/income");
+        return { success: true, count: paidRequests.length };
+    } catch (error) {
+        console.error("Failed to mark all as unpaid:", error);
+        return { success: false, error: "Kunne ikke oppdatere betalinger" };
+    }
+}
+
+/**
  * Delete a single payment request.
  * Can delete even if paid (void transaction logic might be needed, but usually we just block paid for safety unless explicit void action).
  * For now: Block deletion if PAID to match bulk delete logic, or allow if user really wants to (but manual voiding is better).
@@ -538,6 +616,159 @@ export async function togglePaymentStatus(requestId: string) {
     } catch (error) {
         console.error("Error toggling payment:", error);
         return { success: false, error: "Failed to toggle status" };
+    }
+}
+
+export async function setInvoiceGroupPaymentStatus(data: {
+    title: string;
+    targetStatus: "PAID" | "PENDING";
+}) {
+    try {
+        const user = await ensureMember();
+        if (user.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
+        const sourceStatus =
+            data.targetStatus === "PAID" ? RequestStatus.PENDING : RequestStatus.PAID;
+
+        const requestsToToggle = await prisma.paymentRequest.findMany({
+            where: {
+                title: data.title,
+                status: sourceStatus
+            },
+            select: {
+                id: true,
+                title: true,
+                amount: true,
+                memberId: true,
+                eventId: true,
+                dueDate: true,
+                category: true,
+                transactionId: true
+            }
+        });
+
+        if (requestsToToggle.length === 0) {
+            return { success: true, updatedCount: 0, totalCount: 0 };
+        }
+
+        let updatedCount = 0;
+        for (const request of requestsToToggle) {
+            if (data.targetStatus === "PAID") {
+                await prisma.$transaction(async (tx) => {
+                    const transaction = await tx.transaction.create({
+                        data: {
+                            amount: request.amount,
+                            description: request.title,
+                            category: request.category.toString(),
+                            date: new Date(),
+                            memberId: request.memberId,
+                            eventId: request.eventId,
+                            paymentRequest: {
+                                connect: { id: request.id }
+                            }
+                        }
+                    });
+
+                    await tx.paymentRequest.update({
+                        where: { id: request.id },
+                        data: {
+                            status: RequestStatus.PAID,
+                            transactionId: transaction.id
+                        }
+                    });
+
+                    await tx.member.update({
+                        where: { id: request.memberId },
+                        data: {
+                            balance: {
+                                increment: request.amount
+                            }
+                        }
+                    });
+
+                    if (request.category === PaymentCategory.MEMBERSHIP_FEE && request.dueDate) {
+                        const y = request.dueDate.getFullYear();
+                        const m = String(request.dueDate.getMonth() + 1).padStart(2, '0');
+                        const period = `${y}-${m}`;
+                        await tx.payment.upsert({
+                            where: {
+                                memberId_period: {
+                                    memberId: request.memberId,
+                                    period
+                                }
+                            },
+                            update: {
+                                status: "PAID",
+                                paidAt: new Date(),
+                                amount: Math.round(Number(request.amount))
+                            },
+                            create: {
+                                memberId: request.memberId,
+                                period,
+                                status: "PAID",
+                                paidAt: new Date(),
+                                amount: Math.round(Number(request.amount))
+                            }
+                        });
+                    }
+                });
+            } else {
+                await prisma.$transaction(async (tx) => {
+                    if (request.transactionId) {
+                        await tx.transaction.delete({ where: { id: request.transactionId } });
+                    }
+
+                    await tx.paymentRequest.update({
+                        where: { id: request.id },
+                        data: {
+                            status: RequestStatus.PENDING,
+                            transactionId: null
+                        }
+                    });
+
+                    await tx.member.update({
+                        where: { id: request.memberId },
+                        data: {
+                            balance: {
+                                decrement: request.amount
+                            }
+                        }
+                    });
+
+                    if (request.category === PaymentCategory.MEMBERSHIP_FEE && request.dueDate) {
+                        const y = request.dueDate.getFullYear();
+                        const m = String(request.dueDate.getMonth() + 1).padStart(2, '0');
+                        const period = `${y}-${m}`;
+                        await tx.payment.updateMany({
+                            where: {
+                                memberId: request.memberId,
+                                period
+                            },
+                            data: {
+                                status: "UNPAID",
+                                amount: null,
+                                paidAt: null
+                            }
+                        });
+                    }
+                });
+            }
+            updatedCount++;
+        }
+
+        revalidatePath("/admin/finance");
+        revalidatePath("/admin/finance/income");
+        revalidatePath("/admin/finance/invoices");
+        revalidatePath(`/admin/finance/invoices/${encodeURIComponent(data.title)}`);
+
+        return {
+            success: true,
+            updatedCount,
+            totalCount: requestsToToggle.length
+        };
+    } catch (error) {
+        console.error("Failed to update invoice group payment status:", error);
+        return { success: false, error: "Kunne ikke oppdatere fakturastatus for gruppen." };
     }
 }
 

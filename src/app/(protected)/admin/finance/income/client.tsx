@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { Avatar } from "@/components/Avatar";
-import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus, deleteMonthlyFees, deleteSingleInvoice, markMonthlyFeesAsPaid } from "@/server/actions/finance";
+import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus, deleteMonthlyFees, deleteSingleInvoice, markMonthlyFeesAsPaid, markMonthlyFeesAsUnpaid } from "@/server/actions/finance";
 import Link from "next/link";
 import { RequestStatus } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
@@ -57,6 +57,7 @@ export default function IncomePage() {
     const [updating, setUpdating] = useState<string | null>(null);
     const [generating, setGenerating] = useState(false);
     const [markingPaid, setMarkingPaid] = useState(false);
+    const [markingUnpaid, setMarkingUnpaid] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     // Fetch Data
@@ -251,6 +252,47 @@ export default function IncomePage() {
         }
     };
 
+    const handleMarkAllUnpaid = async () => {
+        if (!stats) return;
+
+        const confirmed = await openConfirm({
+            title: "Registrer alle som ubetalt",
+            message: `Er du sikker på at du vil registrere ALLE betalte krav for ${getMonthName(selectedMonth - 1)} ${selectedYear} som ubetalt? Dette vil fjerne registrerte transaksjoner for perioden.`,
+            type: "warning",
+            confirmText: "Registrer alle",
+            cancelText: "Avbryt"
+        });
+
+        if (!confirmed) return;
+
+        setMarkingUnpaid(true);
+        try {
+            const res = await markMonthlyFeesAsUnpaid(selectedYear, selectedMonth);
+            if (res.success) {
+                await fetchData();
+                await openAlert({
+                    title: "Suksess",
+                    message: `Registrerte ${res.count} krav som ubetalt.`,
+                    type: "success"
+                });
+            } else {
+                await openAlert({
+                    title: "Feil",
+                    message: typeof res.error === 'string' ? res.error : "Ukjent feil",
+                    type: "error"
+                });
+            }
+        } catch (e) {
+            await openAlert({
+                title: "Feil",
+                message: "En feil oppstod.",
+                type: "error"
+            });
+        } finally {
+            setMarkingUnpaid(false);
+        }
+    };
+
     // Helper to format the Title into something short for the header
     const formatTitle = (title: string) => {
         // "Medlemskontingent 2025-12" -> "Desember"
@@ -383,24 +425,45 @@ export default function IncomePage() {
                             {/* Delete Button (Only if requests exist) */}
                             {stats && stats.totalCount > 0 && (
                                 <div className="mt-4 flex justify-between items-center">
-                                    <button
-                                        onClick={handleMarkAllPaid}
-                                        disabled={generating || markingPaid || stats.missing === 0}
-                                        className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.missing === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:text-emerald-800'
-                                            }`}
-                                    >
-                                        {markingPaid ? (
-                                            <>
-                                                <span className="material-symbols-outlined text-[1.2rem] animate-spin">refresh</span>
-                                                Behandler...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span className="material-symbols-outlined text-[1.2rem]">done_all</span>
-                                                Registrer alle som betalt
-                                            </>
-                                        )}
-                                    </button>
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={handleMarkAllPaid}
+                                            disabled={generating || markingPaid || markingUnpaid || stats.missing === 0}
+                                            className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.missing === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:text-emerald-800'
+                                                }`}
+                                        >
+                                            {markingPaid ? (
+                                                <>
+                                                    <span className="material-symbols-outlined text-[1.2rem] animate-spin">refresh</span>
+                                                    Behandler...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="material-symbols-outlined text-[1.2rem]">done_all</span>
+                                                    Registrer alle som betalt
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={handleMarkAllUnpaid}
+                                            disabled={generating || markingPaid || markingUnpaid || stats.paidCount === 0}
+                                            className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.paidCount === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-amber-600 hover:text-amber-800'
+                                                }`}
+                                        >
+                                            {markingUnpaid ? (
+                                                <>
+                                                    <span className="material-symbols-outlined text-[1.2rem] animate-spin">refresh</span>
+                                                    Behandler...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="material-symbols-outlined text-[1.2rem]">restart_alt</span>
+                                                    Registrer alle som ubetalt
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
 
                                     <button
                                         onClick={handleDeleteFees}
