@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
-import { MEMBER_FEES } from "@/lib/finance";
+import { PaymentCategory, RequestStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,10 +18,12 @@ export async function GET() {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Determine the start of the current year for filtering income/expenses
-    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+    // Determine the boundaries of the current year for filtering
+    const currentYear = new Date().getFullYear();
+    const startOfYear = new Date(currentYear, 0, 1);
+    const startOfNextYear = new Date(currentYear + 1, 0, 1);
 
-    const [transactions, treasurySum, incomeSum, expenseSum, members, memberBalances] = await Promise.all([
+    const [transactions, treasurySum, incomeSum, expenseSum, members, membershipTypes, invoiceRequests, memberBalances] = await Promise.all([
         // Fetch recent transactions with member info
         prisma.transaction.findMany({
             take: 100,
@@ -60,6 +62,33 @@ export async function GET() {
         // Fetch all members to calculate expected income
         prisma.member.findMany({
             select: { membershipType: true }
+        }),
+        // Membership type fees for yearly projection
+        prisma.membershipType.findMany({
+            select: { name: true, fee: true }
+        }),
+        // Include extraordinary invoices created for this year in expected total
+        prisma.paymentRequest.findMany({
+            where: {
+                category: { not: PaymentCategory.MEMBERSHIP_FEE },
+                status: { not: RequestStatus.WAIVED },
+                OR: [
+                    {
+                        dueDate: {
+                            gte: startOfYear,
+                            lt: startOfNextYear
+                        }
+                    },
+                    {
+                        dueDate: null,
+                        createdAt: {
+                            gte: startOfYear,
+                            lt: startOfNextYear
+                        }
+                    }
+                ]
+            },
+            select: { amount: true }
         }),
         // Fetch members with balances for the widget
         // Fetch members with balances for the widget
@@ -100,11 +129,23 @@ export async function GET() {
         })()
     ]);
 
-    // Calculate expected annual income
-    const expectedAnnualIncome = members.reduce((acc, member) => {
-        const monthlyFee = MEMBER_FEES[member.membershipType as keyof typeof MEMBER_FEES] || MEMBER_FEES.STANDARD;
+    // Calculate expected annual income:
+    // 1) annual membership projection + 2) extraordinary invoices created for this year.
+    const membershipFeeMap = new Map(
+        membershipTypes.map((type) => [type.name, Number(type.fee)])
+    );
+    const defaultMonthlyFee = membershipFeeMap.get("STANDARD") ?? 0;
+
+    const expectedMembershipIncome = members.reduce((acc, member) => {
+        const monthlyFee = membershipFeeMap.get(member.membershipType) ?? defaultMonthlyFee;
         return acc + (monthlyFee * 12);
     }, 0);
+
+    const expectedInvoiceIncome = invoiceRequests.reduce(
+        (sum, req) => sum + Number(req.amount),
+        0
+    );
+    const expectedAnnualIncome = expectedMembershipIncome + expectedInvoiceIncome;
 
 
     // Group transactions
@@ -145,6 +186,8 @@ export async function GET() {
         totalIncome: incomeSum._sum.amount?.toNumber() ?? 0,
         totalExpenses: expenseSum._sum.amount?.toNumber() ?? 0,
         expectedAnnualIncome,
+        expectedMembershipIncome,
+        expectedInvoiceIncome,
         transactions: groupedTransactions.slice(0, 10), // Limit to 10 for dashboard
         memberBalances: memberBalances.map(m => ({ // Map Decimal to number for JSON
             ...m,
