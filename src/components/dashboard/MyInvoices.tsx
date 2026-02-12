@@ -39,6 +39,9 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
             <div className={`bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden ${className}`}>
                 {/* ... (empty state same as before) ... */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-transparent pointer-events-none" />
+                <Link href="/invoices" className="absolute top-4 right-4 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
+                    Se alle
+                </Link>
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-400">
                     <span className="material-symbols-outlined text-3xl">task_alt</span>
                 </div>

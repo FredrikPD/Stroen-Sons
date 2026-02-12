@@ -23,11 +23,12 @@ export async function GET() {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Determine current period (YYYY-MM)
+    // Determine current month window
     const now = new Date();
-    const period = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}`;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    const [nextEvent, memberCount, treasurySum, totalMembershipRequests, paidMembershipRequests] = await Promise.all([
+    const [nextEvent, memberCount, treasurySum, totalMembershipRequests, unpaidMembershipRequests] = await Promise.all([
         prisma.event.findFirst({
             where: { startAt: { gte: new Date() } },
             orderBy: { startAt: "asc" },
@@ -37,19 +38,29 @@ export async function GET() {
             _sum: { amount: true },
         }),
         prisma.paymentRequest.count({
-            where: { category: "MEMBERSHIP_FEE" }
+            where: {
+                category: "MEMBERSHIP_FEE",
+                dueDate: {
+                    gte: startOfMonth,
+                    lt: startOfNextMonth,
+                },
+            }
         }),
         prisma.paymentRequest.count({
             where: {
                 category: "MEMBERSHIP_FEE",
-                status: "PAID",
+                status: "PENDING",
+                dueDate: {
+                    gte: startOfMonth,
+                    lt: startOfNextMonth,
+                },
             }
         })
     ]);
 
     // If no membership fee requests exist, return -1 to signal "No Invoices"
     // Otherwise, return the number of unpaid (pending) membership fee requests
-    const unpaidCount = totalMembershipRequests === 0 ? -1 : (totalMembershipRequests - paidMembershipRequests);
+    const unpaidCount = totalMembershipRequests === 0 ? -1 : unpaidMembershipRequests;
 
     return NextResponse.json({
         firstName: member.firstName,
