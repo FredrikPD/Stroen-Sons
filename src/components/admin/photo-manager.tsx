@@ -320,7 +320,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
                             {isUploading ? (
                                 <div className="flex flex-col items-center animate-in fade-in duration-300 w-full max-w-xs">
-                                    <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-4"></div>
+                                    <div className="w-16 h-16 border-4 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin mb-4"></div>
                                     <h3 className="text-lg font-bold text-gray-900 mb-1">Laster opp bilder...</h3>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
                                         <div

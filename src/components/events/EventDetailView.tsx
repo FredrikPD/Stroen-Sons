@@ -466,7 +466,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     }`}
                             >
                                 {isPending ? (
-                                    <span className="material-symbols-outlined animate-spin text-[1.2rem]">refresh</span>
+                                    <span className="w-5 h-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                                 ) : (
                                     <>
                                         <span className="material-symbols-outlined text-[1.2rem]">

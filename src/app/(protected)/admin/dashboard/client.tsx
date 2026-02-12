@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { LoadingState } from "@/components/ui/LoadingState";
+import type { AdminDashboardData } from "@/lib/admin-dashboard";
 
-export default function AdminDashboardClientPage() {
-    const { data, loading, error } = useAdminDashboard();
+export default function AdminDashboardClientPage({ initialData }: { initialData?: AdminDashboardData | null }) {
+    const { data, loading, error } = useAdminDashboard(initialData);
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     if (error) {

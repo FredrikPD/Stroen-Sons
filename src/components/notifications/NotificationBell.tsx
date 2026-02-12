@@ -118,7 +118,7 @@ export default function NotificationBell() {
                     <div className="max-h-[400px] overflow-y-auto">
                         {loading ? (
                             <div className="p-8 text-center text-gray-400">
-                                <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-[#4F46E5] rounded-full mx-auto mb-2"></div>
+                                <div className="animate-spin h-5 w-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full mx-auto mb-2"></div>
                                 Laster...
                             </div>
                         ) : notifications.length === 0 ? (

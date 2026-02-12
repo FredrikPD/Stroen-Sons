@@ -51,40 +51,38 @@ export default async function AccountPage() {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6 lg:space-y-8">
             {/* Top Row: Profile & Role */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
                 {/* Profile Card (Larger) */}
-                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-4 flex items-center">
+                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-5 sm:p-6 flex items-start">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-80" />
 
-                    <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-4">
+                    <div className="relative z-10 flex items-center gap-4 w-full">
                         {/* Big Avatar */}
-                        <div className="min-w-16 w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-zinc-800 to-black text-white flex items-center justify-center text-2xl lg:text-3xl font-bold shadow-lg ring-4 ring-white">
+                        <div className="shrink-0 min-w-14 w-14 h-14 sm:min-w-16 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-zinc-800 to-black text-white flex items-center justify-center text-xl sm:text-2xl lg:text-3xl font-bold shadow-lg ring-4 ring-white">
                             {initials}
                         </div>
 
-                        <div className="flex-1 text-center md:text-left pt-2">
-                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-1">
+                        <div className="flex-1 min-w-0 text-left">
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-1 leading-tight break-words">
                                 {profile.firstName} {profile.lastName}
                             </h1>
-                            <p className="text-gray-500 text-lg mb-2">{profile.email}</p>
+                            <p className="text-gray-500 text-base sm:text-lg mb-2 break-all">{profile.email}</p>
 
-                            <div className="flex gap-4 justify-center md:justify-start mb-2">
+                            <div className="flex flex-wrap gap-3 sm:gap-4 mb-1">
                                 <div className="flex items-center gap-2 text-xs text-gray-400">
                                     Medlem siden {new Date(profile.createdAt).getFullYear()}
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
 
                 {/* Member Card */}
-                <div className="flex flex-col items-center justify-center relative">
+                <div className="flex flex-col justify-center relative">
                     {/* The Card */}
-                    <div className="w-full h-full bg-gray-900 text-white rounded-2xl p-6 relative overflow-hidden shadow-2xl">
+                    <div className="w-full h-full bg-gray-900 text-white rounded-2xl p-5 sm:p-6 relative overflow-hidden shadow-2xl">
 
                         {/* Decorative Background Elements */}
                         <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
@@ -102,23 +100,23 @@ export default async function AccountPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-4 mt-4">
-                                <div className="flex justify-between items-end border-t border-white/10 pt-4">
-                                    <div>
+                            <div className="mt-4">
+                                <div className="grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
+                                    <div className="min-w-0">
                                         <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
-                                        <span className="text-sm font-semibold tracking-wide mt-1 block">
+                                        <span className="text-sm font-semibold tracking-wide mt-1 block truncate">
                                             {profile.userRole?.name || profile.role}
                                         </span>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-[10px] text-gray-400 uppercase tracking-wider">Medlemstype</p>
-                                        <p className="text-sm font-semibold tracking-wide mt-1">{profile.membershipType || "Standard"}</p>
+                                        <p className="text-sm font-semibold tracking-wide mt-1 truncate">{profile.membershipType || "Standard"}</p>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-[10px] text-gray-400 uppercase tracking-wider">Status</p>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${isAccountActive ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
-                                            <span className="text-sm font-semibold tracking-wide">{isAccountActive ? "Aktiv" : "Inaktiv"}</span>
+                                        <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isAccountActive ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
+                                            <span className="text-sm font-semibold tracking-wide truncate">{isAccountActive ? "Aktiv" : "Inaktiv"}</span>
                                         </div>
                                     </div>
                                 </div>

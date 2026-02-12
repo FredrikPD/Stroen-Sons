@@ -270,7 +270,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                     className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {isPending ? (
-                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></span>
+                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></span>
                                     ) : (
                                         <span className="material-symbols-outlined text-lg">delete_forever</span>
                                     )}

@@ -5,6 +5,7 @@ import { getMembers, updateMemberRole, updateMemberType } from '@/actions/admin-
 import { getMembershipTypes, MembershipTypeWithCount } from '@/server/actions/membership-types';
 import { Role } from '@prisma/client';
 import { Avatar } from '@/components/Avatar';
+import { LoadingState } from '@/components/ui/LoadingState';
 
 interface Member {
     id: string;
@@ -70,11 +71,7 @@ export default function RolesManager() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState className="h-64" />;
     }
 
     return (
@@ -177,7 +174,7 @@ export default function RolesManager() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         {updatingId === member.id ? (
                                             <span className="text-indigo-600 flex items-center justify-end gap-1">
-                                                <span className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></span>
+                                                <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin"></span>
                                                 Lagrer...
                                             </span>
                                         ) : (

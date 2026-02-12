@@ -25,6 +25,7 @@ type MemberBalance = {
 
 import { sendBulkPaymentReminders, sendPaymentReminder } from "@/server/actions/emails";
 import { PremiumModal } from "@/components/ui/PremiumModal";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function MemberBalancePage() {
     const [members, setMembers] = useState<MemberBalance[]>([]);
@@ -184,11 +185,7 @@ export default function MemberBalancePage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (

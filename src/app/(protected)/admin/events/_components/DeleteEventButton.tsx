@@ -48,7 +48,7 @@ export function DeleteEventButton({ id, title }: DeleteEventButtonProps) {
             type="button"
         >
             {isPending ? (
-                <span className="w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
             ) : (
                 <span className="material-symbols-outlined text-lg">delete</span>
             )}

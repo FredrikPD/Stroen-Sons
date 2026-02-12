@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { updateProfile } from "@/server/actions/account";
 import { PushNotificationSettings } from "@/components/notifications/PushNotificationSettings";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 interface AccountClientProps {
     initialProfile: any; // Ideally stricter type from Prisma
@@ -35,11 +36,7 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
     });
 
     if (!isLoaded || !user || !session) {
-        return (
-            <div className="w-full h-96 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState className="h-96" />;
     }
 
     const formatPhoneNumber = (phone: string) => phone;

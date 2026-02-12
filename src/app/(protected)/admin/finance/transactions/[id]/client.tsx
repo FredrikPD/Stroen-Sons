@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getTransactionDetails } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
 import { SetHeader } from "@/components/layout/SetHeader";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function TransactionDetailPage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
@@ -26,11 +27,7 @@ export default function TransactionDetailPage({ id }: { id: string }) {
     }, [id]);
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     if (error || !data) {

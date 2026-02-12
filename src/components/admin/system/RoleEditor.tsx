@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useModal } from "@/components/providers/ModalContext";
 import { createRole, getRole, updateRole } from "@/server/actions/roles";
 import Link from "next/link";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 const PERMISSIONS = [
     { label: "Administrator (Full Tilgang)", path: "/admin.*", description: "Gir tilgang til absolutt alt i systemet." },
@@ -87,7 +88,7 @@ export default function RoleEditor({ id }: { id?: string }) {
         });
     };
 
-    if (loading && id && !name) return <div className="p-8 text-center text-gray-500">Laster...</div>;
+    if (loading && id && !name) return <LoadingState className="h-56" />;
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">

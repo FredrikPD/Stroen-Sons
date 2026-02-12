@@ -104,7 +104,7 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
                         disabled={isPending}
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
                     >
-                        {isPending && <span className="material-symbols-outlined animate-spin text-sm">sync</span>}
+                        {isPending && <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />}
                         {isPending ? "Lagrer..." : "Lagre endringer"}
                     </button>
                 </div>

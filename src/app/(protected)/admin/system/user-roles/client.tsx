@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getRoles, deleteRole } from "@/server/actions/roles";
 import { useModal } from "@/components/providers/ModalContext";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 type RoleWithCount = {
     id: string;
@@ -53,11 +54,7 @@ export default function RolesClientPage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (

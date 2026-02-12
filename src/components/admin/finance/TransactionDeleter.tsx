@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { getAllTransactionsRaw, deleteTransaction, deleteAllTransactions } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/components/providers/ModalContext";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 type Transaction = {
     id: string;
@@ -136,7 +137,7 @@ export function TransactionDeleter() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Laster transaksjoner...</div>;
+    if (loading) return <LoadingState className="h-56" />;
 
     return (
         <div className="space-y-6">
@@ -185,7 +186,7 @@ export function TransactionDeleter() {
                         className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     >
                         {deletingAll ? (
-                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                         ) : (
                             <span className="material-symbols-outlined text-lg">delete_forever</span>
                         )}
@@ -237,7 +238,7 @@ export function TransactionDeleter() {
                                                 title="Slett"
                                             >
                                                 {deletingId === tx.id ? (
-                                                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                                                    <div className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                                                 ) : (
                                                     <span className="material-symbols-outlined text-lg">delete</span>
                                                 )}

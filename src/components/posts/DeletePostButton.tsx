@@ -44,7 +44,7 @@ export default function DeletePostButton({ postId }: { postId: string }) {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100 disabled:opacity-50"
         >
             {loading ? (
-                <div className="animate-spin h-3 w-3 border-2 border-red-600 border-t-transparent rounded-full" />
+                <div className="animate-spin h-3 w-3 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full" />
             ) : (
                 <span className="material-symbols-outlined text-[1.1rem]">delete</span>
             )}

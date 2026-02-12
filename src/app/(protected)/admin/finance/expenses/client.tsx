@@ -12,6 +12,7 @@ import { Avatar } from "@/components/Avatar";
 import { useUploadThing } from "@/utils/uploadthing";
 import { deleteFile } from "@/server/actions/files";
 import { useModal } from "@/components/providers/ModalContext";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { toast } from "sonner";
 
 type Member = {
@@ -525,11 +526,7 @@ export default function ExpensesPage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -729,7 +726,7 @@ export default function ExpensesPage() {
 
                                     {isUploading && (
                                         <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm">
-                                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-100 border-t-indigo-600"></div>
+                                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
                                         </div>
                                     )}
                                 </label>
@@ -804,9 +801,7 @@ export default function ExpensesPage() {
 
                     <div className="max-h-[900px] overflow-y-auto p-3 space-y-2">
                         {loadingList && displayedExpenses.length === 0 ? (
-                            <div className="py-16 flex justify-center">
-                                <div className="animate-spin rounded-full h-7 w-7 border-2 border-indigo-100 border-t-indigo-600"></div>
-                            </div>
+                            <LoadingState className="h-40" spinnerSizeClassName="h-7 w-7" />
                         ) : displayedExpenses.length === 0 ? (
                             <div className="text-center py-16 text-gray-500">
                                 <p className="font-medium">Ingen utgifter funnet.</p>

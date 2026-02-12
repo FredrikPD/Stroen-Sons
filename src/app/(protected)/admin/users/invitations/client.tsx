@@ -244,7 +244,7 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                                 >
                                     {inviteLoading ? (
                                         <>
-                                            <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                                            <span className="animate-spin w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full"></span>
                                             Sender...
                                         </>
                                     ) : (

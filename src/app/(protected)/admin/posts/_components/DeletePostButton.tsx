@@ -59,7 +59,7 @@ export function DeletePostButton({ id, title }: DeletePostButtonProps) {
             disabled={isDeleting}
         >
             {isDeleting ? (
-                <span className="w-5 h-5 block border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+                <span className="w-5 h-5 block border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
             ) : (
                 <span className="material-symbols-outlined text-[20px]">delete</span>
             )}

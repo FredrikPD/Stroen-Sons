@@ -473,7 +473,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 {isUploading && (
                                     <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
                                         <div className="flex flex-col items-center gap-2">
-                                            <span className="w-6 h-6 border-2 border-[#4F46E5]/30 border-t-[#4F46E5] rounded-full animate-spin" />
+                                            <span className="w-6 h-6 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                                             <span className="text-xs font-semibold text-[#4F46E5]">Laster opp...</span>
                                         </div>
                                     </div>
@@ -720,7 +720,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                 >
                     {isSubmitting ? (
                         <>
-                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                             {isEditMode ? "Oppdaterer..." : "Oppretter..."}
                         </>
                     ) : (

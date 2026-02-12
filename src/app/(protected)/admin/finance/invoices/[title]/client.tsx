@@ -11,6 +11,7 @@ import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
 import { Toggle } from "@/components/ui/Toggle";
 import { useModal } from "@/components/providers/ModalContext";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 const parseAmount = (value: string) => {
     const parsed = Number.parseFloat(value.replace(",", "."));
@@ -216,11 +217,7 @@ export default function InvoiceDetailPage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     const totalAmount = requests.reduce((sum, r) => sum + Number(r.amount), 0);
@@ -343,7 +340,7 @@ export default function InvoiceDetailPage() {
                             >
                                 {updatingId === 'group' ? (
                                     <>
-                                        <span className="animate-spin text-xs material-symbols-outlined">progress_activity</span>
+                                        <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                                         Lagrer...
                                     </>
                                 ) : (

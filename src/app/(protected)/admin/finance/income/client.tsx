@@ -9,6 +9,7 @@ import Link from "next/link";
 import { RequestStatus } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { CreateInvoiceModal } from "@/components/admin/finance/CreateInvoiceModal";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 // Helper to get month name
 const getMonthName = (monthIndex: number) => {
@@ -316,11 +317,7 @@ export default function IncomePage() {
     }
 
     if (dashboardLoading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -434,7 +431,7 @@ export default function IncomePage() {
                                         >
                                             {markingPaid ? (
                                                 <>
-                                                    <span className="material-symbols-outlined text-[1.2rem] animate-spin">refresh</span>
+                                                    <span className="w-5 h-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                                                     Behandler...
                                                 </>
                                             ) : (
@@ -453,7 +450,7 @@ export default function IncomePage() {
                                         >
                                             {markingUnpaid ? (
                                                 <>
-                                                    <span className="material-symbols-outlined text-[1.2rem] animate-spin">refresh</span>
+                                                    <span className="w-5 h-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
                                                     Behandler...
                                                 </>
                                             ) : (
@@ -499,9 +496,7 @@ export default function IncomePage() {
             {/* Member List Table */}
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                 {loadingData ? (
-                    <div className="flex justify-center items-center h-40">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    </div>
+                    <LoadingState className="h-40" spinnerSizeClassName="h-6 w-6" />
                 ) : (
                     <>
                         {/* Table Header */}

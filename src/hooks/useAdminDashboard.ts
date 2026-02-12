@@ -1,27 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
+import type { AdminDashboardData } from "@/lib/admin-dashboard";
 
-export type AdminDashboardData = {
-    firstName: string | null;
-    role?: string;
-    userRole?: any;
-    memberCount: number;
-    unpaidCount?: number;
-    treasuryBalance: number;
-    nextEvent: null | {
-        id: string;
-        title: string;
-        startAt: string; // JSON
-        coverImage?: string | null;
-    };
-};
-
-export function useAdminDashboard() {
-    const [data, setData] = useState<AdminDashboardData | null>(null);
-    const [loading, setLoading] = useState(true);
+export function useAdminDashboard(initialData?: AdminDashboardData | null) {
+    const [data, setData] = useState<AdminDashboardData | null>(initialData ?? null);
+    const [loading, setLoading] = useState(!initialData);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (initialData) return;
+
         (async () => {
             try {
                 const res = await fetch("/api/admin/dashboard", { cache: "no-store" });
@@ -37,7 +25,7 @@ export function useAdminDashboard() {
                 setLoading(false);
             }
         })();
-    }, []);
+    }, [initialData]);
 
     return { data, loading, error };
 }

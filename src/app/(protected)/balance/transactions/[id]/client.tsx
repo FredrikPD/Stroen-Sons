@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getTransactionDetails } from "@/server/actions/finance";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function TransactionDetailClient({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
@@ -23,11 +24,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
     }, [id]);
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     if (error || !data) {

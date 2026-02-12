@@ -212,7 +212,7 @@ export default function InvoiceDeleteClient({ members }: Props) {
                             {loading ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center">
-                                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
                                     </td>
                                 </tr>
                             ) : invoices.length === 0 ? (

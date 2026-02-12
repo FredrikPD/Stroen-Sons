@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAllTransactions } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 // Define Transaction Type (matching server action return)
 type Transaction = {
@@ -98,11 +99,7 @@ export default function AllTransactionsPage() {
     })));
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (

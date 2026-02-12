@@ -134,7 +134,7 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                     >
                         {isSubmitting ? (
                             <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
                                 Lagrer...
                             </>
                         ) : (
@@ -384,7 +384,7 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                             {isUploading && (
                                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 backdrop-blur-sm rounded-xl">
                                     <div className="flex flex-col items-center gap-2">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-100 border-t-indigo-600"></div>
+                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
                                         <span className="text-[10px] font-bold text-indigo-600">Laster opp...</span>
                                     </div>
                                 </div>
@@ -412,7 +412,7 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                     >
                         {isSubmitting ? (
                             <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
                                 Behandler...
                             </>
                         ) : (

@@ -7,6 +7,7 @@ import { getEventParticipants, adminAddParticipant, adminRemoveParticipant } fro
 import { getMembers } from "@/server/actions/members";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function EventParticipationClientPage() {
     const { openAlert, openConfirm } = useModal();
@@ -101,7 +102,7 @@ export default function EventParticipationClientPage() {
         setAdding(false);
     };
 
-    if (loading) return <div className="p-10 text-center">Laster...</div>;
+    if (loading) return <LoadingState />;
 
     const filteredMembers = allMembers.filter(m =>
         !participants.some(p => p.id === m.id) &&

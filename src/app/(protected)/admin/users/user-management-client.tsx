@@ -199,7 +199,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                 </div>
                                                 {updatingRoleId === member.id && (
                                                     <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                                                        <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                                                        <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin"></span>
                                                     </div>
                                                 )}
                                             </div>

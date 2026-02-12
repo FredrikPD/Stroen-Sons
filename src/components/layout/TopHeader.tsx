@@ -37,15 +37,15 @@ export default function TopHeader({
   const baseTitle = getPageTitle();
 
   return (
-    <header className="sticky top-0 h-14 border-b border-border-color bg-background-header backdrop-blur-sm flex items-center justify-between px-6 lg:px-10 shrink-0 z-20">
+    <header className="sticky top-0 h-14 border-b border-border-color bg-background-header backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 lg:px-10 shrink-0 z-20">
       {/* Left (Path) */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Hamburger (mobile) */}
         <button
           type="button"
           onClick={() => { onMenuClick(); }}
           aria-label="Open menu"
-          className="lg:hidden text-text-main"
+          className="lg:hidden text-text-main h-9 w-9 rounded-lg flex items-center justify-center hover:bg-gray-100"
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
@@ -92,14 +92,14 @@ export default function TopHeader({
       </div>
 
       {/* Right (Profile) */}
-      <div className="flex items-center gap-5">
-        <div className="h-6 w-px bg-gray-200" />
+      <div className="flex items-center gap-3 sm:gap-5">
+        <div className="hidden sm:block h-6 w-px bg-gray-200" />
 
         <NotificationBell />
 
         <div
           onClick={() => router.push("/account")}
-          className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all"
+          className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all shrink-0"
         >
           {loading || !userName ? (
             <div className="animate-pulse bg-white/20 w-full h-full rounded-full" />

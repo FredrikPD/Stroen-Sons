@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getInvoiceGroups } from "@/server/actions/invoices";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 type InvoiceGroup = {
     id: string;
@@ -34,11 +35,7 @@ export default function InvoicesPage() {
     }, []);
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     const activeGroups = groups.filter(g => g.paidCount < g.totalCount);

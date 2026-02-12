@@ -93,7 +93,7 @@ export default function AdminSystemClientPage() {
                     >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${syncing ? 'bg-amber-100 text-amber-600' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'}`}>
                             {syncing ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-amber-600 border-t-transparent" />
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]" />
                             ) : (
                                 <span className="material-symbols-outlined text-xl">sync_saved_locally</span>
                             )}

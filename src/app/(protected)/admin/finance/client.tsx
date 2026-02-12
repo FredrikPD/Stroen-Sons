@@ -1,98 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { getCurrentMember } from "@/server/actions/finance";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { FinanceStats } from "@/lib/admin-finance";
 
-// Types for finance data
-type MemberInfo = {
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
-};
-
-type Transaction = {
-    id: string;
-    date: string;
-    description: string;
-    subDescription?: string;
-    category: string;
-    type: "INNTEKT" | "UTGIFT";
-    amount: number;
-    status: string;
-    member?: MemberInfo;
-};
-
-type MemberBalance = {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
-    role: string;
-    membershipType: string;
-    balance: number;
-};
-
-type FinanceStats = {
-    treasuryBalance: number;
-    totalIncome: number;
-    totalExpenses: number;
-    expectedAnnualIncome: number;
-    transactions: Transaction[];
-    memberBalances: MemberBalance[];
-};
-
-export default function FinancePortalClientPage() {
-    const [currentMember, setCurrentMember] = useState<any>(null);
-    const [authLoading, setAuthLoading] = useState(true);
-    const [financeData, setFinanceData] = useState<FinanceStats | null>(null);
-    const [financeLoading, setFinanceLoading] = useState(true);
-    const [filter, setFilter] = useState<'ALL' | 'INNTEKT' | 'UTGIFT'>('ALL');
+export default function FinancePortalClientPage({ initialData }: { initialData: FinanceStats }) {
     const router = useRouter();
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            const member = await getCurrentMember();
-            setCurrentMember(member);
-            setAuthLoading(false);
-            if (!member || member.role !== "ADMIN") {
-                router.push("/dashboard");
-            }
-        };
-        checkAuth();
-    }, [router]);
-
-    useEffect(() => {
-        const fetchFinanceData = async () => {
-            if (!authLoading && currentMember?.role === "ADMIN") {
-                try {
-                    const res = await fetch("/api/admin/finance");
-                    if (res.ok) {
-                        const data = await res.json();
-                        setFinanceData(data);
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch finance data", error);
-                } finally {
-                    setFinanceLoading(false);
-                }
-            }
-        };
-        fetchFinanceData();
-    }, [currentMember, authLoading]);
-
-    if (authLoading || financeLoading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
-    }
-
-    if (!currentMember || currentMember.role !== "ADMIN") {
-        return null; // Will redirect
-    }
+    const [financeData] = useState<FinanceStats>(initialData);
+    const [filter, setFilter] = useState<'ALL' | 'INNTEKT' | 'UTGIFT'>('ALL');
 
     const { treasuryBalance, totalIncome, totalExpenses, expectedAnnualIncome, transactions, memberBalances } = financeData || {
         treasuryBalance: 0,

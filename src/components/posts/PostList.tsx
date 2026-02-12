@@ -155,7 +155,7 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
             {
                 loading && (
                     <div className="flex justify-center p-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
                     </div>
                 )
             }

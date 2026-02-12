@@ -5,6 +5,7 @@ import { getInvoiceFormData } from "@/server/actions/invoices";
 import { createBulkPaymentRequests } from "@/server/actions/payment-requests";
 import { PaymentCategory } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 const parseAmount = (value: string) => {
     const parsed = Number.parseFloat(value.replace(",", "."));
@@ -115,11 +116,7 @@ export default function CreateInvoicePage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[60vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState className="h-[60vh]" />;
     }
 
     const targetCount = getTargetMemberIds().length;

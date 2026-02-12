@@ -125,7 +125,7 @@ export default function FinancialReportsPage() {
                         >
                             {loading ? (
                                 <>
-                                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                    <span className="animate-spin h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full"></span>
                                     Henter data...
                                 </>
                             ) : (

@@ -5,6 +5,7 @@ import { getSystemStats, type SystemStats } from "@/server/actions/system-resour
 import { toast } from "sonner";
 import { getCurrentMember } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function ResourceManagerClient() {
     const [stats, setStats] = useState<SystemStats | null>(null);
@@ -37,11 +38,7 @@ export default function ResourceManagerClient() {
     }, []);
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (

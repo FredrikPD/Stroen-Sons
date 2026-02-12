@@ -136,7 +136,7 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                             >
                                 {isPending ? (
                                     <>
-                                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></span>
                                         Oppretter...
                                     </>
                                 ) : (
