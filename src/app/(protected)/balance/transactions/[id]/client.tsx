@@ -45,7 +45,12 @@ export default function TransactionDetailClient({ id }: { id: string }) {
     const { description, date, category, totalAmount, type, event, allocations, isSplit, createdAt, receiptUrl } = data;
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat("nb-NO", {
+            style: "currency",
+            currency: "NOK",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     };
 
     const getReceiptFileName = (url: string) => {
@@ -83,7 +88,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
 
                     <div className="text-right">
                         <div className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">TOTALBELØP</div>
-                        <div className={`text-4xl ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                        <div className={`text-4xl font-medium ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
                             {type === 'INNTEKT' ? '+' : ''}{formatCurrency(totalAmount)}
                         </div>
                     </div>

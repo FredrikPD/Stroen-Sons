@@ -124,7 +124,7 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
                                     </div>
                                     <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto mt-1 md:mt-0">
                                         <p className={`font-bold text-sm whitespace-nowrap ${isPaid ? "text-gray-400" : "text-gray-900"}`}>
-                                            kr {inv.amount.toLocaleString('no-NO', { minimumFractionDigits: 0 })}
+                                            kr {inv.amount.toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </p>
                                         <span className="material-symbols-outlined text-gray-300 group-hover/item:text-blue-500 transition-colors">chevron_right</span>
                                     </div>

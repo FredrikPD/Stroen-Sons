@@ -395,10 +395,11 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
             const currentRequest = requestMap.get(currentTitle);
 
             if (currentRequest) {
+                const currentAmount = Number(currentRequest.amount);
                 totalRequestsThisMonth++;
-                potentialIncome += currentRequest.amount;
+                potentialIncome += currentAmount;
                 if (currentRequest.status === 'PAID') {
-                    totalCollected += currentRequest.amount;
+                    totalCollected += currentAmount;
                     paidCount++;
                 }
             }
@@ -682,6 +683,7 @@ export async function getMyFinancialData() {
             balance: member.balance.toNumber(),
             paymentRequests: paymentRequests.map(pr => ({
                 ...pr,
+                amount: Number(pr.amount),
                 dueDate: pr.dueDate ? pr.dueDate.toISOString() : null,
                 createdAt: pr.createdAt.toISOString(),
                 updatedAt: pr.updatedAt.toISOString(),
@@ -775,26 +777,29 @@ export async function getTransactionDetails(transactionId: string) {
             return { success: false, error: "Unauthorized" };
         }
 
-        // 2. Identify if it's potentially a split transaction
-        // Split transactions share: Date (exact), Category, and Description contains " (Splittet)" or is base
-        const isSplit = targetTx.description.includes("(Splittet)");
-        const baseDescription = targetTx.description.replace(" (Splittet)", "").trim();
+        // 2. Fetch all transactions that belong to the same grouped row as the list view.
+        // Group key on the list page is: exact date + category + description without " (Splittet)" suffix.
+        const splitSuffix = " (Splittet)";
+        const baseDescription = targetTx.description.replace(splitSuffix, "").trim();
 
         let relatedTransactions = [targetTx];
 
-        if (isSplit) {
-            // Fetch siblings
-            relatedTransactions = await prisma.transaction.findMany({
+        if (member.role === "ADMIN") {
+            const relatedTransactionsLookup = await prisma.transaction.findMany({
                 where: {
                     date: targetTx.date,
                     category: targetTx.category,
-                    description: { contains: baseDescription }, // Contains base
+                    OR: [
+                        { description: baseDescription },
+                        { description: `${baseDescription}${splitSuffix}` }
+                    ]
                 },
                 include: {
                     member: { select: { firstName: true, lastName: true, id: true, email: true } },
                     event: { select: { title: true, id: true } }
                 }
             });
+            relatedTransactions = relatedTransactionsLookup.length > 0 ? relatedTransactionsLookup : [targetTx];
         }
 
         // 3. Aggregate Data

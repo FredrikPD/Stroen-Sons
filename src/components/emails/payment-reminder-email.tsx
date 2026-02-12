@@ -69,7 +69,12 @@ export const PaymentReminderEmail = ({
                                     </Column>
                                     <Column className="text-right align-top">
                                         <Text className="text-gray-900 text-[14px] font-bold m-0">
-                                            {new Intl.NumberFormat('nb-NO', { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(invoice.amount)}
+                                            {new Intl.NumberFormat('nb-NO', {
+                                                style: 'currency',
+                                                currency: 'NOK',
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            }).format(invoice.amount)}
                                         </Text>
                                     </Column>
                                 </Row>
@@ -79,7 +84,12 @@ export const PaymentReminderEmail = ({
                                     Totalt å betale:
                                 </Text>
                                 <Text className="text-emerald-600 text-[16px] font-bold m-0 text-right float-right">
-                                    {new Intl.NumberFormat('nb-NO', { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(totalAmount)}
+                                    {new Intl.NumberFormat('nb-NO', {
+                                        style: 'currency',
+                                        currency: 'NOK',
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    }).format(totalAmount)}
                                 </Text>
                             </div>
                         </Section>

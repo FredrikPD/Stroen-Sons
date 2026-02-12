@@ -13,6 +13,12 @@ type InvoiceGroup = {
     requests: any[]; // Full requests if needed
 };
 
+const formatNok = (amount: number) =>
+    new Intl.NumberFormat("nb-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+
 export default function InvoicesPage() {
     const [groups, setGroups] = useState<InvoiceGroup[]>([]);
     const [loading, setLoading] = useState(true);
@@ -80,7 +86,7 @@ export default function InvoicesPage() {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-semibold text-gray-600">{group.totalAmount.toLocaleString()} NOK</p>
+                                        <p className="text-sm font-semibold text-gray-600">{formatNok(group.totalAmount)} NOK</p>
                                         <span className="text-xs px-2 py-1 bg-amber-50 text-amber-700 rounded-full font-medium">
                                             {group.paidCount} / {group.totalCount} betalt
                                         </span>
@@ -130,7 +136,7 @@ export default function InvoicesPage() {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-semibold text-gray-500">{group.totalAmount.toLocaleString()} NOK</p>
+                                        <p className="text-sm font-semibold text-gray-500">{formatNok(group.totalAmount)} NOK</p>
                                         <span className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-medium">
                                             Ferdigstilt
                                         </span>

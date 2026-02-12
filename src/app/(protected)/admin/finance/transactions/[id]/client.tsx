@@ -48,7 +48,12 @@ export default function TransactionDetailPage({ id }: { id: string }) {
     const { description, date, category, totalAmount, type, event, allocations, isSplit, createdAt, receiptUrl, receiptKey } = data;
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(amount);
+        return new Intl.NumberFormat("nb-NO", {
+            style: "currency",
+            currency: "NOK",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     };
 
     // Derive a human-readable filename from receipt URL
@@ -93,7 +98,7 @@ export default function TransactionDetailPage({ id }: { id: string }) {
 
                     <div className="text-right">
                         <div className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">TOTALBELØP</div>
-                        <div className={`text-4xl font-bold ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                        <div className={`text-4xl font-medium ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
                             {type === 'INNTEKT' ? '+' : ''}{formatCurrency(totalAmount)}
                         </div>
                     </div>
@@ -209,4 +214,3 @@ export default function TransactionDetailPage({ id }: { id: string }) {
         </div>
     );
 }
-

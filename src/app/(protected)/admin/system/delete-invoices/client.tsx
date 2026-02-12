@@ -27,6 +27,11 @@ interface Props {
 
 export default function InvoiceDeleteClient({ members }: Props) {
     const { openConfirm, openAlert } = useModal();
+    const formatNok = (amount: number) =>
+        new Intl.NumberFormat("nb-NO", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
 
     // Filters
     const [search, setSearch] = useState("");
@@ -236,7 +241,7 @@ export default function InvoiceDeleteClient({ members }: Props) {
                                             {inv.member.firstName} {inv.member.lastName}
                                         </td>
                                         <td className="px-6 py-4 font-mono text-sm text-gray-600">
-                                            {inv.amount},-
+                                            {formatNok(Number(inv.amount))} kr
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' :

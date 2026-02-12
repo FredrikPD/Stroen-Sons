@@ -202,7 +202,7 @@ model PaymentRequest {
   id          String          @id @default(cuid())
   title       String
   description String?
-  amount      Int
+  amount      Decimal         @db.Decimal(10, 2)
   dueDate     DateTime?
   status      RequestStatus   @default(PENDING)
   category    PaymentCategory @default(OTHER)

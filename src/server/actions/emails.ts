@@ -233,6 +233,7 @@ export async function sendPaymentReminder(memberId: string, requestIds: string[]
                 memberName: member.firstName || "Medlem",
                 invoices: invoices.map(inv => ({
                     ...inv,
+                    amount: Number(inv.amount),
                     dueDate: inv.dueDate ? inv.dueDate.toISOString() : null
                 })),
                 paymentUrl
@@ -298,6 +299,7 @@ export async function sendBulkPaymentReminders() {
                     memberName: member.firstName || "Medlem",
                     invoices: member.paymentRequests.map((inv: any) => ({
                         ...inv,
+                        amount: Number(inv.amount),
                         dueDate: inv.dueDate ? inv.dueDate.toISOString() : null
                     })),
                     paymentUrl

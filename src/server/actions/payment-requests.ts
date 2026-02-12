@@ -6,6 +6,14 @@ import { revalidatePath } from "next/cache";
 import { createNotification } from "@/server/actions/notifications";
 import { ensureMember } from "@/server/auth/ensureMember";
 
+const roundToTwo = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
+
+const formatNok = (amount: number) =>
+    new Intl.NumberFormat("nb-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+
 /**
  * Create a single payment request for a member.
  */
@@ -19,9 +27,15 @@ export async function createPaymentRequest(data: {
     eventId?: string;
 }) {
     try {
+        const normalizedAmount = roundToTwo(data.amount);
+        if (!Number.isFinite(normalizedAmount) || normalizedAmount < 0) {
+            return { success: false, error: "Beløp må være et gyldig tall på minst 0,00" };
+        }
+
         const request = await db.paymentRequest.create({
             data: {
                 ...data,
+                amount: normalizedAmount,
                 status: RequestStatus.PENDING,
             },
         });
@@ -32,7 +46,7 @@ export async function createPaymentRequest(data: {
             memberId: data.memberId,
             type: "INVOICE_CREATED",
             title: `Ny ${categoryLabel}: ${data.title}`,
-            message: `Du har mottatt et krav på ${data.amount} kr.`,
+            message: `Du har mottatt et krav på ${formatNok(normalizedAmount)} kr.`,
             link: "/dashboard"
         });
 
@@ -58,10 +72,15 @@ export async function createBulkPaymentRequests(data: {
     eventId?: string;
 }) {
     try {
+        const normalizedAmount = roundToTwo(data.amount);
+        if (!Number.isFinite(normalizedAmount) || normalizedAmount < 0) {
+            return { success: false, error: "Beløp må være et gyldig tall på minst 0,00" };
+        }
+
         const requests = data.memberIds.map((memberId) => ({
             title: data.title,
             description: data.description,
-            amount: data.amount,
+            amount: normalizedAmount,
             dueDate: data.dueDate,
             memberId: memberId,
             category: data.category,
@@ -81,7 +100,7 @@ export async function createBulkPaymentRequests(data: {
                 memberId: memberId,
                 type: "INVOICE_CREATED",
                 title: `Ny ${categoryLabel}: ${data.title}`,
-                message: `Du har mottatt et krav på ${data.amount} kr.`,
+                message: `Du har mottatt et krav på ${formatNok(normalizedAmount)} kr.`,
                 link: "/dashboard"
             });
         }));
@@ -114,12 +133,14 @@ export async function markRequestAsPaid(requestId: string) {
             return { success: false, error: "Already paid" };
         }
 
+        const requestAmount = roundToTwo(Number(request.amount));
+
         // 2. Transactionally update status, create Transaction, AND update Member Balance
         await db.$transaction(async (tx) => {
             // Create the official Accounting Transaction
             const transaction = await tx.transaction.create({
                 data: {
-                    amount: request.amount,
+                    amount: requestAmount,
                     description: request.title,
                     category: request.category.toString(),
                     date: new Date(),
@@ -145,7 +166,7 @@ export async function markRequestAsPaid(requestId: string) {
                 where: { id: request.memberId },
                 data: {
                     balance: {
-                        increment: request.amount
+                        increment: requestAmount
                     }
                 }
             });
@@ -167,14 +188,14 @@ export async function markRequestAsPaid(requestId: string) {
                     update: {
                         status: "PAID",
                         paidAt: new Date(),
-                        amount: request.amount
+                        amount: Math.round(requestAmount)
                     },
                     create: {
                         memberId: request.memberId,
                         period: period,
                         status: "PAID",
                         paidAt: new Date(),
-                        amount: request.amount
+                        amount: Math.round(requestAmount)
                     }
                 });
             }
@@ -198,8 +219,14 @@ export async function getMemberPaymentRequests(memberId: string) {
             where: { memberId },
             orderBy: { createdAt: 'desc' }
         });
-        return { success: true, data: requests };
-    } catch (error) {
+        return {
+            success: true,
+            data: requests.map((request) => ({
+                ...request,
+                amount: Number(request.amount)
+            }))
+        };
+    } catch {
         return { success: false, error: "Failed to fetch requests" };
     }
 }
@@ -208,11 +235,15 @@ export async function getMemberPaymentRequests(memberId: string) {
  * Fetch all pending requests for admin view
  */
 export async function getAllPendingRequests() {
-    return await db.paymentRequest.findMany({
+    const requests = await db.paymentRequest.findMany({
         where: { status: "PENDING" },
         include: { member: true },
         orderBy: { dueDate: 'asc' } // Oldest due first
     });
+    return requests.map((request) => ({
+        ...request,
+        amount: Number(request.amount)
+    }));
 }
 
 /**
@@ -265,7 +296,13 @@ export async function getPaymentRequest(requestId: string) {
             return { success: false, error: "Du har ikke tilgang til denne fakturaen" };
         }
 
-        return { success: true, data: request };
+        return {
+            success: true,
+            data: {
+                ...request,
+                amount: Number(request.amount)
+            }
+        };
     } catch (error) {
         console.error("Failed to fetch request:", error);
         return { success: false, error: "Kunne ikke hente faktura" };

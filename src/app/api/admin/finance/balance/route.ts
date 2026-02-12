@@ -39,7 +39,7 @@ export async function GET() {
             requests: member.paymentRequests.map(req => ({
                 id: req.id,
                 title: req.title, // Use title instead of period
-                amount: req.amount,
+                amount: Number(req.amount),
                 status: req.status, // "PENDING" | "PAID" | "WAIVED"
                 dueDate: req.dueDate,
                 category: req.category

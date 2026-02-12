@@ -13,12 +13,17 @@ export const metadata = {
 export default async function AllInvoicesPage() {
     try {
         await ensureMember();
-    } catch (e) {
+    } catch {
         redirect("/sign-in");
     }
 
     const data = await getMyFinancialData();
     const invoices = data.paymentRequests;
+    const formatNok = (amount: number) =>
+        new Intl.NumberFormat("no-NO", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
 
     // Filter and Sort
     const unpaid = invoices
@@ -83,7 +88,7 @@ export default async function AllInvoicesPage() {
 
                 <div className="flex items-center justify-between md:justify-end gap-6 pl-14 md:pl-0">
                     <span className={`text-lg font-bold whitespace-nowrap ${isPaid ? "text-gray-400" : "text-gray-900"}`}>
-                        {invoice.amount.toLocaleString("no-NO")} kr
+                        {formatNok(invoice.amount)} kr
                     </span>
                     <span className="material-symbols-outlined text-gray-300 group-hover:text-blue-500 transition-colors">
                         chevron_right

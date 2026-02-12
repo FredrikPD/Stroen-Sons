@@ -63,7 +63,12 @@ export default function AllTransactionsPage() {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(amount);
+        return new Intl.NumberFormat("nb-NO", {
+            style: "currency",
+            currency: "NOK",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     };
 
     // Filter transactions FIRST

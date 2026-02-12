@@ -5,9 +5,17 @@ import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/server/actions/notifications";
 
+const roundToTwo = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
+
+const formatNok = (amount: number) =>
+    new Intl.NumberFormat("nb-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+
 export async function getInvoiceGroups() {
     try {
-        const requests = await db.paymentRequest.findMany({
+        const rawRequests = await db.paymentRequest.findMany({
             where: {
                 category: { not: PaymentCategory.MEMBERSHIP_FEE } // Separate section for non-monthly fees
             },
@@ -16,6 +24,10 @@ export async function getInvoiceGroups() {
             },
             orderBy: { createdAt: 'desc' }
         });
+        const requests = rawRequests.map((request) => ({
+            ...request,
+            amount: Number(request.amount)
+        }));
 
         // Group by Title (e.g. "Hytte tur 2025")
         const groups: Record<string, {
@@ -71,6 +83,7 @@ export async function getInvoiceGroupDetails(title: string) {
 
         const safeRequests = requests.map((req: any) => ({
             ...req,
+            amount: Number(req.amount),
             transaction: req.transaction ? {
                 ...req.transaction,
                 amount: req.transaction.amount.toNumber()
@@ -113,7 +126,9 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
 }, memberIds?: string[]) {
     try {
         // Validation
-        if (data.amount !== undefined && data.amount < 0) return { success: false, error: "Beløp kan ikke være negativt" };
+        if (data.amount !== undefined && (!Number.isFinite(data.amount) || data.amount < 0)) {
+            return { success: false, error: "Beløp kan ikke være negativt" };
+        }
 
 
         // 1. Fetch existing requests for this group to know state and usage as template
@@ -128,7 +143,7 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
         const template = existingRequests[0];
 
         // Determine finalized values for fields (New data > Old data)
-        const finalAmount = data.amount !== undefined ? data.amount : template.amount;
+        const finalAmount = data.amount !== undefined ? roundToTwo(data.amount) : Number(template.amount);
         const finalDescription = data.description !== undefined ? data.description : template.description;
         const finalDueDate = data.dueDate !== undefined ? data.dueDate : template.dueDate;
 
@@ -145,9 +160,6 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
 
             // Perform Adds
             if (toAdd.length > 0) {
-                // Determine category string for notification
-                const categoryLabel = template.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' : 'Faktura';
-
                 // Batch create requests
                 await db.paymentRequest.createMany({
                     data: toAdd.map(mId => ({
@@ -170,7 +182,7 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
                         memberId: mId,
                         type: "INVOICE_CREATED",
                         title: `Ny betalingsforespørsel: ${oldTitle}`,
-                        message: `Du har mottatt en ny forespørsel på ${finalAmount} kr.`,
+                        message: `Du har mottatt en ny forespørsel på ${formatNok(finalAmount)} kr.`,
                         link: "/dashboard" // Or specific invoice page if we had one for members
                     });
                 }));
@@ -206,7 +218,7 @@ export async function updateInvoiceGroup(oldTitle: string, data: {
         // 3. Update ALL remaining requests with new details (if changed)
         const updateData: any = {};
         if (data.description !== undefined) updateData.description = data.description;
-        if (data.amount !== undefined) updateData.amount = data.amount;
+        if (data.amount !== undefined) updateData.amount = roundToTwo(data.amount);
         if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
 
         if (Object.keys(updateData).length > 0) {
@@ -309,8 +321,13 @@ export async function getInvoices(filters?: {
             orderBy: { createdAt: 'desc' },
             take: 100 // Limit for safety
         });
-
-        return { success: true, requests };
+        return {
+            success: true,
+            requests: requests.map((request) => ({
+                ...request,
+                amount: Number(request.amount)
+            }))
+        };
     } catch (error) {
         console.error("Failed to fetch invoices:", error);
         return { success: false, error: "Kunne ikke hente fakturaer" };

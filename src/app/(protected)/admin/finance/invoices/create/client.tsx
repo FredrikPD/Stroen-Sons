@@ -3,9 +3,19 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getInvoiceFormData } from "@/server/actions/invoices";
 import { createBulkPaymentRequests } from "@/server/actions/payment-requests";
-import Link from "next/link";
 import { PaymentCategory } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
+
+const parseAmount = (value: string) => {
+    const parsed = Number.parseFloat(value.replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatNok = (amount: number) =>
+    new Intl.NumberFormat("nb-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
 
 export default function CreateInvoicePage() {
     const router = useRouter();
@@ -63,10 +73,11 @@ export default function CreateInvoicePage() {
         }
 
         try {
+            const parsedAmount = parseAmount(amount);
             const res = await createBulkPaymentRequests({
                 title,
                 description,
-                amount: parseInt(amount),
+                amount: parsedAmount,
                 dueDate: dueDate ? new Date(dueDate) : undefined,
                 category: category as PaymentCategory,
                 eventId: selectedEventId || undefined,
@@ -107,6 +118,7 @@ export default function CreateInvoicePage() {
     }
 
     const targetCount = getTargetMemberIds().length;
+    const totalIncome = targetCount * parseAmount(amount);
     const filteredMembers = members.filter(m =>
         (m.firstName + " " + m.lastName).toLowerCase().includes(memberSearch.toLowerCase())
     );
@@ -141,8 +153,10 @@ export default function CreateInvoicePage() {
                                     type="number"
                                     value={amount}
                                     onChange={e => setAmount(e.target.value)}
+                                    min="0"
+                                    step="0.01"
                                     className="w-full bg-gray-50 border-gray-100 rounded-xl pl-4 pr-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="0"
+                                    placeholder="0.00"
                                 />
                             </div>
                         </div>
@@ -304,7 +318,7 @@ export default function CreateInvoicePage() {
                             </div>
                             <div className="text-right">
                                 <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Total Inntekt</p>
-                                <p className="text-xl font-bold text-indigo-900">{(targetCount * (parseInt(amount) || 0)).toLocaleString()} kr</p>
+                                <p className="text-xl font-bold text-indigo-900">{formatNok(totalIncome)} kr</p>
                             </div>
                         </div>
                     </div>

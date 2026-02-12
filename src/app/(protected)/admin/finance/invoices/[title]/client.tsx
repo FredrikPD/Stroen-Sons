@@ -13,6 +13,17 @@ import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
 import { Toggle } from "@/components/ui/Toggle";
 import { useModal } from "@/components/providers/ModalContext";
 
+const parseAmount = (value: string) => {
+    const parsed = Number.parseFloat(value.replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatNok = (amount: number) =>
+    new Intl.NumberFormat("nb-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+
 export default function InvoiceDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -51,7 +62,7 @@ export default function InvoiceDetailPage() {
                     const first = resDetails.requests[0];
                     setEditForm({
                         description: first.description || '',
-                        amount: first.amount,
+                        amount: Number(first.amount),
                         dueDate: first.dueDate ? new Date(first.dueDate).toISOString().split('T')[0] : ''
                     });
                     // Set selected members
@@ -166,8 +177,8 @@ export default function InvoiceDetailPage() {
         );
     }
 
-    const totalAmount = requests.reduce((sum, r) => sum + r.amount, 0);
-    const paidAmount = requests.reduce((sum, r) => r.status === 'PAID' ? sum + r.amount : sum, 0);
+    const totalAmount = requests.reduce((sum, r) => sum + Number(r.amount), 0);
+    const paidAmount = requests.reduce((sum, r) => r.status === 'PAID' ? sum + Number(r.amount) : sum, 0);
     const paidCount = requests.filter(r => r.status === 'PAID').length;
 
     return (
@@ -211,7 +222,9 @@ export default function InvoiceDetailPage() {
                             <input
                                 type="number"
                                 value={editForm.amount}
-                                onChange={e => setEditForm({ ...editForm, amount: Number(e.target.value) })}
+                                onChange={e => setEditForm({ ...editForm, amount: parseAmount(e.target.value) })}
+                                min="0"
+                                step="0.01"
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                             />
                             <p className="text-[10px] text-gray-400 mt-1">Dette vil oppdatere beløpet for ALLE i denne gruppen.</p>
@@ -361,7 +374,7 @@ export default function InvoiceDetailPage() {
                                     <div>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Beløp per pers</p>
                                         <p className="text-sm font-medium text-gray-900">
-                                            {requests[0]?.amount},-
+                                            {formatNok(Number(requests[0]?.amount || 0))} kr
                                         </p>
                                     </div>
                                     <div>
@@ -398,11 +411,11 @@ export default function InvoiceDetailPage() {
 
                                     <div className="flex justify-between items-center py-2 border-t border-gray-200">
                                         <span className="text-xs text-gray-500">Totalt innbetalt</span>
-                                        <span className="text-lg font-bold text-gray-900">{paidAmount.toLocaleString()} kr</span>
+                                        <span className="text-lg font-bold text-gray-900">{formatNok(paidAmount)} kr</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-t border-gray-200">
                                         <span className="text-xs text-gray-500">Utestående</span>
-                                        <span className="text-base font-medium text-red-500">{(totalAmount - paidAmount).toLocaleString()} kr</span>
+                                        <span className="text-base font-medium text-red-500">{formatNok(totalAmount - paidAmount)} kr</span>
                                     </div>
                                 </div>
                             </div>
@@ -433,7 +446,7 @@ export default function InvoiceDetailPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 font-mono text-sm text-gray-600">
-                                    {req.amount},-
+                                    {formatNok(Number(req.amount))} kr
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${req.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'

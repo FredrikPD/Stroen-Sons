@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrentMember } from "@/server/actions/finance";
 
@@ -25,7 +24,6 @@ type MemberBalance = {
 };
 
 import { sendBulkPaymentReminders, sendPaymentReminder } from "@/server/actions/emails";
-import { toast } from "sonner"; // Assuming sonner is used, or alert
 import { PremiumModal } from "@/components/ui/PremiumModal";
 
 export default function MemberBalancePage() {
@@ -168,7 +166,12 @@ export default function MemberBalancePage() {
     );
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat("nb-NO", {
+            style: "currency",
+            currency: "NOK",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     };
 
     const formatDate = (dateString: string | null) => {

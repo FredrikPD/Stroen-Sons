@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
     try {
         await ensureMember();
-    } catch (e) {
+    } catch {
         redirect("/sign-in");
     }
 
@@ -48,6 +48,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
     const invoice = res.data;
     const isPaid = invoice.status === RequestStatus.PAID;
+    const formattedAmount = new Intl.NumberFormat("no-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(invoice.amount);
 
     return (
         <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
@@ -90,7 +94,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                         <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2">Totalbeløp å betale</p>
                         <div className="flex items-center justify-center gap-2 text-4xl font-bold text-gray-900">
-                            <span>{invoice.amount.toLocaleString("no-NO")}</span>
+                            <span>{formattedAmount}</span>
                             <span className="text-xl text-gray-400 font-medium">NOK</span>
                         </div>
                         {invoice.dueDate && (
