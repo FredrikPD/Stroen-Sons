@@ -89,8 +89,8 @@ export default async function DashboardPage() {
     getRecentMemories()
   ]);
 
-  const unpaidInvoices = paymentRequestsRes.success && paymentRequestsRes.data
-    ? paymentRequestsRes.data.filter(r => r.status === 'PENDING').map(r => ({
+  const invoices = paymentRequestsRes.success && paymentRequestsRes.data
+    ? paymentRequestsRes.data.map(r => ({
       ...r,
       dueDate: r.dueDate ? r.dueDate.toISOString() : null,
       category: r.category.toString(),
@@ -127,21 +127,26 @@ export default async function DashboardPage() {
 
   const firstName = member.firstName ?? member.email.split("@")[0];
 
-  // Determine payment status using PaymentRequest (invoices)
-  const membershipRequest = paymentRequestsRes.success && paymentRequestsRes.data
-    ? paymentRequestsRes.data.find(r => r.category === "MEMBERSHIP_FEE" && r.status === "PENDING")
+  // Determine payment status using PaymentRequest (invoices) for THIS period
+  const currentMembershipRequest = paymentRequestsRes.success && paymentRequestsRes.data
+    ? paymentRequestsRes.data.find(r => {
+      if (r.category !== "MEMBERSHIP_FEE") return false;
+      // Use dueDate if exists, otherwise createdAt to determine period
+      const d = r.dueDate || r.createdAt;
+      const rPeriod = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      return rPeriod === period;
+    })
     : null;
 
   let paymentStatus: "PAID" | "NO_INVOICE" | "UNPAID_ACTIVE" | "UNPAID_OVERDUE";
-  if (!membershipRequest) {
-    // No pending membership fee request — either none created or already paid
-    const paidRequest = paymentRequestsRes.success && paymentRequestsRes.data
-      ? paymentRequestsRes.data.find(r => r.category === "MEMBERSHIP_FEE" && r.status === "PAID")
-      : null;
-    paymentStatus = paidRequest ? "PAID" : "NO_INVOICE";
+
+  if (!currentMembershipRequest) {
+    paymentStatus = "NO_INVOICE";
+  } else if (currentMembershipRequest.status === "PAID") {
+    paymentStatus = "PAID";
   } else {
-    // Pending membership fee request exists — check deadline
-    if (membershipRequest.dueDate && new Date() > new Date(membershipRequest.dueDate)) {
+    // PENDING
+    if (currentMembershipRequest.dueDate && new Date() > new Date(currentMembershipRequest.dueDate)) {
       paymentStatus = "UNPAID_OVERDUE";
     } else {
       paymentStatus = "UNPAID_ACTIVE";
@@ -398,7 +403,7 @@ export default async function DashboardPage() {
 
           {/* Kommende Fakturaer */}
           <div>
-            <MyInvoices invoices={unpaidInvoices} limit={4} />
+            <MyInvoices invoices={invoices} limit={4} />
           </div>
 
         </div>

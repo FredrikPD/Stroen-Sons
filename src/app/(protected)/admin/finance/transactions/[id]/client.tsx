@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getTransactionDetails } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
+import { SetHeader } from "@/components/layout/SetHeader";
 
 export default function TransactionDetailPage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
@@ -67,6 +68,11 @@ export default function TransactionDetailPage({ id }: { id: string }) {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
+            <SetHeader
+                backHref="/admin/finance/transactions"
+                backLabel="Transaksjonshistorikk"
+            />
+
             {/* Header Card */}
             <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -203,3 +209,4 @@ export default function TransactionDetailPage({ id }: { id: string }) {
         </div>
     );
 }
+

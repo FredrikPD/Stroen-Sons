@@ -44,7 +44,7 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg mb-2">Ingen fakturaer</h3>
                 <p className="text-gray-500 text-sm max-w-[250px]">
-                    Du har ingen fakturaer.
+                    Du har ingen ubetaltefakturaer.
                 </p>
             </div>
         );

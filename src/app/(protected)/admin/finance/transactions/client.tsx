@@ -190,13 +190,21 @@ export default function AllTransactionsPage() {
                                                             {tx.category}
                                                         </span>
                                                         {tx.members && tx.members.length > 0 && (
-                                                            <div className="flex gap-1">
-                                                                {tx.members.map(m => (
+                                                            <div className="flex gap-1 flex-wrap">
+                                                                {tx.members.slice(0, 3).map(m => (
                                                                     <span key={m} className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border border-transparent ${tx.type === 'INNTEKT' ? 'bg-emerald-50 text-emerald-700' : 'bg-orange-50 text-orange-700'}`}>
                                                                         <span className="material-symbols-outlined text-[10px] mr-1">person</span>
                                                                         {m}
                                                                     </span>
                                                                 ))}
+                                                                {tx.members.length > 3 && (
+                                                                    <span
+                                                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200 cursor-help"
+                                                                        title={tx.members.slice(3).join(', ')}
+                                                                    >
+                                                                        +{tx.members.length - 3} andre
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>

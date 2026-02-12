@@ -1075,3 +1075,43 @@ export async function deleteAllTransactions() {
         return { success: false, error: "Kunne ikke slette alle transaksjoner" };
     }
 }
+
+export async function getAllTransactionsRaw() {
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const transactions = await prisma.transaction.findMany({
+            orderBy: { date: "desc" },
+            include: {
+                member: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true
+                    }
+                }
+            }
+        });
+
+        // Map to a cleaner format for the frontend
+        const mappedTransactions = (transactions as any[]).map(tx => ({
+            id: tx.id,
+            date: tx.date,
+            description: tx.description,
+            category: tx.category,
+            type: Number(tx.amount) > 0 ? "INNTEKT" : "UTGIFT",
+            amount: Number(tx.amount),
+            member: tx.member ? {
+                id: tx.member.id,
+                name: `${tx.member.firstName} ${tx.member.lastName}`
+            } : null
+        }));
+
+        return { success: true, transactions: mappedTransactions };
+
+    } catch (error) {
+        console.error("Failed to fetch raw transactions:", error);
+        return { success: false, error: "Kunne ikke hente transaksjoner" };
+    }
+}
