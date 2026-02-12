@@ -4,6 +4,7 @@ import { useUser, useSession } from "@clerk/nextjs";
 import { useState } from "react";
 import { toast } from "sonner";
 import { updateProfile } from "@/server/actions/account";
+import { PushNotificationSettings } from "@/components/notifications/PushNotificationSettings";
 
 interface AccountClientProps {
     initialProfile: any; // Ideally stricter type from Prisma
@@ -401,6 +402,8 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                         </div>
                     )}
                 </div>
+
+                <PushNotificationSettings />
             </div>
         </div>
     );

@@ -26,6 +26,12 @@ const normalizeExpenseDescription = (description: string) => {
 const roundToTwoDecimals = (value: number) =>
     Math.round((value + Number.EPSILON) * 100) / 100;
 
+const formatNok = (amount: number) =>
+    new Intl.NumberFormat("nb-NO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+
 const splitAmountIntoShares = (totalAmount: number, count: number) => {
     if (count <= 0) return [];
     const totalCents = Math.round(totalAmount * 100);
@@ -244,6 +250,14 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
                         amount: paymentAmountInt
                     }
                 });
+            });
+
+            await createNotification({
+                memberId: req.memberId,
+                type: "BALANCE_DEPOSIT",
+                title: "Innbetaling registrert",
+                message: `Vi har registrert en innbetaling på ${formatNok(Number(req.amount))} kr for "${req.title}".`,
+                link: "/balance"
             });
         }
 
@@ -721,6 +735,14 @@ export async function setInvoiceGroupPaymentStatus(data: {
                             }
                         });
                     }
+                });
+
+                await createNotification({
+                    memberId: request.memberId,
+                    type: "BALANCE_DEPOSIT",
+                    title: "Innbetaling registrert",
+                    message: `Vi har registrert en innbetaling på ${formatNok(Number(request.amount))} kr for "${request.title}".`,
+                    link: "/balance"
                 });
             } else {
                 await prisma.$transaction(async (tx) => {
@@ -1650,6 +1672,14 @@ export async function setMemberBalance(memberId: string, newBalance: number, rea
                 where: { id: member.id },
                 data: { balance: newBalance }
             });
+        });
+
+        await createNotification({
+            memberId: member.id,
+            type: difference >= 0 ? "BALANCE_DEPOSIT" : "BALANCE_WITHDRAWAL",
+            title: difference >= 0 ? "Saldojustering (+)" : "Saldojustering (-)",
+            message: `Saldoen din er justert med ${formatNok(Math.abs(difference))} kr. Årsak: ${reason}.`,
+            link: "/balance"
         });
 
         revalidatePath("/admin/finance");

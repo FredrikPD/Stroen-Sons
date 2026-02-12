@@ -6,8 +6,13 @@ import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { ModalProvider } from "@/components/providers/ModalContext";
+import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
 
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
+
+export const viewport: Viewport = {
+  themeColor: "#4F46E5",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -15,9 +20,14 @@ export const metadata: Metadata = {
     default: 'Strøen Søns',
   },
   description: 'Foreningen for gentlemen',
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/icon.png",
-    apple: "/apple-icon.png",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     title: "Strøen Søns",
@@ -43,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body className="bg-background-main text-text-main font-display">
+          <RegisterServiceWorker />
           <NextTopLoader color="#4F46E5" showSpinner={false} />
           <NextSSRPlugin
             /**

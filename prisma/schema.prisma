@@ -33,6 +33,7 @@ model Member {
   transactions    Transaction[]
   paymentRequests PaymentRequest[]
   notifications   Notification[]
+  pushSubscriptions PushSubscription[]
 
   @@index([firstName])
 }
@@ -221,6 +222,8 @@ model PaymentRequest {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  dueSoonReminderSentAt DateTime?
+  dueTodayReminderSentAt DateTime?
 }
 
 model Photo {
@@ -274,6 +277,21 @@ model Notification {
   @@index([read])
 }
 
+model PushSubscription {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastUsedAt DateTime?
+
+  @@index([memberId])
+}
+
 enum NotificationType {
   EVENT_CREATED
   EVENT_UPDATED
@@ -281,6 +299,7 @@ enum NotificationType {
   POST_UPDATED
   INVOICE_CREATED
   BALANCE_WITHDRAWAL
+  BALANCE_DEPOSIT
   PHOTOS_UPLOADED
 }
 

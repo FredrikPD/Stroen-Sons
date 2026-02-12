@@ -75,6 +75,7 @@ export default function NotificationBell() {
             case "POST_UPDATED": return "edit_note";
             case "INVOICE_CREATED": return "payments";
             case "BALANCE_WITHDRAWAL": return "account_balance_wallet";
+            case "BALANCE_DEPOSIT": return "savings";
             case "PHOTOS_UPLOADED": return "add_a_photo";
             default: return "notifications";
         }

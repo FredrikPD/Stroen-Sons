@@ -4,6 +4,7 @@ import { db } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { NotificationType } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { sendPushSignalToMember, sendPushSignalToMembers } from "@/server/push/web-push";
 
 export async function getNotifications() {
     const member = await ensureMember();
@@ -63,6 +64,8 @@ export async function createNotification(data: CreateNotificationInput) {
                 memberId: data.memberId,
             },
         });
+
+        await sendPushSignalToMember(data.memberId);
         // We can't revalidatePath for specific users easily in a shared action, 
         // but the next time they fetch it will be there.
     } catch (error) {
@@ -86,6 +89,8 @@ export async function broadcastNotification(data: Omit<CreateNotificationInput, 
             }))
         });
 
+        await sendPushSignalToMembers(allMembers.map((member) => member.id));
+
     } catch (error) {
         console.error("Failed to broadcast notification:", error);
     }
@@ -108,5 +113,96 @@ export async function notifyNewPhotos(eventId: string) {
         });
     } catch (error) {
         console.error("Failed to notify about new photos:", error);
+    }
+}
+
+export async function sendInvoiceDeadlineReminders() {
+    try {
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const startInThreeDays = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
+        const startInFourDays = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 4);
+
+        const [dueSoon, dueToday] = await Promise.all([
+            db.paymentRequest.findMany({
+                where: {
+                    status: "PENDING",
+                    dueDate: {
+                        gte: startInThreeDays,
+                        lt: startInFourDays,
+                    },
+                    dueSoonReminderSentAt: null,
+                },
+                select: {
+                    id: true,
+                    memberId: true,
+                    title: true,
+                    dueDate: true,
+                }
+            }),
+            db.paymentRequest.findMany({
+                where: {
+                    status: "PENDING",
+                    dueDate: {
+                        gte: startOfToday,
+                        lt: startOfTomorrow,
+                    },
+                    dueTodayReminderSentAt: null,
+                },
+                select: {
+                    id: true,
+                    memberId: true,
+                    title: true,
+                    dueDate: true,
+                }
+            })
+        ]);
+
+        const dueSoonDateLabel = startInThreeDays.toLocaleDateString("nb-NO");
+        const dueTodayDateLabel = startOfToday.toLocaleDateString("nb-NO");
+
+        await Promise.all(dueSoon.map((request) =>
+            createNotification({
+                memberId: request.memberId,
+                type: NotificationType.INVOICE_CREATED,
+                title: "Faktura forfaller snart",
+                message: `"${request.title}" forfaller ${dueSoonDateLabel}.`,
+                link: `/invoices/${request.id}`,
+            })
+        ));
+
+        await Promise.all(dueToday.map((request) =>
+            createNotification({
+                memberId: request.memberId,
+                type: NotificationType.INVOICE_CREATED,
+                title: "Faktura forfaller i dag",
+                message: `"${request.title}" forfaller ${dueTodayDateLabel}.`,
+                link: `/invoices/${request.id}`,
+            })
+        ));
+
+        if (dueSoon.length > 0) {
+            await db.paymentRequest.updateMany({
+                where: { id: { in: dueSoon.map((request) => request.id) } },
+                data: { dueSoonReminderSentAt: now },
+            });
+        }
+
+        if (dueToday.length > 0) {
+            await db.paymentRequest.updateMany({
+                where: { id: { in: dueToday.map((request) => request.id) } },
+                data: { dueTodayReminderSentAt: now },
+            });
+        }
+
+        return {
+            success: true,
+            dueSoonCount: dueSoon.length,
+            dueTodayCount: dueToday.length,
+        };
+    } catch (error) {
+        console.error("Failed to send invoice deadline reminders:", error);
+        return { success: false, dueSoonCount: 0, dueTodayCount: 0 };
     }
 }

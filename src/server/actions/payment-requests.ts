@@ -203,6 +203,14 @@ export async function markRequestAsPaid(requestId: string) {
             }
         });
 
+        await createNotification({
+            memberId: request.memberId,
+            type: "BALANCE_DEPOSIT",
+            title: "Innbetaling registrert",
+            message: `Vi har registrert en innbetaling på ${formatNok(requestAmount)} kr for "${request.title}".`,
+            link: "/balance"
+        });
+
         revalidatePath("/admin/finance/income");
         return { success: true };
     } catch (error) {
