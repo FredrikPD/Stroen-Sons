@@ -202,6 +202,7 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
                 });
 
                 // Update Payment Record (Simplified View)
+                const paymentAmountInt = Math.round(Number(req.amount));
                 await tx.payment.upsert({
                     where: {
                         memberId_period: {
@@ -212,14 +213,14 @@ export async function markMonthlyFeesAsPaid(year: number, month: number) {
                     update: {
                         status: "PAID",
                         paidAt: date,
-                        amount: req.amount
+                        amount: paymentAmountInt
                     },
                     create: {
                         memberId: req.memberId,
                         period: period,
                         status: "PAID",
                         paidAt: date,
-                        amount: req.amount
+                        amount: paymentAmountInt
                     }
                 });
             });
