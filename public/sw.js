@@ -1,4 +1,4 @@
-const CACHE_NAME = "stroen-sons-pwa-v3";
+const CACHE_NAME = "stroen-sons-pwa-v4";
 const OFFLINE_URL = "/offline";
 const PUSH_META_CACHE_NAME = "stroen-sons-pwa-push-meta-v1";
 const PUSH_SEEN_KEY = "/__push_seen_notifications";
@@ -108,6 +108,16 @@ const setSeenNotificationIds = async (ids) => {
   );
 };
 
+const showGenericNotification = async () => {
+  await self.registration.showNotification("Ny varsling", {
+    body: "Du har en ny oppdatering i Strøen Søns.",
+    icon: "/pwa-192x192.png",
+    badge: "/pwa-192x192.png",
+    data: { url: "/dashboard" },
+    tag: "notification-generic",
+  });
+};
+
 self.addEventListener("push", (event) => {
   event.waitUntil((async () => {
     try {
@@ -115,13 +125,7 @@ self.addEventListener("push", (event) => {
       const endpoint = subscription?.endpoint;
 
       if (!endpoint) {
-        await self.registration.showNotification("Ny varsling", {
-          body: "Du har en ny oppdatering i Strøen Søns.",
-          icon: "/pwa-192x192.png",
-          badge: "/pwa-192x192.png",
-          data: { url: "/dashboard" },
-          tag: "notification-generic",
-        });
+        await showGenericNotification();
         return;
       }
 
@@ -133,19 +137,22 @@ self.addEventListener("push", (event) => {
       });
 
       if (!response.ok) {
-        await self.registration.showNotification("Ny varsling", {
-          body: "Du har en ny oppdatering i Strøen Søns.",
-          icon: "/pwa-192x192.png",
-          badge: "/pwa-192x192.png",
-          data: { url: "/dashboard" },
-          tag: "notification-generic",
-        });
+        await showGenericNotification();
+        return;
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        await showGenericNotification();
         return;
       }
 
       const payload = await response.json();
       const notifications = Array.isArray(payload.notifications) ? payload.notifications : [];
-      if (notifications.length === 0) return;
+      if (notifications.length === 0) {
+        await showGenericNotification();
+        return;
+      }
 
       const sortedNotifications = [...notifications].sort((a, b) => {
         const aTs = new Date(a.createdAt || 0).getTime();
@@ -159,7 +166,10 @@ self.addEventListener("push", (event) => {
         (item) => item.read === false && !seenIds.includes(item.id)
       );
 
-      if (!candidate) return;
+      if (!candidate) {
+        await showGenericNotification();
+        return;
+      }
 
       await self.registration.showNotification(candidate.title || "Ny varsling", {
         body: candidate.message || "",
@@ -175,7 +185,11 @@ self.addEventListener("push", (event) => {
       const updatedSeen = [candidate.id, ...seenIds.filter((id) => id !== candidate.id)].slice(0, 50);
       await setSeenNotificationIds(updatedSeen);
     } catch {
-      // Ignore push-display errors to avoid breaking SW lifecycle.
+      try {
+        await showGenericNotification();
+      } catch {
+        // Ignore push-display errors to avoid breaking SW lifecycle.
+      }
     }
   })());
 });

@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
     "/sign-up(.*)",
     "/forgot-password(.*)",
     "/offline(.*)",
+    "/api/push/latest-by-subscription(.*)", // Service worker background fetch must work without Clerk session
     "/api/uploadthing(.*)", // UploadThing webhooks/callbacks
     "/api/webhooks(.*)", // Clerk webhooks
 ]);
