@@ -150,7 +150,11 @@ export default function EventParticipationClientPage() {
                                 participants.map(p => (
                                     <div key={p.id} className="flex items-center justify-between p-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
                                         <div className="flex items-center gap-3">
-                                            <Avatar initials={p.firstName[0] + (p.lastName[0] || "")} />
+                                            <Avatar
+                                                src={p.avatarUrl}
+                                                initials={`${p.firstName?.[0] || ""}${p.lastName?.[0] || ""}`}
+                                                alt={p.firstName || p.email}
+                                            />
                                             <span className="text-sm font-medium">{p.firstName} {p.lastName}</span>
                                         </div>
                                         <button
@@ -187,9 +191,13 @@ export default function EventParticipationClientPage() {
                                     filteredMembers.map(m => (
                                         <div key={m.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                                                    {m.firstName[0]}
-                                                </div>
+                                                <Avatar
+                                                    src={m.avatarUrl}
+                                                    initials={`${m.firstName?.[0] || ""}${m.lastName?.[0] || ""}`}
+                                                    size="sm"
+                                                    className="w-6 h-6 text-[10px]"
+                                                    alt={m.firstName || m.email}
+                                                />
                                                 <span className="text-sm">{m.firstName} {m.lastName}</span>
                                             </div>
                                             <button

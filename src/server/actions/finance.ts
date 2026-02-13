@@ -489,6 +489,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
                 id: true,
                 firstName: true,
                 lastName: true,
+                avatarUrl: true,
                 membershipType: true,
                 paymentRequests: {
                     where: {
@@ -507,6 +508,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
             id: string;
             firstName: string | null;
             lastName: string | null;
+            avatarUrl: string | null;
             membershipType: string;
             paymentRequests: Array<{
                 id: string;
@@ -550,7 +552,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
                 id: member.id,
                 name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Ukjent Navn',
                 membershipType: member.membershipType,
-                avatarUrl: null,
+                avatarUrl: member.avatarUrl,
                 history: {
                     // Return the Request Object, or Status?
                     // UI expects status string currently.
@@ -853,6 +855,7 @@ export async function getMembersAndEvents() {
                     id: true,
                     firstName: true,
                     lastName: true,
+                    avatarUrl: true,
                     role: true,
                     createdAt: true
                 },
@@ -996,7 +999,7 @@ const buildExpenseGroupWhere = (tx: {
 
 type ExpenseTransaction = Prisma.TransactionGetPayload<{
     include: {
-        member: { select: { id: true, firstName: true, lastName: true } },
+        member: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
         event: { select: { id: true, title: true } }
     }
 }>;
@@ -1028,7 +1031,7 @@ const groupExpenseTransactions = (transactions: ExpenseTransaction[], orderedGro
         totalAmount: number;
         splitCount: number;
         memberIds: string[];
-        members: { id: string; name: string }[];
+        members: { id: string; name: string; avatarUrl: string | null }[];
         eventId: string | null;
         eventTitle: string | null;
         receiptUrl: string | null;
@@ -1068,7 +1071,8 @@ const groupExpenseTransactions = (transactions: ExpenseTransaction[], orderedGro
             group.memberIds.push(tx.memberId);
             group.members.push({
                 id: tx.memberId,
-                name: `${tx.member.firstName || ""} ${tx.member.lastName || ""}`.trim() || "Ukjent medlem"
+                name: `${tx.member.firstName || ""} ${tx.member.lastName || ""}`.trim() || "Ukjent medlem",
+                avatarUrl: tx.member.avatarUrl ?? null
             });
         }
     }
@@ -1137,7 +1141,7 @@ export async function getAdminExpenses(data?: {
                 take: batchSize + 1,
                 ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
                 include: {
-                    member: { select: { id: true, firstName: true, lastName: true } },
+                    member: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
                     event: { select: { id: true, title: true } }
                 }
             })) as ExpenseTransaction[];
@@ -1198,7 +1202,7 @@ export async function getAdminExpenses(data?: {
             },
             orderBy: [{ date: "desc" }, { createdAt: "desc" }, { id: "desc" }],
             include: {
-                member: { select: { id: true, firstName: true, lastName: true } },
+                member: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
                 event: { select: { id: true, title: true } }
             }
         })) as ExpenseTransaction[];
@@ -1586,7 +1590,7 @@ export async function getTransactionDetails(transactionId: string, scope: Transa
     try {
         const member = await ensureMember();
         const transactionDetailInclude = {
-            member: { select: { firstName: true, lastName: true, id: true, email: true } },
+            member: { select: { firstName: true, lastName: true, id: true, email: true, avatarUrl: true } },
             event: { select: { title: true, id: true } },
             paymentRequest: {
                 select: {
@@ -1667,7 +1671,8 @@ export async function getTransactionDetails(transactionId: string, scope: Transa
             member: tx.member ? {
                 id: tx.member.id,
                 name: `${tx.member.firstName} ${tx.member.lastName}`,
-                email: tx.member.email
+                email: tx.member.email,
+                avatarUrl: tx.member.avatarUrl ?? null
             } : null
         }));
 

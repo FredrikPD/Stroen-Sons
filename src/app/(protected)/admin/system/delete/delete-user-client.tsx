@@ -4,11 +4,13 @@ import { useState, useEffect, useTransition } from "react";
 import { deleteMember } from "@/server/actions/delete-member";
 import { Role } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
+import { Avatar } from "@/components/Avatar";
 
 type Member = {
     id: string;
     firstName: string | null;
     lastName: string | null;
+    avatarUrl: string | null;
     email: string;
     role: Role;
     clerkId: string | null;
@@ -132,9 +134,13 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                 onClick={() => setSelectedMember(member)}
                                 className="flex items-center gap-3 p-3 text-left bg-white border border-gray-100 hover:border-indigo-500 hover:shadow-md rounded-xl transition-all group"
                             >
-                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                    {member.firstName?.[0]}{member.lastName?.[0]}
-                                </div>
+                                <Avatar
+                                    src={member.avatarUrl}
+                                    initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
+                                    alt={member.firstName || member.email}
+                                    className="w-10 h-10 text-gray-600 font-bold bg-gray-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors"
+                                    size="sm"
+                                />
                                 <div>
                                     <p className="font-bold text-gray-900 leading-tight">{member.firstName} {member.lastName}</p>
                                     <p className="text-xs text-gray-500">{member.email}</p>
@@ -164,9 +170,13 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
 
                             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                                 {/* Avatar */}
-                                <div className="w-32 h-32 rounded-2xl bg-indigo-50 border-4 border-white shadow-xl flex items-center justify-center text-3xl font-bold text-indigo-600 shrink-0">
-                                    {selectedMember.firstName?.[0]}{selectedMember.lastName?.[0]}
-                                </div>
+                                <Avatar
+                                    src={selectedMember.avatarUrl}
+                                    initials={`${selectedMember.firstName?.[0] || ""}${selectedMember.lastName?.[0] || ""}`}
+                                    alt={selectedMember.firstName || selectedMember.email}
+                                    className="w-32 h-32 rounded-2xl text-3xl font-bold text-indigo-600 bg-indigo-50 border-4 border-white shadow-xl shrink-0"
+                                    size="lg"
+                                />
 
                                 <div className="flex-1 w-full text-center md:text-left">
                                     <h3 className="text-3xl font-bold text-gray-900">{selectedMember.firstName} {selectedMember.lastName}</h3>

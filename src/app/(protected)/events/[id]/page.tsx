@@ -39,6 +39,7 @@ export default async function EventDetailPage({ params }: Props) {
                     id: true,
                     firstName: true,
                     lastName: true,
+                    avatarUrl: true,
                     email: true,
                 }
             },

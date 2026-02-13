@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV, type NavItem } from "./nav";
+import { Avatar } from "@/components/Avatar";
 
 interface MobileMenuProps {
     open: boolean;
@@ -21,7 +22,9 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
     const pathname = usePathname();
     const router = useRouter();
     const { signOut } = useClerk();
+    const { user } = useUser();
     const [isAdmin, setIsAdmin] = useState(false);
+    const resolvedAvatarUrl = user?.imageUrl ?? avatarUrl;
 
     useEffect(() => {
         if (role === "ADMIN") {
@@ -136,9 +139,13 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
                     <div className="p-2 border-t border-gray-100 mt-auto">
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-3 px-3 py-2">
-                                <div className="h-8 w-8 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                                    {userName ? userName.substring(0, 2).toUpperCase() : "??"}
-                                </div>
+                                <Avatar
+                                    src={resolvedAvatarUrl}
+                                    initials={userName ? userName.substring(0, 2).toUpperCase() : "??"}
+                                    alt={userName || "Bruker"}
+                                    className="h-8 w-8 text-xs font-bold shadow-sm bg-[#1A1A1A]"
+                                    size="sm"
+                                />
                                 <div className="flex flex-col">
                                     <span className="text-sm font-bold text-gray-900">{userName || "Bruker"}</span>
                                     <span className="text-xs text-gray-500 capitalize">{role ? role.toLowerCase() : "Medlem"}</span>

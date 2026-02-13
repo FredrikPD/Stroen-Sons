@@ -75,6 +75,7 @@ export default async function PostDetailPage({ params }: PageProps) {
                     <div className="flex justify-between items-start mb-8">
                         <div className="flex items-center gap-3">
                             <Avatar
+                                src={post.author.avatarUrl ?? null}
                                 initials={post.author.firstName ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}` : "?"}
                                 size="md"
                             />

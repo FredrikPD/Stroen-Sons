@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV } from "./nav";
 import { useHeader } from "./HeaderContext";
 import NotificationBell from "../notifications/NotificationBell";
@@ -19,7 +20,9 @@ export default function TopHeader({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useUser();
   const { title: customTitle, backHref, backLabel } = useHeader();
+  const resolvedAvatarUrl = user?.imageUrl ?? avatarUrl;
 
   const getPageTitle = () => {
     if (!pathname) return "Hjem";
@@ -97,20 +100,32 @@ export default function TopHeader({
 
         <NotificationBell />
 
-        <div
+        <button
+          type="button"
           onClick={() => router.push("/account")}
-          className="h-9 w-9 rounded-full bg-[#222222] text-white flex items-center justify-center text-xs font-bold border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all shrink-0"
+          className="h-9 w-9 border border-gray-200 cursor-pointer shadow-sm hover:ring-2 hover:ring-[#4F46E5]/20 transition-all shrink-0 rounded-full overflow-hidden"
+          aria-label="Gå til konto"
         >
           {loading || !userName ? (
             <div className="animate-pulse bg-white/20 w-full h-full rounded-full" />
           ) : (
-            (() => {
-              const parts = userName.split(" ");
-              if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-              return userName.substring(0, 2).toUpperCase();
-            })()
+            resolvedAvatarUrl ? (
+              <img
+                src={resolvedAvatarUrl}
+                alt={userName}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full bg-[#111111] text-white flex items-center justify-center text-xs font-bold">
+                {(() => {
+                  const parts = userName.split(" ");
+                  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                  return userName.substring(0, 2).toUpperCase();
+                })()}
+              </div>
+            )
           )}
-        </div>
+        </button>
       </div>
     </header>
   );

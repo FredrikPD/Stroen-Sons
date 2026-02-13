@@ -2,6 +2,7 @@ import { getProfile } from "@/server/actions/account";
 import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
 import { Metadata } from "next";
 import AccountClient from "./AccountClient";
+import { Avatar } from "@/components/Avatar";
 
 export const metadata: Metadata = {
     title: "Min Konto",
@@ -60,9 +61,13 @@ export default async function AccountPage() {
 
                     <div className="relative z-10 flex items-center gap-4 w-full">
                         {/* Big Avatar */}
-                        <div className="shrink-0 min-w-14 w-14 h-14 sm:min-w-16 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-zinc-800 to-black text-white flex items-center justify-center text-xl sm:text-2xl lg:text-3xl font-bold shadow-lg ring-4 ring-white">
-                            {initials}
-                        </div>
+                        <Avatar
+                            src={profile.avatarUrl ?? null}
+                            initials={initials}
+                            size="lg"
+                            alt={`${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.email}
+                            className="shrink-0 min-w-14 w-14 h-14 sm:min-w-16 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-xl sm:text-2xl lg:text-3xl shadow-lg ring-4 ring-white bg-gradient-to-br from-zinc-800 to-black"
+                        />
 
                         <div className="flex-1 min-w-0 text-left">
                             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-1 leading-tight break-words">

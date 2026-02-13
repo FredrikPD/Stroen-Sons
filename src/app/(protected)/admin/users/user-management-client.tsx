@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { assignRole } from "@/server/actions/roles";
 import { useModal } from "@/components/providers/ModalContext";
 import { useRouter } from "next/navigation";
+import { Avatar } from "@/components/Avatar";
 
 type Member = {
     id: string;
@@ -17,7 +18,7 @@ type Member = {
     membershipType: string;
     status: string;
     lastActive: string;
-    avatarInitial: string;
+    avatarUrl: string | null;
 };
 
 // Quick Actions Data
@@ -163,9 +164,13 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                         <td className="py-4 px-6 min-w-[360px]">
                                             <div className="flex items-center gap-3">
                                                 {/* Avatar */}
-                                                <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600 font-bold shrink-0">
-                                                    {member.avatarInitial}
-                                                </div>
+                                                <Avatar
+                                                    src={member.avatarUrl}
+                                                    initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
+                                                    size="sm"
+                                                    className="w-10 h-10 border border-gray-200 text-gray-700 bg-gray-100 shrink-0"
+                                                    alt={member.firstName || member.email}
+                                                />
                                                 <div>
                                                     <p className="text-sm font-bold text-gray-900">{member.firstName ? `${member.firstName} ${member.lastName || ""}` : "Ukjent"}</p>
                                                     <p className="text-xs text-gray-500 whitespace-nowrap">{member.email}</p>

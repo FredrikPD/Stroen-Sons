@@ -42,6 +42,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         role={member?.role}
         userRole={member?.userRole}
         userName={[member?.firstName, member?.lastName].filter(Boolean).join(" ") || null}
+        avatarUrl={member?.avatarUrl ?? null}
       />
 
       <main
@@ -51,7 +52,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <TopHeader
           loading={loading}
           userName={[member?.firstName, member?.lastName].filter(Boolean).join(" ") || null}
-          avatarUrl={null}
+          avatarUrl={member?.avatarUrl ?? null}
           onMenuClick={() => setMenuOpen(true)}
         />
 

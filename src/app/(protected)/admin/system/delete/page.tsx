@@ -16,6 +16,7 @@ export default async function DeleteUserPage() {
             id: true,
             firstName: true,
             lastName: true,
+            avatarUrl: true,
             email: true,
             role: true,
             clerkId: true,

@@ -16,6 +16,7 @@ interface Member {
     id: string;
     firstName: string | null;
     lastName: string | null;
+    avatarUrl: string | null;
     email: string;
     role: Role;
     userRole?: AvailableRole | null;
@@ -56,6 +57,7 @@ export default function RolesManager() {
                         id: member.id,
                         firstName: member.firstName,
                         lastName: member.lastName,
+                        avatarUrl: member.avatarUrl ?? null,
                         email: member.email,
                         role: member.role,
                         userRole: member.userRole ?? null,
@@ -179,6 +181,7 @@ export default function RolesManager() {
                                             <div className="flex-shrink-0 h-10 w-10">
                                                 <Avatar
                                                     className="h-10 w-10 rounded-full"
+                                                    src={member.avatarUrl}
                                                     initials={`${member.firstName?.[0] || ''}${member.lastName?.[0] || ''}`}
                                                 />
                                             </div>

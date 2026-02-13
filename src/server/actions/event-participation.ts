@@ -22,6 +22,7 @@ export async function getEventParticipants(eventId: string) {
                 id: true,
                 firstName: true,
                 lastName: true,
+                avatarUrl: true,
                 email: true,
                 phoneNumber: true
             },

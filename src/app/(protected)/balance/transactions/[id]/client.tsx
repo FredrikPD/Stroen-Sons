@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getTransactionDetails } from "@/server/actions/finance";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { Avatar } from "@/components/Avatar";
 
 export default function TransactionDetailClient({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
@@ -175,9 +176,13 @@ export default function TransactionDetailClient({ id }: { id: string }) {
                                     <td className="px-8 py-4">
                                         {alloc.member ? (
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-white border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                                                    {alloc.member.name.charAt(0)}
-                                                </div>
+                                                <Avatar
+                                                    src={alloc.member.avatarUrl ?? null}
+                                                    initials={alloc.member.name.substring(0, 2).toUpperCase()}
+                                                    alt={alloc.member.name}
+                                                    className="w-8 h-8 text-xs font-bold text-gray-600 bg-gradient-to-br from-gray-100 to-white border border-gray-200"
+                                                    size="sm"
+                                                />
                                                 <div>
                                                     <div className="font-medium text-gray-900">{alloc.member.name}</div>
                                                     <div className="text-xs text-gray-500">{alloc.member.email}</div>

@@ -21,6 +21,7 @@ export type PostWithDetails = {
     author: {
         firstName: string | null;
         lastName: string | null;
+        avatarUrl?: string | null;
         email: string;
         role?: string;
     };
@@ -63,6 +64,7 @@ export default function PostItem({ post, isAdmin, onDelete, categoryColorMap = {
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                         <Avatar
+                            src={post.author.avatarUrl ?? null}
                             initials={post.author.firstName ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}` : "?"}
                             size="md"
                         />

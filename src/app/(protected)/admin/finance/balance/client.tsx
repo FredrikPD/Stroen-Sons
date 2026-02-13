@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentMember } from "@/server/actions/finance";
+import { Avatar } from "@/components/Avatar";
 
 type PaymentRequest = {
     id: string;
@@ -18,6 +19,7 @@ type MemberBalance = {
     id: string;
     name: string;
     email: string;
+    avatarUrl?: string | null;
     balance: number;
     unpaidCount: number;
     requests: PaymentRequest[];
@@ -236,9 +238,13 @@ export default function MemberBalancePage() {
                         >
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${member.unpaidCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                        {member.name.charAt(0)}
-                                    </div>
+                                    <Avatar
+                                        src={member.avatarUrl ?? null}
+                                        initials={member.name.substring(0, 2).toUpperCase()}
+                                        alt={member.name}
+                                        className={`w-9 h-9 sm:w-10 sm:h-10 text-sm font-bold shrink-0 ${member.unpaidCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}
+                                        size="sm"
+                                    />
                                     <div className="min-w-0">
                                         <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{member.name}</h3>
                                         <p className="text-xs sm:text-sm text-gray-500 truncate">{member.email}</p>

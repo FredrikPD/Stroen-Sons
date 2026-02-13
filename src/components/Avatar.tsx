@@ -6,6 +6,7 @@ type AvatarProps = {
     alt?: string;
     size?: "xs" | "sm" | "md" | "lg" | "xl";
     className?: string;
+    imageClassName?: string;
 };
 
 export const Avatar = ({
@@ -13,7 +14,8 @@ export const Avatar = ({
     initials,
     alt = "Avatar",
     size = "md",
-    className = ""
+    className = "",
+    imageClassName = ""
 }: AvatarProps) => {
 
     // Size mappings
@@ -45,7 +47,7 @@ export const Avatar = ({
                 <img
                     src={src}
                     alt={alt}
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover ${imageClassName}`.trim()}
                 />
             ) : (
                 <span>{initials?.substring(0, 2).toUpperCase() || "?"}</span>

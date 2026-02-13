@@ -1,22 +1,11 @@
 import { getMembers } from "@/server/actions/members";
 import { Metadata } from "next";
+import { Avatar } from "@/components/Avatar";
 
 export const metadata: Metadata = {
     title: "Medlemmer",
     description: "Oversikt over alle medlemmer i Strøen Søns",
 };
-
-function InitialsAvatar({ firstName, lastName, role }: { firstName: string | null; lastName: string | null, role: string }) {
-    const first = firstName?.charAt(0) || "";
-    const last = lastName?.charAt(0) || "";
-    const isAdmin = role === "ADMIN";
-
-    return (
-        <div className="size-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm ring-2 ring-white bg-gradient-to-br from-zinc-600 to-zinc-900">
-            {first}{last}
-        </div>
-    );
-}
 
 function RoleBadge({ role }: { role: string }) {
     const isadmin = role === "ADMIN";
@@ -44,7 +33,13 @@ function MemberCard({ member }: { member: any }) {
                     }`} />
 
                 <div className="relative z-10 flex items-start justify-between">
-                    <InitialsAvatar firstName={member.firstName} lastName={member.lastName} role={member.role} />
+                    <Avatar
+                        src={member.avatarUrl ?? null}
+                        initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
+                        size="md"
+                        className="size-12 text-lg shadow-sm ring-2 ring-white bg-gradient-to-br from-zinc-600 to-zinc-900"
+                        alt={member.firstName || member.email}
+                    />
                     <RoleBadge role={member.role} />
                 </div>
 

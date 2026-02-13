@@ -31,6 +31,7 @@ export default async function EventsPage() {
                         select: {
                             firstName: true,
                             lastName: true,
+                            avatarUrl: true,
                             role: true,
                             email: true,
                         }

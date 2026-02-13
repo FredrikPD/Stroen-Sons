@@ -8,7 +8,7 @@ type EventAttendee = {
     firstName: string | null;
     lastName: string | null;
     email: string | null;
-    // We might add profileImage if available later
+    avatarUrl?: string | null;
 };
 
 export type EventWithDetails = {
@@ -117,6 +117,7 @@ export default function EventCard({ event, color = "blue" }: { event: EventWithD
                                     {event.attendees.map((attendee, i) => (
                                         <Avatar
                                             key={i}
+                                            src={attendee.avatarUrl ?? null}
                                             initials={attendee.firstName && attendee.lastName ? `${attendee.firstName[0]}${attendee.lastName[0]}`.toUpperCase() : (attendee.firstName || attendee.email || "?").substring(0, 2).toUpperCase()}
                                             alt={`${attendee.firstName || ''} ${attendee.lastName || ''}`}
                                             className="w-6 h-6 border-[1.5px] border-white text-xs"

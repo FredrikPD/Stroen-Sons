@@ -26,6 +26,7 @@ export async function getMembers() {
                 id: true,
                 firstName: true,
                 lastName: true,
+                avatarUrl: true,
                 email: true,
                 role: true,
                 userRole: {

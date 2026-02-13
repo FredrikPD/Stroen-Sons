@@ -19,15 +19,22 @@ export async function ensureMember() {
   });
 
   if (existingMember) {
-    // Update last active if > 15 min ago to reduce writes
     const now = new Date();
-    // Check if lastActiveAt exists (it sits on the type now) and if it's old enough
-    if (!existingMember.lastActiveAt || (now.getTime() - existingMember.lastActiveAt.getTime() > 15 * 60 * 1000)) {
-      await prisma.member.update({
+    const shouldUpdateLastActive =
+      !existingMember.lastActiveAt ||
+      (now.getTime() - existingMember.lastActiveAt.getTime() > 15 * 60 * 1000);
+    const nextAvatarUrl = user.imageUrl ?? null;
+    const shouldSyncAvatar =
+      existingMember.avatarUrl !== nextAvatarUrl;
+
+    if (shouldUpdateLastActive || shouldSyncAvatar) {
+      return await prisma.member.update({
         where: { id: existingMember.id },
         data: {
+          avatarUrl: nextAvatarUrl,
           lastActiveAt: now,
-        }
+        },
+        include: { userRole: true },
       });
     }
     return existingMember;
@@ -51,6 +58,7 @@ export async function ensureMember() {
         // Let's keep our DB as authority for now unless empty
         firstName: existingByEmail.firstName || user.firstName,
         lastName: existingByEmail.lastName || user.lastName,
+        avatarUrl: user.imageUrl ?? null,
       },
       include: { userRole: true },
     });
@@ -63,6 +71,7 @@ export async function ensureMember() {
       email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatarUrl: user.imageUrl ?? null,
       status: "ACTIVE", // Self-sign up = Active
     },
     include: { userRole: true },

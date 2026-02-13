@@ -200,6 +200,7 @@ export async function getPosts({
                 select: {
                     firstName: true,
                     lastName: true,
+                    avatarUrl: true,
                     email: true,
                 },
             },
@@ -262,6 +263,7 @@ export async function getPinnedPosts() {
                     select: {
                         firstName: true,
                         lastName: true,
+                        avatarUrl: true,
                     }
                 }
             },

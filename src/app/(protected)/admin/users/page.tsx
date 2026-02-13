@@ -29,6 +29,7 @@ export default async function UserManagementPage() {
                 id: true,
                 firstName: true,
                 lastName: true,
+                avatarUrl: true,
                 email: true,
                 role: true,
                 userRole: { select: { id: true, name: true } },
@@ -63,7 +64,7 @@ export default async function UserManagementPage() {
             membershipType: m.membershipType,
             status: m.status === 'ACTIVE' ? "Aktiv" : m.status === 'PENDING' ? "Ventende" : "Inaktiv",
             lastActive: lastActive,
-            avatarInitial: (m.firstName?.[0] || m.email[0]).toUpperCase()
+            avatarUrl: m.avatarUrl ?? null
         };
     });
 

@@ -12,6 +12,7 @@ model Member {
   email          String       @unique
   firstName      String?
   lastName       String?
+  avatarUrl      String?
   phoneNumber    String?
   address        String?
   zipCode        String?

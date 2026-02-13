@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser, useSession } from "@clerk/nextjs";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { updateProfile } from "@/server/actions/account";
 import { PushNotificationSettings } from "@/components/notifications/PushNotificationSettings";
@@ -16,12 +16,14 @@ type PasswordStep = "initial" | "ready" | "success";
 export default function AccountClient({ initialProfile }: AccountClientProps) {
     const { user, isLoaded } = useUser();
     const { session } = useSession();
+    const avatarInputRef = useRef<HTMLInputElement>(null);
 
     // Password Update State
     const [passwordStep, setPasswordStep] = useState<PasswordStep>("initial");
     const [code, setCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
 
     // Profile Edit State
     const [isEditing, setIsEditing] = useState(false);
@@ -137,6 +139,36 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
         }
     };
 
+    const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const maxBytes = 8 * 1024 * 1024;
+        if (!file.type.startsWith("image/")) {
+            toast.error("Velg en bildefil.");
+            e.target.value = "";
+            return;
+        }
+        if (file.size > maxBytes) {
+            toast.error("Bildet er for stort. Maks 8 MB.");
+            e.target.value = "";
+            return;
+        }
+
+        setAvatarUploading(true);
+        try {
+            await user.setProfileImage({ file });
+            await user.reload();
+            toast.success("Profilbildet er oppdatert.");
+        } catch (err: any) {
+            console.error("Error updating profile image:", err);
+            toast.error(err?.errors?.[0]?.message || "Kunne ikke oppdatere profilbildet.");
+        } finally {
+            setAvatarUploading(false);
+            e.target.value = "";
+        }
+    };
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
             {/* Left Column: Account Info (Editable) */}
@@ -170,11 +202,33 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                     {!isEditing ? (
                         <div className="space-y-6">
                             <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-                                <img
-                                    src={user.imageUrl}
-                                    alt="Profilbilde"
-                                    className="w-16 h-16 rounded-full border-2 border-white shadow-sm"
-                                />
+                                <div className="relative shrink-0">
+                                    <img
+                                        src={user.imageUrl}
+                                        alt="Profilbilde"
+                                        className="w-16 h-16 rounded-full border-2 border-white shadow-sm object-cover"
+                                    />
+                                    <input
+                                        ref={avatarInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAvatarFileChange}
+                                        className="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => avatarInputRef.current?.click()}
+                                        disabled={avatarUploading}
+                                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-indigo-600 text-white border-2 border-white flex items-center justify-center hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                                        title="Bytt profilbilde"
+                                    >
+                                        {avatarUploading ? (
+                                            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                        ) : (
+                                            <span className="material-symbols-outlined text-sm">photo_camera</span>
+                                        )}
+                                    </button>
+                                </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">
                                         {formData.firstName} {formData.lastName}
@@ -182,6 +236,14 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                                     <p className="text-sm text-gray-500">
                                         Medlem siden {user.createdAt ? new Date(user.createdAt).getFullYear() : "N/A"}
                                     </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => avatarInputRef.current?.click()}
+                                        disabled={avatarUploading}
+                                        className="mt-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {avatarUploading ? "Laster opp..." : "Bytt profilbilde"}
+                                    </button>
                                 </div>
                             </div>
                             {/* Display fields... I'll keep the existing structure but shortened request here */}

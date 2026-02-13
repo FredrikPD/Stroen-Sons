@@ -19,6 +19,7 @@ type Member = {
     id: string;
     firstName: string | null;
     lastName: string | null;
+    avatarUrl?: string | null;
     role: string;
 };
 
@@ -36,7 +37,7 @@ type ExpenseItem = {
     totalAmount: number;
     splitCount: number;
     memberIds: string[];
-    members: { id: string; name: string }[];
+    members: { id: string; name: string; avatarUrl?: string | null }[];
     eventId: string | null;
     eventTitle: string | null;
     receiptUrl: string | null;
@@ -673,7 +674,7 @@ export default function ExpensesPage() {
                                                         }`}
                                                 >
                                                     <Avatar
-                                                        src={null}
+                                                        src={member.avatarUrl ?? null}
                                                         initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
                                                         alt={member.firstName || ""}
                                                         size="sm"

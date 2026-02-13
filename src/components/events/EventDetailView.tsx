@@ -15,6 +15,7 @@ type Attendee = {
     firstName: string | null;
     lastName: string | null;
     email: string;
+    avatarUrl?: string | null;
 };
 
 type Photo = {
@@ -420,6 +421,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 {attendees.slice(0, 5).map((a, i) => (
                                     <Avatar
                                         key={a.id}
+                                        src={a.avatarUrl ?? null}
                                         initials={a.firstName && a.lastName ? `${a.firstName[0]}${a.lastName[0]}`.toUpperCase() : (a.firstName || a.email).substring(0, 2).toUpperCase()}
                                         alt={`${a.firstName || ''} ${a.lastName || ''}`}
                                         className="w-10 h-10 border-2 border-white ring-1 ring-gray-100"
@@ -511,6 +513,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     {attendees.map((attendee) => (
                                         <div key={attendee.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                                             <Avatar
+                                                src={attendee.avatarUrl ?? null}
                                                 initials={attendee.firstName && attendee.lastName ? `${attendee.firstName[0]}${attendee.lastName[0]}`.toUpperCase() : (attendee.firstName || attendee.email).substring(0, 2).toUpperCase()}
                                                 alt={`${attendee.firstName || ''} ${attendee.lastName || ''}`}
                                                 className="w-8 h-8 flex-shrink-0 text-[10px]"

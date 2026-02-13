@@ -39,6 +39,7 @@ export async function getAlbums(): Promise<Album[]> {
                 select: {
                     firstName: true,
                     lastName: true,
+                    avatarUrl: true,
                 }
             },
             _count: {
@@ -66,7 +67,7 @@ export async function getAlbums(): Promise<Album[]> {
         date: event.startAt,
         attendees: event.attendees ? event.attendees.map((a: any) => ({
             ...a,
-            avatarUrl: null
+            avatarUrl: a.avatarUrl ?? null
         })) : []
     }));
 }

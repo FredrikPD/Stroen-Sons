@@ -34,6 +34,7 @@ export async function GET() {
             id: member.id,
             name: `${member.firstName} ${member.lastName}`,
             email: member.email,
+            avatarUrl: member.avatarUrl,
             balance: member.balance.toNumber(),
             unpaidCount: member.paymentRequests.filter(r => r.status === "PENDING").length,
             requests: member.paymentRequests.map(req => ({
