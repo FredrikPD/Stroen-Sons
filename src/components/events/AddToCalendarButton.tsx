@@ -17,7 +17,7 @@ export default function AddToCalendarButton({ event }: AddToCalendarButtonProps)
             className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
         >
             <span className="material-symbols-outlined text-lg">calendar_add_on</span>
-            Last ned til kalender
+            Legg til kalender
         </a>
     );
 }

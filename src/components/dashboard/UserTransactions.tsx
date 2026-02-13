@@ -60,6 +60,14 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
     const formatCurrency = (amount: number) =>
         new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(amount);
 
+    const formatCategory = (category: string) => {
+        const normalized = category.toUpperCase();
+        if (normalized === "MEMBERSHIP_FEE") return "Kontingent";
+        if (normalized === "EVENT_FEE") return "Arrangement";
+        if (normalized === "OTHER") return "Annet";
+        return category.replace(/_/g, " ");
+    };
+
     const getMonthName = (key: string) => {
         const [y, m] = key.split('-');
         const d = new Date(Number(y), Number(m) - 1);
@@ -143,7 +151,7 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
                                             const monthTotal = txs.reduce((s, t) => s + t.amount, 0);
 
                                             return (
-                                                <div key={monthKey} className="relative pl-4 border-l-2 border-gray-100 ml-4">
+                                                <div key={monthKey} className="relative pl-2 sm:pl-4 border-l-2 border-gray-100 ml-2 sm:ml-4">
                                                     {/* Month Timeline Dot */}
                                                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-gray-200"></div>
 
@@ -168,44 +176,34 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
                                                                 <Link
                                                                     key={tx.id}
                                                                     href={`/balance/transactions/${tx.id}`}
-                                                                    className={`flex items-center gap-4 px-4 py-4 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-gray-50/50 hover:z-10 relative transition-all group cursor-pointer
+                                                                    className={`flex items-center gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-gray-50/50 hover:z-10 relative transition-all group cursor-pointer
                                                                         ${isFirst ? 'rounded-t-2xl' : ''}
                                                                         ${isLast ? 'rounded-b-2xl' : ''}
                                                                         ${!isFirst ? '-mt-px' : ''}
                                                                     `}
                                                                 >
-                                                                    {/* Icon */}
-                                                                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${isPositive
-                                                                        ? 'bg-emerald-100 text-emerald-600'
-                                                                        : 'bg-red-100 text-red-600'
-                                                                        }`}>
-                                                                        <span className="material-symbols-outlined text-[1.25rem]">
-                                                                            {isPositive ? "arrow_upward" : "arrow_downward"}
-                                                                        </span>
-                                                                    </div>
-
                                                                     {/* Details */}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="text-sm font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                                                        <p className="text-sm font-semibold text-gray-900 leading-tight whitespace-normal break-words sm:truncate group-hover:text-indigo-600 transition-colors">
                                                                             {tx.description}
                                                                         </p>
-                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                        <div className="flex flex-wrap items-center gap-2 mt-1.5">
                                                                             <span className="text-xs text-gray-500">
                                                                                 {new Date(tx.date).toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
                                                                             </span>
-                                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500">
-                                                                                {tx.category}
+                                                                            <span className="inline-flex max-w-[9.5rem] sm:max-w-none items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500 truncate">
+                                                                                {formatCategory(tx.category)}
                                                                             </span>
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* Amount + Chevron */}
-                                                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                                                        <span className={`text-base font-bold tabular-nums ${isPositive ? 'text-emerald-700' : 'text-gray-900'}`}>
-                                                                            {isPositive ? "+" : ""}{formatCurrency(tx.amount)}
-                                                                        </span>
-                                                                        <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-indigo-50 flex items-center justify-center transition-colors">
-                                                                            <span className="material-symbols-outlined text-gray-400 group-hover:text-indigo-500 text-sm transition-colors">
+                                                                    {/* Amount */}
+                                                                    <div className="flex-shrink-0 text-right">
+                                                                        <div className="inline-flex items-center justify-end">
+                                                                            <span className={`text-sm sm:text-base font-semibold tabular-nums ${isPositive ? 'text-emerald-700' : 'text-gray-900'}`}>
+                                                                                {isPositive ? "+" : ""}{formatCurrency(tx.amount)}
+                                                                            </span>
+                                                                            <span className="material-symbols-outlined pl-1 text-base leading-none text-gray-400">
                                                                                 chevron_right
                                                                             </span>
                                                                         </div>

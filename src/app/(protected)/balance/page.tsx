@@ -25,6 +25,7 @@ export default async function BalancePage() {
 
     // Sort transactions by date descending
     const sortedTransactions = data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const visibleInvoices = data.paymentRequests.filter((invoice) => invoice.status !== "PAID");
 
     // Mock ID if not available (should be available now)
     const memberId = data.memberId || "Ukjent";
@@ -72,7 +73,7 @@ export default async function BalancePage() {
                 {/* Unpaid Invoices (Right - 2/3 width) */}
                 <div className="lg:w-2/3 relative min-h-[400px] lg:min-h-0">
                     <div className="lg:absolute lg:inset-0">
-                        <MyInvoices invoices={data.paymentRequests} className="h-full" />
+                        <MyInvoices invoices={visibleInvoices} className="h-full" />
                     </div>
                 </div>
             </div>

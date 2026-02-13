@@ -1526,7 +1526,9 @@ export async function getAllTransactions() {
     }
 }
 
-export async function getTransactionDetails(transactionId: string) {
+type TransactionDetailScope = "OWN" | "ADMIN";
+
+export async function getTransactionDetails(transactionId: string, scope: TransactionDetailScope = "OWN") {
     try {
         const member = await ensureMember();
 
@@ -1543,10 +1545,15 @@ export async function getTransactionDetails(transactionId: string) {
             return { success: false, error: "Transaksjon ikke funnet" };
         }
 
-        // Allow admins OR the transaction's owner
         const isOwner = targetTx.memberId === member.id;
-        if (member.role !== 'ADMIN' && !isOwner) {
-            return { success: false, error: "Unauthorized" };
+        if (scope === "ADMIN") {
+            if (member.role !== "ADMIN") {
+                return { success: false, error: "Unauthorized" };
+            }
+        } else {
+            if (!isOwner) {
+                return { success: false, error: "Unauthorized" };
+            }
         }
 
         // 2. Fetch all transactions that belong to the same grouped row as the list view.
@@ -1556,7 +1563,7 @@ export async function getTransactionDetails(transactionId: string) {
 
         let relatedTransactions = [targetTx];
 
-        if (member.role === "ADMIN") {
+        if (scope === "ADMIN") {
             const relatedTransactionsLookup = await prisma.transaction.findMany({
                 where: {
                     date: targetTx.date,
@@ -1572,6 +1579,23 @@ export async function getTransactionDetails(transactionId: string) {
                 }
             });
             relatedTransactions = relatedTransactionsLookup.length > 0 ? relatedTransactionsLookup : [targetTx];
+        } else {
+            const ownRelatedTransactions = await prisma.transaction.findMany({
+                where: {
+                    memberId: member.id,
+                    date: targetTx.date,
+                    category: targetTx.category,
+                    OR: [
+                        { description: baseDescription },
+                        { description: `${baseDescription}${splitSuffix}` }
+                    ]
+                },
+                include: {
+                    member: { select: { firstName: true, lastName: true, id: true, email: true } },
+                    event: { select: { title: true, id: true } }
+                }
+            });
+            relatedTransactions = ownRelatedTransactions.length > 0 ? ownRelatedTransactions : [targetTx];
         }
 
         // 3. Aggregate Data

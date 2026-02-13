@@ -33,6 +33,8 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
     });
 
     const pendingCount = invoices.filter(i => i.status === 'PENDING').length;
+    const unpaidInvoices = sortedInvoices.filter((invoice) => invoice.status !== "PAID");
+    const displayedUnpaidCount = Math.min(limit || unpaidInvoices.length, unpaidInvoices.length);
 
     if (invoices.length === 0) {
         return (
@@ -137,7 +139,7 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
                     </div>
 
                     <div className="mt-6 mb-1 text-center pb-2">
-                        <p className="font-medium text-gray-400 text-xs">Viser {Math.min(limit || invoices.length, invoices.length)} av {invoices.length} fakturaer</p>
+                        <p className="font-medium text-gray-400 text-xs">Viser {displayedUnpaidCount} av {unpaidInvoices.length} ubetalte fakturaer</p>
                     </div>
                 </div>
             </div>

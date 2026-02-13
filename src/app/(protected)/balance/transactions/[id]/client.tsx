@@ -12,7 +12,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
 
     useEffect(() => {
         const fetchDetails = async () => {
-            const res = await getTransactionDetails(id);
+            const res = await getTransactionDetails(id, "OWN");
             if (res.success) {
                 setData(res.data);
             } else {

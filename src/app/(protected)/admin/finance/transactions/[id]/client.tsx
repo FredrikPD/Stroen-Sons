@@ -15,7 +15,7 @@ export default function TransactionDetailPage({ id }: { id: string }) {
 
     useEffect(() => {
         const fetchDetails = async () => {
-            const res = await getTransactionDetails(id);
+            const res = await getTransactionDetails(id, "ADMIN");
             if (res.success) {
                 setData(res.data);
             } else {
@@ -27,7 +27,15 @@ export default function TransactionDetailPage({ id }: { id: string }) {
     }, [id]);
 
     if (loading) {
-        return <LoadingState />;
+        return (
+            <div className="max-w-4xl mx-auto space-y-8">
+                <SetHeader
+                    backHref="/admin/finance/transactions"
+                    backLabel="Transaksjonshistorikk"
+                />
+                <LoadingState className="min-h-[60vh] px-4" />
+            </div>
+        );
     }
 
     if (error || !data) {

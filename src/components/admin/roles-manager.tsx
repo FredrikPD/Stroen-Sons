@@ -1,11 +1,16 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getMembers, updateMemberRole, updateMemberType } from '@/actions/admin-roles';
+import { getAvailableRoles, getMembers, updateMemberRole, updateMemberType } from '@/actions/admin-roles';
 import { getMembershipTypes, MembershipTypeWithCount } from '@/server/actions/membership-types';
 import { Role } from '@prisma/client';
 import { Avatar } from '@/components/Avatar';
 import { LoadingState } from '@/components/ui/LoadingState';
+
+interface AvailableRole {
+    id: string;
+    name: string;
+}
 
 interface Member {
     id: string;
@@ -13,12 +18,25 @@ interface Member {
     lastName: string | null;
     email: string;
     role: Role;
+    userRole?: AvailableRole | null;
     membershipType: string;
     clerkId: string | null;
 }
 
+function mapUserRoleNameToLegacyRole(roleName: string): Role {
+    const normalizedRoleName = roleName.trim().toLowerCase();
+    if (normalizedRoleName === "admin") {
+        return "ADMIN";
+    }
+    if (normalizedRoleName === "moderator") {
+        return "MODERATOR";
+    }
+    return "MEMBER";
+}
+
 export default function RolesManager() {
     const [members, setMembers] = useState<Member[]>([]);
+    const [availableRoles, setAvailableRoles] = useState<AvailableRole[]>([]);
     const [membershipTypes, setMembershipTypes] = useState<MembershipTypeWithCount[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -26,18 +44,43 @@ export default function RolesManager() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const [membersRes, typesRes] = await Promise.all([
-                getMembers(),
-                getMembershipTypes()
-            ]);
+            try {
+                const [membersRes, typesRes, rolesRes] = await Promise.all([
+                    getMembers(),
+                    getMembershipTypes(),
+                    getAvailableRoles(),
+                ]);
 
-            if (membersRes.success && membersRes.data) {
-                setMembers(membersRes.data);
+                if (membersRes.success && membersRes.data) {
+                    const normalizedMembers = membersRes.data.map((member: any) => ({
+                        id: member.id,
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        email: member.email,
+                        role: member.role,
+                        userRole: member.userRole ?? null,
+                        membershipType: member.membershipType,
+                        clerkId: member.clerkId,
+                    }));
+                    setMembers(normalizedMembers);
+                } else if (membersRes.error) {
+                    alert(membersRes.error);
+                }
+
+                if (typesRes.success && typesRes.data) {
+                    setMembershipTypes(typesRes.data);
+                } else if (typesRes.error) {
+                    alert(typesRes.error);
+                }
+
+                if (rolesRes.success && rolesRes.data) {
+                    setAvailableRoles(rolesRes.data);
+                } else if (rolesRes.error) {
+                    alert(rolesRes.error);
+                }
+            } finally {
+                setLoading(false);
             }
-            if (typesRes.success && typesRes.data) {
-                setMembershipTypes(typesRes.data);
-            }
-            setLoading(false);
         };
         fetchData();
     }, []);
@@ -48,13 +91,26 @@ export default function RolesManager() {
         return fullName.includes(query) || member.email.toLowerCase().includes(query);
     });
 
-    const handleRoleChange = async (memberId: string, newRole: Role) => {
+    const handleRoleChange = async (memberId: string, newRoleId: string) => {
         setUpdatingId(memberId);
-        const result = await updateMemberRole(memberId, newRole);
+        const result = await updateMemberRole(memberId, newRoleId);
         if (result.success) {
-            setMembers(members.map(m => m.id === memberId ? { ...m, role: newRole } : m));
+            const selectedRole = availableRoles.find((role) => role.id === newRoleId) ?? null;
+            setMembers((prevMembers) => prevMembers.map((member) =>
+                member.id === memberId
+                    ? {
+                        ...member,
+                        role: selectedRole ? mapUserRoleNameToLegacyRole(selectedRole.name) : member.role,
+                        userRole: selectedRole,
+                    }
+                    : member
+            ));
+
+            if (result.warning) {
+                alert(result.warning);
+            }
         } else {
-            alert('Failed to update role');
+            alert(result.error || 'Kunne ikke oppdatere rolle');
         }
         setUpdatingId(null);
     };
@@ -63,9 +119,11 @@ export default function RolesManager() {
         setUpdatingId(memberId);
         const result = await updateMemberType(memberId, newType);
         if (result.success) {
-            setMembers(members.map(m => m.id === memberId ? { ...m, membershipType: newType } : m));
+            setMembers((prevMembers) => prevMembers.map((member) =>
+                member.id === memberId ? { ...member, membershipType: newType } : member
+            ));
         } else {
-            alert('Failed to update membership type');
+            alert(result.error || 'Kunne ikke oppdatere medlemstype');
         }
         setUpdatingId(null);
     };
@@ -134,19 +192,22 @@ export default function RolesManager() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <select
-                                            value={member.role}
-                                            onChange={(e) => handleRoleChange(member.id, e.target.value as Role)}
+                                            value={member.userRole?.id || ''}
+                                            onChange={(e) => handleRoleChange(member.id, e.target.value)}
                                             disabled={updatingId === member.id}
-                                            className={`block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.role === 'ADMIN'
-                                                ? 'text-red-700 font-medium bg-red-50 border-red-200'
-                                                : member.role === 'MODERATOR'
-                                                    ? 'text-fuchsia-700 font-medium bg-fuchsia-50 border-fuchsia-200'
-                                                    : 'text-emerald-700 font-medium bg-emerald-50 border-emerald-200'
+                                            className={`block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.userRole?.name === 'Admin'
+                                                ? 'text-purple-700 font-medium bg-purple-100 border-purple-200'
+                                                : member.userRole?.name === 'Moderator'
+                                                    ? 'text-indigo-700 font-medium bg-indigo-100 border-indigo-200'
+                                                    : 'text-gray-700 font-medium bg-gray-100 border-gray-200'
                                                 }`}
                                         >
-                                            <option value="MEMBER">Medlem</option>
-                                            <option value="MODERATOR">Moderator</option>
-                                            <option value="ADMIN">Administrator</option>
+                                            {!member.userRole && <option value="">Velg rolle...</option>}
+                                            {availableRoles.map((role) => (
+                                                <option key={role.id} value={role.id}>
+                                                    {role.name}
+                                                </option>
+                                            ))}
                                         </select>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/server/db";
 import { ensureRole } from "@/server/auth/ensureRole";
+import { syncClerkRoleMetadata } from "@/server/clerk/syncRoleMetadata";
 import { Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -119,15 +120,30 @@ export async function assignRole(memberId: string, roleId: string) {
         if (role.name === "Admin") legacyRole = Role.ADMIN;
         if (role.name === "Moderator") legacyRole = Role.MODERATOR;
 
-        await prisma.member.update({
+        const updatedMember = await prisma.member.update({
             where: { id: memberId },
             data: {
                 userRoleId: roleId,
                 role: legacyRole // Sync legacy enum for backward compatibility
-            }
+            },
+            select: {
+                clerkId: true,
+            },
+        });
+
+        const clerkSyncResult = await syncClerkRoleMetadata({
+            clerkId: updatedMember.clerkId,
+            roleId: role.id,
+            legacyRole,
         });
 
         revalidatePath("/admin/users");
+        revalidatePath("/admin/users/roles");
+
+        if (!clerkSyncResult.success && !clerkSyncResult.skipped) {
+            return { success: true, warning: clerkSyncResult.error };
+        }
+
         return { success: true };
     } catch (e) {
         console.error(e);

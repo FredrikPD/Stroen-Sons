@@ -93,7 +93,11 @@ export default function UserManagementClient({ members, availableRoles }: { memb
         setUpdatingRoleId(null);
 
         if (res.success) {
-            await openAlert({ title: "Oppdatert", message: "Rollen ble endret.", type: "success" });
+            await openAlert({
+                title: res.warning ? "Oppdatert med varsel" : "Oppdatert",
+                message: res.warning ? `Rollen ble endret. ${res.warning}` : "Rollen ble endret.",
+                type: res.warning ? "info" : "success"
+            });
             router.refresh();
         } else {
             await openAlert({ title: "Feil", message: res.error || "Kunne ikke endre rolle.", type: "error" });
