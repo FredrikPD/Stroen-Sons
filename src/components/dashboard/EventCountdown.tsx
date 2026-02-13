@@ -38,9 +38,9 @@ export function EventCountdown({ targetDate }: EventCountdownProps) {
 
     return (
         <div className="flex gap-2">
-            <div className="bg-white/10 backdrop-blur-md rounded-lg p-2 text-center min-w-[50px]">
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-3 py-2.5 text-center min-w-[72px] shadow-sm">
                 <span className="block text-2xl font-bold leading-none">{daysLeft}</span>
-                <span className="text-[9px] uppercase text-white/70 font-bold tracking-wider">Dager</span>
+                <span className="text-[10px] uppercase text-white/80 font-bold tracking-[0.14em]">Dager</span>
             </div>
         </div>
     );

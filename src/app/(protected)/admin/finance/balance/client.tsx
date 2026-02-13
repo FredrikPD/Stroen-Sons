@@ -189,7 +189,7 @@ export default function MemberBalancePage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -226,46 +226,48 @@ export default function MemberBalancePage() {
             </div>
 
             {/* Members List */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
                 {filteredMembers.map((member) => (
-                    <div key={member.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md">
+                    <div key={member.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md min-w-0">
                         {/* Member Row Header */}
                         <div
                             onClick={() => setExpandedMemberId(expandedMemberId === member.id ? null : member.id)}
-                            className="p-6 cursor-pointer flex items-center justify-between group"
+                            className="p-4 sm:p-6 cursor-pointer group"
                         >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${member.unpaidCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                    {member.name.charAt(0)}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{member.name}</h3>
-                                    <p className="text-sm text-gray-500">{member.email}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-8">
-                                <div className="text-right min-w-[80px]">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo</p>
-                                    <p className={`font-bold ${member.balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        {formatCurrency(member.balance)}
-                                    </p>
-                                </div>
-                                <div className="text-right min-w-[80px]">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ubetalte</p>
-                                    <p className={`font-bold ${member.unpaidCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                        {member.unpaidCount}
-                                    </p>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${member.unpaidCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        {member.name.charAt(0)}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{member.name}</h3>
+                                        <p className="text-xs sm:text-sm text-gray-500 truncate">{member.email}</p>
+                                    </div>
                                 </div>
                                 <span className={`material-symbols-outlined text-gray-300 transition-transform duration-300 ${expandedMemberId === member.id ? 'rotate-180' : ''}`}>
                                     expand_more
                                 </span>
                             </div>
+
+                            <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end sm:gap-8">
+                                <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:min-w-[90px]">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo</p>
+                                    <p className={`font-bold ${member.balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        {formatCurrency(member.balance)}
+                                    </p>
+                                </div>
+                                <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:min-w-[90px]">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ubetalte</p>
+                                    <p className={`font-bold ${member.unpaidCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                        {member.unpaidCount}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Expanded Details - Payment History */}
                         {expandedMemberId === member.id && (
-                            <div className="border-t border-gray-100 bg-gray-50/50 p-6 animate-in slide-in-from-top-2 duration-200">
+                            <div className="border-t border-gray-100 bg-gray-50/50 p-4 sm:p-6 animate-in slide-in-from-top-2 duration-200">
                                 <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-gray-400 text-lg">history</span>
                                     Betalingshistorikk
@@ -274,41 +276,41 @@ export default function MemberBalancePage() {
                                 {member.requests && member.requests.length > 0 ? (
                                     <div className="grid gap-2">
                                         {member.requests.map((req) => (
-                                            <div key={req.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                                                <div className="flex items-center gap-3">
+                                            <div key={req.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-white border border-gray-200 rounded-lg min-w-0">
+                                                <div className="flex items-center gap-3 min-w-0">
                                                     <div className={`w-1 h-12 rounded-full ${req.status === 'PAID' ? 'bg-emerald-500' : (req.status === 'WAIVED' ? 'bg-gray-400' : 'bg-amber-400')}`}></div>
-                                                    <div>
-                                                        <p className="font-bold text-gray-900 text-sm">{req.title}</p>
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-gray-900 text-sm truncate">{req.title}</p>
                                                         <p className="text-xs text-gray-500">{req.category === 'MEMBERSHIP_FEE' ? 'Medlemskontigent' : 'Faktura'}</p>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-6">
-                                                    <div className="text-right">
+                                                <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-6 w-full sm:w-auto min-w-0">
+                                                    <div className="col-span-1 rounded-md bg-gray-50 px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 flex items-center justify-between gap-3 sm:block sm:text-right min-w-0">
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Beløp</p>
-                                                        <p className="text-sm font-medium text-gray-900">{formatCurrency(req.amount)}</p>
+                                                        <p className="text-sm font-medium text-gray-900 truncate">{formatCurrency(req.amount)}</p>
                                                     </div>
 
-                                                    <div className="text-right min-w-[100px]">
+                                                    <div className="col-span-1 rounded-md bg-gray-50 px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 flex items-center justify-between gap-3 sm:block sm:text-right min-w-0 sm:min-w-[100px]">
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Forfall</p>
-                                                        <p className="text-sm text-gray-500">{formatDate(req.dueDate)}</p>
+                                                        <p className="text-sm text-gray-500 truncate">{formatDate(req.dueDate)}</p>
                                                     </div>
 
-                                                    <div className="text-right min-w-[100px] flex items-center justify-end gap-3">
-                                                        <div>
+                                                    <div className="col-span-2 rounded-md bg-gray-50 px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 text-left sm:text-right sm:min-w-[120px] flex items-center justify-between sm:justify-end gap-3 min-w-0">
+                                                        <div className="min-w-0">
                                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
                                                             {req.status === 'PAID' ? (
-                                                                <div className="flex items-center justify-end gap-1 text-emerald-600 text-sm font-bold">
+                                                                <div className="flex items-center justify-start sm:justify-end gap-1 text-emerald-600 text-sm font-bold">
                                                                     <span className="material-symbols-outlined text-base">check_circle</span>
                                                                     <span>Betalt</span>
                                                                 </div>
                                                             ) : req.status === 'WAIVED' ? (
-                                                                <div className="flex items-center justify-end gap-1 text-gray-500 text-sm font-bold">
+                                                                <div className="flex items-center justify-start sm:justify-end gap-1 text-gray-500 text-sm font-bold">
                                                                     <span className="material-symbols-outlined text-base">remove_circle</span>
                                                                     <span>Fritatt</span>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex items-center justify-end gap-1 text-amber-500 text-sm font-bold">
+                                                                <div className="flex items-center justify-start sm:justify-end gap-1 text-amber-500 text-sm font-bold">
                                                                     <span className="material-symbols-outlined text-base">pending</span>
                                                                     <span>Ubetalt</span>
                                                                 </div>
@@ -319,7 +321,7 @@ export default function MemberBalancePage() {
                                                             <button
                                                                 onClick={(e) => handleSingleReminder(member.id, req.id, e)}
                                                                 disabled={emailSending}
-                                                                className="ml-2 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors border border-indigo-200"
+                                                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors border border-indigo-200 shrink-0"
                                                                 title="Send påminnelse på e-post"
                                                             >
                                                                 <span className="material-symbols-outlined text-lg">forward_to_inbox</span>

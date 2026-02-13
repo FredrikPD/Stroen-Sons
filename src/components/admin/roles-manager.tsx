@@ -134,8 +134,8 @@ export default function RolesManager() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <div className="relative w-full max-w-md">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div className="relative w-full sm:max-w-md">
                     <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <span className="material-symbols-outlined text-gray-400">search</span>
                     </span>
@@ -147,26 +147,26 @@ export default function RolesManager() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="self-start sm:self-auto text-xs sm:text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 font-medium">
                     Viser {filteredMembers.length} av {members.length} medlemmer
                 </div>
             </div>
 
             <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-[980px] divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[360px]">
                                     Medlem
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[220px]">
                                     Rolle
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[240px]">
                                     Medlemstype
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[150px]">
                                     Status
                                 </th>
                             </tr>
@@ -174,7 +174,7 @@ export default function RolesManager() {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredMembers.map((member) => (
                                 <tr key={member.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-4 whitespace-nowrap min-w-[360px]">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
                                                 <Avatar
@@ -183,19 +183,19 @@ export default function RolesManager() {
                                                 />
                                             </div>
                                             <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">
+                                                <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
                                                     {member.firstName} {member.lastName}
                                                 </div>
-                                                <div className="text-sm text-gray-500">{member.email}</div>
+                                                <div className="text-sm text-gray-500 whitespace-nowrap">{member.email}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-4 whitespace-nowrap min-w-[220px]">
                                         <select
                                             value={member.userRole?.id || ''}
                                             onChange={(e) => handleRoleChange(member.id, e.target.value)}
                                             disabled={updatingId === member.id}
-                                            className={`block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.userRole?.name === 'Admin'
+                                            className={`block w-full min-w-[190px] pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.userRole?.name === 'Admin'
                                                 ? 'text-purple-700 font-medium bg-purple-100 border-purple-200'
                                                 : member.userRole?.name === 'Moderator'
                                                     ? 'text-indigo-700 font-medium bg-indigo-100 border-indigo-200'
@@ -210,12 +210,12 @@ export default function RolesManager() {
                                             ))}
                                         </select>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-4 whitespace-nowrap min-w-[240px]">
                                         <select
                                             value={member.membershipType}
                                             onChange={(e) => handleTypeChange(member.id, e.target.value)}
                                             disabled={updatingId === member.id}
-                                            className={`block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.membershipType === 'HONORARY' ? 'text-amber-700 font-medium bg-amber-50 border-amber-200' :
+                                            className={`block w-full min-w-[210px] pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${member.membershipType === 'HONORARY' ? 'text-amber-700 font-medium bg-amber-50 border-amber-200' :
                                                 member.membershipType === 'TRIAL' ? 'text-orange-700 font-medium bg-orange-50 border-orange-200' :
                                                     member.membershipType === 'SUPPORT' ? 'text-pink-700 font-medium bg-pink-50 border-pink-200' :
                                                         'text-emerald-700 font-medium bg-emerald-50 border-emerald-200'
@@ -232,7 +232,7 @@ export default function RolesManager() {
                                             )}
                                         </select>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap min-w-[150px] text-right text-sm font-medium">
                                         {updatingId === member.id ? (
                                             <span className="text-indigo-600 flex items-center justify-end gap-1">
                                                 <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin"></span>

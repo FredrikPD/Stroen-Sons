@@ -1471,6 +1471,46 @@ export async function getMyFinancialData() {
     }
 }
 
+type TransactionGroupPaymentRequest = {
+    title: string;
+    createdAt: Date;
+    category: PaymentCategory;
+};
+
+const getPaymentRequestTransactionGroupKey = (paymentRequest: TransactionGroupPaymentRequest) => {
+    // Membership fees are period-based by title (e.g. "Medlemskontingent 2026-02"),
+    // so we intentionally group by title only.
+    if (paymentRequest.category === PaymentCategory.MEMBERSHIP_FEE) {
+        return `request::${paymentRequest.category}::${paymentRequest.title}`;
+    }
+
+    // Regular invoices can reuse titles, so include createdAt batch to keep groups distinct.
+    return `request::${paymentRequest.category}::${paymentRequest.title}::${paymentRequest.createdAt.toISOString()}`;
+};
+
+const buildPaymentRequestTransactionGroupWhere = (paymentRequest: TransactionGroupPaymentRequest): Prisma.TransactionWhereInput => {
+    if (paymentRequest.category === PaymentCategory.MEMBERSHIP_FEE) {
+        return {
+            paymentRequest: {
+                is: {
+                    category: PaymentCategory.MEMBERSHIP_FEE,
+                    title: paymentRequest.title
+                }
+            }
+        };
+    }
+
+    return {
+        paymentRequest: {
+            is: {
+                category: paymentRequest.category,
+                title: paymentRequest.title,
+                createdAt: paymentRequest.createdAt
+            }
+        }
+    };
+};
+
 export async function getAllTransactions() {
     try {
         const admin = await ensureMember();
@@ -1484,6 +1524,13 @@ export async function getAllTransactions() {
                         firstName: true,
                         lastName: true
                     }
+                },
+                paymentRequest: {
+                    select: {
+                        title: true,
+                        createdAt: true,
+                        category: true
+                    }
                 }
             }
         });
@@ -1492,18 +1539,25 @@ export async function getAllTransactions() {
         const groupedTransactionsMap = new Map<string, any>();
 
         (transactions as any[]).forEach((tx) => {
-            const baseDescription = tx.description.replace(" (Splittet)", "");
-            const dateKey = tx.date.toISOString();
-            const key = `${dateKey}_${baseDescription}_${tx.category}`;
+            const baseDescription = normalizeExpenseDescription(tx.description);
+            const fallbackKey = `${tx.date.toISOString()}_${baseDescription}_${tx.category}`;
+            const key = tx.paymentRequest
+                ? getPaymentRequestTransactionGroupKey(tx.paymentRequest)
+                : fallbackKey;
 
             if (groupedTransactionsMap.has(key)) {
                 const existing = groupedTransactionsMap.get(key);
-                existing.amount += Number(tx.amount);
+                existing.amount = roundToTwoDecimals(existing.amount + Number(tx.amount));
                 if (tx.member) {
                     const name = `${tx.member.firstName} ${tx.member.lastName}`;
                     if (!existing.members.includes(name)) {
                         existing.members.push(name);
                     }
+                }
+
+                if (tx.date > existing.date) {
+                    existing.id = tx.id;
+                    existing.date = tx.date;
                 }
             } else {
                 groupedTransactionsMap.set(key, {
@@ -1531,14 +1585,26 @@ type TransactionDetailScope = "OWN" | "ADMIN";
 export async function getTransactionDetails(transactionId: string, scope: TransactionDetailScope = "OWN") {
     try {
         const member = await ensureMember();
+        const transactionDetailInclude = {
+            member: { select: { firstName: true, lastName: true, id: true, email: true } },
+            event: { select: { title: true, id: true } },
+            paymentRequest: {
+                select: {
+                    title: true,
+                    createdAt: true,
+                    category: true
+                }
+            }
+        } as const;
+
+        type TransactionDetailRecord = Prisma.TransactionGetPayload<{
+            include: typeof transactionDetailInclude
+        }>;
 
         // 1. Fetch the target transaction first to get key details
         const targetTx = await prisma.transaction.findUnique({
             where: { id: transactionId },
-            include: {
-                member: { select: { firstName: true, lastName: true, id: true, email: true } },
-                event: { select: { title: true, id: true } }
-            }
+            include: transactionDetailInclude
         });
 
         if (!targetTx) {
@@ -1557,44 +1623,37 @@ export async function getTransactionDetails(transactionId: string, scope: Transa
         }
 
         // 2. Fetch all transactions that belong to the same grouped row as the list view.
-        // Group key on the list page is: exact date + category + description without " (Splittet)" suffix.
-        const splitSuffix = " (Splittet)";
-        const baseDescription = targetTx.description.replace(splitSuffix, "").trim();
+        const baseDescription = normalizeExpenseDescription(targetTx.description);
 
-        let relatedTransactions = [targetTx];
+        const groupWhere: Prisma.TransactionWhereInput = targetTx.paymentRequest
+            ? buildPaymentRequestTransactionGroupWhere(targetTx.paymentRequest)
+            : {
+                date: targetTx.date,
+                category: targetTx.category,
+                OR: [
+                    { description: baseDescription },
+                    { description: `${baseDescription}${EXPENSE_SPLIT_SUFFIX}` }
+                ]
+            };
+
+        let relatedTransactions: TransactionDetailRecord[] = [targetTx];
 
         if (scope === "ADMIN") {
             const relatedTransactionsLookup = await prisma.transaction.findMany({
-                where: {
-                    date: targetTx.date,
-                    category: targetTx.category,
-                    OR: [
-                        { description: baseDescription },
-                        { description: `${baseDescription}${splitSuffix}` }
-                    ]
-                },
-                include: {
-                    member: { select: { firstName: true, lastName: true, id: true, email: true } },
-                    event: { select: { title: true, id: true } }
-                }
-            });
+                where: groupWhere,
+                include: transactionDetailInclude,
+                orderBy: { date: "desc" }
+            }) as TransactionDetailRecord[];
             relatedTransactions = relatedTransactionsLookup.length > 0 ? relatedTransactionsLookup : [targetTx];
         } else {
             const ownRelatedTransactions = await prisma.transaction.findMany({
                 where: {
                     memberId: member.id,
-                    date: targetTx.date,
-                    category: targetTx.category,
-                    OR: [
-                        { description: baseDescription },
-                        { description: `${baseDescription}${splitSuffix}` }
-                    ]
+                    AND: [groupWhere]
                 },
-                include: {
-                    member: { select: { firstName: true, lastName: true, id: true, email: true } },
-                    event: { select: { title: true, id: true } }
-                }
-            });
+                include: transactionDetailInclude,
+                orderBy: { date: "desc" }
+            }) as TransactionDetailRecord[];
             relatedTransactions = ownRelatedTransactions.length > 0 ? ownRelatedTransactions : [targetTx];
         }
 

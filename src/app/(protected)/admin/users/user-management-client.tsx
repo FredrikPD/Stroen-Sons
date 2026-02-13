@@ -147,20 +147,20 @@ export default function UserManagementClient({ members, availableRoles }: { memb
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full min-w-[980px] text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-gray-100">
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Bruker</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Rolle</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Sist Aktiv</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[360px]">Bruker</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[200px]">Rolle</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[180px]">Type</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[140px]">Status</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[160px]">Sist Aktiv</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {paginatedMembers.map((member) => (
                                     <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="py-4 px-6">
+                                        <td className="py-4 px-6 min-w-[360px]">
                                             <div className="flex items-center gap-3">
                                                 {/* Avatar */}
                                                 <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600 font-bold shrink-0">
@@ -168,11 +168,11 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-bold text-gray-900">{member.firstName ? `${member.firstName} ${member.lastName || ""}` : "Ukjent"}</p>
-                                                    <p className="text-xs text-gray-500">{member.email}</p>
+                                                    <p className="text-xs text-gray-500 whitespace-nowrap">{member.email}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6">
+                                        <td className="py-4 px-6 min-w-[200px]">
                                             {/* Role Dropdown */}
                                             <div className="relative">
                                                 <select
@@ -184,7 +184,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                         e.target.value
                                                     )}
                                                     className={`
-                                                        w-full appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors
+                                                        w-full min-w-[170px] appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors
                                                         ${member.userRole?.name === 'Admin' ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
                                                             member.userRole?.name === 'Moderator' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' :
                                                                 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
@@ -208,8 +208,8 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6">
-                                            <span className="text-sm font-medium text-gray-900">
+                                        <td className="py-4 px-6 min-w-[180px]">
+                                            <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
                                                 {member.membershipType === 'STANDARD' ? 'Standard' :
                                                     member.membershipType === 'HONORARY' ? 'Æresmedlem' :
                                                         member.membershipType === 'TRIAL' ? 'Prøvemedlem' :
@@ -217,15 +217,15 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                                 member.membershipType}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${member.status === 'ACTIVE' ? 'bg-green-50 text-green-700' :
+                                        <td className="py-4 px-6 min-w-[140px]">
+                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${member.status === 'ACTIVE' ? 'bg-green-50 text-green-700' :
                                                 member.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
                                                     'bg-gray-50 text-gray-700'
                                                 }`}>
                                                 {member.status === 'ACTIVE' ? 'Aktiv' : member.status === 'PENDING' ? 'Ventende' : member.status}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6 text-sm text-gray-500">
+                                        <td className="py-4 px-6 min-w-[160px] text-sm text-gray-500 whitespace-nowrap">
                                             {member.lastActive}
                                         </td>
                                     </tr>

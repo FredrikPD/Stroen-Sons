@@ -624,18 +624,18 @@ export default function ExpensesPage() {
                         </div>
 
                         <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
+                            <div className="flex items-start sm:items-center justify-between gap-3 mb-3">
+                                <div className="min-w-0">
                                     <p className="text-xs font-bold text-gray-900">Splitt mellom medlemmer</p>
                                     <p className="text-[11px] text-gray-500">Skru av hvis dette er en felles kostnad uten medlemssaldo.</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setSplitEnabled((prev) => !prev)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${splitEnabled ? "bg-indigo-600" : "bg-gray-300"}`}
+                                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${splitEnabled ? "bg-indigo-600" : "bg-gray-300"}`}
                                 >
                                     <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${splitEnabled ? "translate-x-6" : "translate-x-1"}`}
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${splitEnabled ? "translate-x-6" : "translate-x-1"}`}
                                     />
                                 </button>
                             </div>

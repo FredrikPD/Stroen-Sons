@@ -4,6 +4,7 @@ import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
 import { checkAccess } from "@/server/auth/checkAccess";
 import { UTApi } from "uploadthing/server";
+import { revalidatePath } from "next/cache";
 // Initialize UTApi lazily to avoid build-time env checks
 const getUtapi = () => new UTApi();
 
@@ -129,7 +130,7 @@ export async function deletePhotos(photoIds: string[]) {
     // Fetch photos to get file keys
     const photos = await db.photo.findMany({
         where: { id: { in: photoIds } },
-        select: { id: true, url: true }
+        select: { id: true, url: true, eventId: true }
     });
 
     if (photos.length === 0) return { success: true };
@@ -145,6 +146,14 @@ export async function deletePhotos(photoIds: string[]) {
     await db.photo.deleteMany({
         where: { id: { in: photoIds } },
     });
+
+    const affectedEventIds = Array.from(new Set(photos.map((photo) => photo.eventId)));
+    revalidatePath("/gallery");
+    revalidatePath("/admin/photos");
+    for (const eventId of affectedEventIds) {
+        revalidatePath(`/gallery/${eventId}`);
+        revalidatePath(`/events/${eventId}`);
+    }
 
     return { success: true };
 }

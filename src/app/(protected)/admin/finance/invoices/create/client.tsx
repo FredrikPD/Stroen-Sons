@@ -86,14 +86,9 @@ export default function CreateInvoicePage() {
             });
 
             if (res.success) {
-                const pushedCount = res.notifications?.pushed ?? 0;
-                const pushSummary = pushedCount > 0
-                    ? ` Push-signal sendt til ${pushedCount} enhet${pushedCount === 1 ? "" : "er"}.`
-                    : " Ingen aktive push-enheter funnet for mottakerne.";
-
                 await openAlert({
                     title: "Fakturaer opprettet",
-                    message: `Opprettet ${res.count} krav. Betalingskravene er nå sendt til mottakerne.${pushSummary}`,
+                    message: `Opprettet ${res.count} krav. Betalingskravene er nå sendt til mottakerne.`,
                     type: "success",
                     confirmText: "OK"
                 });
@@ -313,14 +308,16 @@ export default function CreateInvoicePage() {
                             </div>
                         )}
 
-                        <div className="mt-6 bg-indigo-50 rounded-xl p-4 flex items-center justify-between">
-                            <div>
+                        <div className="mt-6 bg-indigo-50 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                            <div className="min-w-0">
                                 <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Oppsummering</p>
-                                <p className="text-sm text-indigo-900 font-medium">Du sender krav til <span className="font-bold">{targetCount}</span> personer.</p>
+                                <p className="text-sm sm:text-base text-indigo-900 font-medium">
+                                    Du sender krav til <span className="font-bold">{targetCount}</span> personer.
+                                </p>
                             </div>
-                            <div className="text-right">
+                            <div className="w-full sm:w-auto pt-3 sm:pt-0 border-t border-indigo-200/70 sm:border-0 text-left sm:text-right">
                                 <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Total Inntekt</p>
-                                <p className="text-xl font-bold text-indigo-900">{formatNok(totalIncome)} kr</p>
+                                <p className="text-2xl sm:text-xl font-bold text-indigo-900 whitespace-nowrap leading-tight">{formatNok(totalIncome)} kr</p>
                             </div>
                         </div>
                     </div>

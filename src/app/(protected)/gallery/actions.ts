@@ -49,8 +49,7 @@ export async function getAlbums(): Promise<Album[]> {
         },
         orderBy: {
             startAt: "desc",
-        },
-        cacheStrategy: { ttl: 60, swr: 60 }
+        }
     });
 
     // Transform to a cleaner shape

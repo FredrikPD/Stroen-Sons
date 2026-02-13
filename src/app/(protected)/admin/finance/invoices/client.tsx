@@ -43,16 +43,16 @@ export default function InvoicesPage() {
 
     return (
         <div className="space-y-10">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Fakturaoversikt</h1>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Fakturaoversikt</h1>
                     <p className="text-gray-500 text-sm max-w-3xl">
                         Oversikt over ekstraordinære innbetalinger (Arrangementer, Turer, etc).
                     </p>
                 </div>
                 <Link
                     href="/admin/finance/invoices/create"
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition"
+                    className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2.5 sm:py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition inline-flex items-center justify-center whitespace-nowrap shrink-0"
                 >
                     + Nytt Krav
                 </Link>

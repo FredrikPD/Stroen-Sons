@@ -2,6 +2,7 @@
 
 import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
+import { Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function getEventParticipants(eventId: string) {
@@ -31,6 +32,36 @@ export async function getEventParticipants(eventId: string) {
     } catch (error) {
         console.error("Failed to get participants:", error);
         return { success: false, error: "Kunne ikke hente deltakere" };
+    }
+}
+
+export async function getAllEventsForParticipation() {
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Ikke autentisert" };
+
+    try {
+        const admin = await db.member.findUnique({
+            where: { clerkId: userId },
+            select: { role: true },
+        });
+
+        if (!admin || (admin.role !== Role.ADMIN && admin.role !== Role.MODERATOR)) {
+            return { success: false, error: "Ingen tilgang" };
+        }
+
+        const events = await db.event.findMany({
+            orderBy: { startAt: "desc" },
+            select: {
+                id: true,
+                title: true,
+                startAt: true,
+            },
+        });
+
+        return { success: true, events };
+    } catch (error) {
+        console.error("Failed to fetch all events for participation admin:", error);
+        return { success: false, error: "Kunne ikke hente arrangementer" };
     }
 }
 

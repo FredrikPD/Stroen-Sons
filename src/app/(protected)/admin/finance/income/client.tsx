@@ -322,16 +322,16 @@ export default function IncomePage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Månedskontingent</h1>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
+                <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Månedskontingent</h1>
                     <p className="text-gray-500 text-sm max-w-3xl">
                         Administrer innbetalinger av medlemskontingent.
                     </p>
                 </div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm shadow-sm"
+                    className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 sm:py-2 px-4 rounded-lg transition-colors inline-flex items-center justify-center gap-2 text-sm shadow-sm whitespace-nowrap shrink-0"
                 >
                     <span className="material-symbols-outlined text-[1.2rem]">add</span>
                     Nytt enkeltkrav
@@ -348,7 +348,7 @@ export default function IncomePage() {
                     <div className="flex flex-col h-full justify-between">
                         <div>
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">PERIODE</p>
-                            <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between sm:items-end mb-6 gap-4">
                                 <select
                                     value={`${selectedYear}-${selectedMonth}`}
                                     onChange={(e) => {
@@ -365,14 +365,14 @@ export default function IncomePage() {
                                     ))}
                                 </select>
 
-                                <div className="flex gap-8 w-full sm:w-auto justify-between sm:justify-end">
-                                    <div className="text-right">
+                                <div className="grid grid-cols-2 gap-4 sm:gap-8 w-full sm:w-auto sm:flex sm:justify-end">
+                                    <div className="text-left sm:text-right">
                                         <p className="text-xs text-gray-500 mb-1">Totalt innbetalt</p>
                                         <p className="text-xl font-bold text-gray-900">
                                             {stats ? `Kr ${stats.totalCollected.toLocaleString("nb-NO")},-` : '...'}
                                         </p>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-left sm:text-right">
                                         <p className="text-xs text-gray-500 mb-1">Manglende</p>
                                         <p className="text-xl font-bold text-red-500">
                                             {stats ? `Kr ${stats.missing.toLocaleString("nb-NO")},-` : '...'}
@@ -421,12 +421,12 @@ export default function IncomePage() {
 
                             {/* Delete Button (Only if requests exist) */}
                             {stats && stats.totalCount > 0 && (
-                                <div className="mt-4 flex justify-between items-center">
-                                    <div className="flex items-center gap-4">
+                                <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:justify-between sm:items-center">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <button
                                             onClick={handleMarkAllPaid}
                                             disabled={generating || markingPaid || markingUnpaid || stats.missing === 0}
-                                            className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.missing === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:text-emerald-800'
+                                            className={`text-sm font-medium inline-flex items-center justify-center sm:justify-start gap-1.5 transition-colors rounded-lg px-3 py-2 border ${stats.missing === 0 ? 'text-gray-300 border-gray-200 bg-gray-50 cursor-not-allowed' : 'text-emerald-700 border-emerald-100 bg-emerald-50 hover:bg-emerald-100'
                                                 }`}
                                         >
                                             {markingPaid ? (
@@ -445,7 +445,7 @@ export default function IncomePage() {
                                         <button
                                             onClick={handleMarkAllUnpaid}
                                             disabled={generating || markingPaid || markingUnpaid || stats.paidCount === 0}
-                                            className={`text-sm font-medium flex items-center gap-1 transition-colors ${stats.paidCount === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-amber-600 hover:text-amber-800'
+                                            className={`text-sm font-medium inline-flex items-center justify-center sm:justify-start gap-1.5 transition-colors rounded-lg px-3 py-2 border ${stats.paidCount === 0 ? 'text-gray-300 border-gray-200 bg-gray-50 cursor-not-allowed' : 'text-amber-700 border-amber-100 bg-amber-50 hover:bg-amber-100'
                                                 }`}
                                         >
                                             {markingUnpaid ? (
@@ -465,7 +465,7 @@ export default function IncomePage() {
                                     <button
                                         onClick={handleDeleteFees}
                                         disabled={generating} // Re-use generating state or add deleting state
-                                        className="text-red-500 hover:text-red-700 text-xs font-medium flex items-center gap-1 transition-colors"
+                                        className="text-red-600 hover:text-red-700 text-sm font-medium inline-flex items-center justify-center sm:justify-start gap-1.5 transition-colors rounded-lg px-3 py-2 border border-red-100 bg-red-50 hover:bg-red-100 disabled:opacity-60"
                                     >
                                         <span className="material-symbols-outlined text-[1rem]">delete</span>
                                         Slett alle generatede krav

@@ -3,6 +3,7 @@ import { UploadThingError } from "uploadthing/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { db } from "@/server/db";
+import { revalidatePath } from "next/cache";
 
 const f = createUploadthing();
 
@@ -56,6 +57,11 @@ export const ourFileRouter = {
                     caption: file.name, // Use filename as default caption or leave empty
                 },
             });
+
+            // Keep gallery/event pages fresh after each uploaded image.
+            revalidatePath("/gallery");
+            revalidatePath(`/gallery/${metadata.eventId}`);
+            revalidatePath(`/events/${metadata.eventId}`);
 
             // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
             return { uploadedBy: metadata.userId, url: file.ufsUrl };

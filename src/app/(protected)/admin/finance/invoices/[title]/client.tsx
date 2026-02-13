@@ -489,56 +489,58 @@ export default function InvoiceDetailPage() {
             )}
 
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full">
-                    <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
-                        <tr>
-                            <th className="px-6 py-4 text-left">Medlem</th>
-                            <th className="px-6 py-4 w-48 text-left">Beløp</th>
-                            <th className="px-6 py-4 w-32 text-left">Status</th>
-                            <th className="px-6 py-4 w-48 text-right">Handling</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {requests.map((req) => (
-                            <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="font-medium text-gray-900">
-                                        {req.member.firstName} {req.member.lastName}
-                                    </div>
-                                    <div className="text-xs text-gray-400">
-                                        Forfall: {req.dueDate ? new Date(req.dueDate).toLocaleDateString() : 'Ingen'}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 w-48 font-mono text-sm text-gray-600">
-                                    {formatNok(Number(req.amount))} kr
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${req.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                        {req.status === 'PAID' ? 'Betalt' : 'Ubetalt'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-3">
-                                        <div className="flex items-center gap-2">
-                                            <Toggle
-                                                checked={req.status === 'PAID'}
-                                                onChange={() => handleToggle(req)}
-                                                disabled={updatingId !== null}
-                                                loading={updatingId === req.id}
-                                            />
-                                            <span className={`text-sm font-medium w-14 text-center inline-block ${req.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'}`}>
-                                                {req.status === 'PAID' ? 'Betalt' : 'Ubetalt'}
-                                            </span>
-                                        </div>
-
-
-                                    </div>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[860px]">
+                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
+                            <tr>
+                                <th className="px-4 sm:px-6 py-4 text-left min-w-[320px]">Medlem</th>
+                                <th className="px-4 sm:px-6 py-4 text-left min-w-[170px]">Beløp</th>
+                                <th className="px-4 sm:px-6 py-4 text-left min-w-[140px]">Status</th>
+                                <th className="px-4 sm:px-6 py-4 text-right min-w-[230px]">Handling</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {requests.map((req) => (
+                                <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="px-4 sm:px-6 py-4 min-w-[320px]">
+                                        <div className="font-medium text-gray-900 whitespace-nowrap">
+                                            {req.member.firstName} {req.member.lastName}
+                                        </div>
+                                        <div className="text-xs text-gray-400 whitespace-nowrap">
+                                            Forfall: {req.dueDate ? new Date(req.dueDate).toLocaleDateString() : 'Ingen'}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 min-w-[170px] font-mono text-sm text-gray-600 whitespace-nowrap">
+                                        {formatNok(Number(req.amount))} kr
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 min-w-[140px]">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${req.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                            {req.status === 'PAID' ? 'Betalt' : 'Ubetalt'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 min-w-[230px] text-right">
+                                        <div className="flex items-center justify-end gap-3">
+                                            <div className="flex items-center gap-2 whitespace-nowrap">
+                                                <Toggle
+                                                    checked={req.status === 'PAID'}
+                                                    onChange={() => handleToggle(req)}
+                                                    disabled={updatingId !== null}
+                                                    loading={updatingId === req.id}
+                                                />
+                                                <span className={`text-sm font-medium w-14 text-center inline-block ${req.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'}`}>
+                                                    {req.status === 'PAID' ? 'Betalt' : 'Ubetalt'}
+                                                </span>
+                                            </div>
+
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

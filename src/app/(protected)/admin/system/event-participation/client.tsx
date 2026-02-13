@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useModal } from "@/components/providers/ModalContext";
-import { getUpcomingEvents } from "@/server/actions/events";
-import { getEventParticipants, adminAddParticipant, adminRemoveParticipant } from "@/server/actions/event-participation";
+import { getEventParticipants, adminAddParticipant, adminRemoveParticipant, getAllEventsForParticipation } from "@/server/actions/event-participation";
 import { getMembers } from "@/server/actions/members";
-import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { LoadingState } from "@/components/ui/LoadingState";
 
@@ -27,10 +25,14 @@ export default function EventParticipationClientPage() {
 
     useEffect(() => {
         Promise.all([
-            getUpcomingEvents(),
+            getAllEventsForParticipation(),
             getMembers()
         ]).then(([eventsRes, membersRes]) => {
-            setEvents(Array.isArray(eventsRes) ? eventsRes : []);
+            if (eventsRes.success && eventsRes.events) {
+                setEvents(eventsRes.events);
+            } else {
+                setEvents([]);
+            }
             if (membersRes.success && membersRes.data) {
                 setAllMembers(membersRes.data);
             }

@@ -19,7 +19,7 @@ export default async function MemberRolesPage() {
             <div>
                 <h1 className="text-3xl font-bold text-gray-900">Medlemsroller</h1>
                 <p className="text-gray-500 mt-2">
-                    Her kan du administrere roller (Administrator/Medlem) og medlemstype for alle registrerte brukere.
+                    Her kan du administrere roller og medlemstype for alle registrerte brukere.
                 </p>
             </div>
 

@@ -105,6 +105,16 @@ export default async function DashboardPage() {
     ...cachedNextEvent,
     startAt: new Date(cachedNextEvent.startAt)
   } : null;
+  const isUserSignedUpForNextEvent = nextEvent
+    ? (await prisma.event.count({
+      where: {
+        id: nextEvent.id,
+        attendees: {
+          some: { id: member.id },
+        },
+      },
+    })) > 0
+    : false;
 
   let nextEventColor = "blue";
   if (nextEvent?.category) {
@@ -173,7 +183,7 @@ export default async function DashboardPage() {
 
           {/* Hero Card (Next Event) */}
           {nextEvent ? (
-            <Link href={`/events/${nextEvent.id}`} className="relative w-full h-[280px] rounded-2xl overflow-hidden shadow-sm group block border border-gray-200">
+            <Link href={`/events/${nextEvent.id}`} className="relative w-full h-[320px] sm:h-[300px] lg:h-[280px] rounded-2xl overflow-hidden shadow-sm group block border border-gray-200">
               {/* Background Image */}
               {nextEvent.coverImage ? (
                 <Image
@@ -187,17 +197,18 @@ export default async function DashboardPage() {
               )}
 
               {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-black/15 sm:bg-black/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/15 sm:from-black/80 sm:via-black/40 sm:to-transparent" />
 
               {/* Content */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
+              <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between text-white">
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex flex-wrap items-center gap-2 max-w-[72%]">
+                    <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
                       Neste Samling
                     </span>
                     {nextEvent.category && (
-                      <span className={`backdrop-blur-md border text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
+                      <span className={`max-w-[140px] truncate backdrop-blur-md border text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
                         {nextEvent.category}
                       </span>
                     )}
@@ -207,45 +218,51 @@ export default async function DashboardPage() {
                   <EventCountdown targetDate={nextEvent.startAt} />
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <h2 className="text-2xl font-bold mb-1 leading-tight text-white drop-shadow-sm">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-1 leading-tight text-white drop-shadow-sm">
                       {nextEvent.title}
                     </h2>
-                    <p className="text-white/90 max-w-lg text-sm font-medium leading-relaxed drop-shadow-sm line-clamp-1">
+                    <p className="text-white/90 max-w-lg text-sm font-medium leading-relaxed drop-shadow-sm line-clamp-2 sm:line-clamp-1">
                       {nextEvent.description || "Gjør deg klar for årets høydepunkt."}
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10">
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-base">calendar_today</span>
-                        <span className="font-semibold text-xs">
-                          {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
-                        </span>
+                  <div className="flex flex-col gap-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-lg border border-white/15 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="material-symbols-outlined text-base">calendar_today</span>
+                          <span className="font-semibold text-xs whitespace-nowrap">
+                            {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
+                          </span>
+                        </div>
+                        <div className="w-px h-4 bg-white/20 shrink-0" />
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="material-symbols-outlined text-base">schedule</span>
+                          <span className="font-semibold text-xs whitespace-nowrap">
+                            {nextEvent.startAt.toLocaleTimeString("nb-NO", { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
                       </div>
-                      <div className="w-px h-4 bg-white/20" />
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-base">schedule</span>
-                        <span className="font-semibold text-xs">
-                          {nextEvent.startAt.toLocaleTimeString("nb-NO", { hour: '2-digit', minute: '2-digit' })}
+
+                      <span className={`inline-flex items-center justify-center gap-1.5 h-[40px] px-3.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap border backdrop-blur-md ${isUserSignedUpForNextEvent
+                        ? "text-emerald-100 bg-emerald-500/25 border-emerald-300/40 shadow-[0_8px_20px_rgba(16,185,129,0.22)]"
+                        : "text-white bg-[#4F46E5]/35 border-[#8A7BFF]/55 shadow-[0_8px_20px_rgba(79,70,229,0.28)] hover:bg-[#4F46E5]/45 hover:border-[#9A8DFF]/70"
+                        }`}>
+                        <span className="material-symbols-outlined text-[14px]">
+                          {isUserSignedUpForNextEvent ? "task_alt" : "arrow_forward"}
                         </span>
-                      </div>
-                      {nextEvent.location && (
-                        <>
-                          <div className="w-px h-4 bg-white/20" />
-                          <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-base">location_on</span>
-                            <span className="font-semibold text-xs">{nextEvent.location}</span>
-                          </div>
-                        </>
-                      )}
+                        {isUserSignedUpForNextEvent ? "Påmeldt" : "Meld deg på"}
+                      </span>
                     </div>
 
-                    <span className="bg-[#4F46E5] hover:bg-[#4338ca] text-white px-4 py-2 rounded-lg font-bold text-xs transition-colors shadow-lg shadow-[#4F46E5]/20">
-                      Meld deg på
-                    </span>
+                    {nextEvent.location && (
+                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 max-w-full sm:max-w-[240px]">
+                        <span className="material-symbols-outlined text-base">location_on</span>
+                        <span className="font-semibold text-xs truncate">{nextEvent.location}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

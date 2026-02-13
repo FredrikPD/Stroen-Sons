@@ -83,14 +83,14 @@ export default function InvitationsClientPage({ initialInvitations, initialError
         <div className="space-y-6">
 
 
-            <div className="flex justify-between items-center">
-                <div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                     <h1 className="text-2xl font-bold text-gray-900">Invitasjoner</h1>
                     <p className="text-gray-500 text-sm">Administrer utsendte invitasjoner og send nye.</p>
                 </div>
                 <button
                     onClick={() => setShowInviteModal(true)}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-2"
+                    className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
                 >
                     <span className="material-symbols-outlined text-lg">add</span>
                     Inviter ny
@@ -104,56 +104,58 @@ export default function InvitationsClientPage({ initialInvitations, initialError
             )}
 
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full">
-                    <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
-                        <tr>
-                            <th className="px-6 py-4">E-post</th>
-                            <th className="px-6 py-4">Rolle</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4">Sendt</th>
-                            <th className="px-6 py-4 text-right">Handling</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {invitations.length === 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[860px]">
+                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-sm italic">
-                                    Ingen ventende invitasjoner.
-                                </td>
+                                <th className="px-6 py-4 min-w-[340px]">E-post</th>
+                                <th className="px-6 py-4 min-w-[150px]">Rolle</th>
+                                <th className="px-6 py-4 min-w-[140px]">Status</th>
+                                <th className="px-6 py-4 min-w-[150px]">Sendt</th>
+                                <th className="px-6 py-4 min-w-[170px] text-right">Handling</th>
                             </tr>
-                        ) : (
-                            invitations.map((inv) => (
-                                <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                        {inv.email}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                            {inv.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                            {inv.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {new Date(inv.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button
-                                            onClick={() => handleRevoke(inv)}
-                                            disabled={loadingId === inv.id}
-                                            className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
-                                        >
-                                            {loadingId === inv.id ? "Working..." : "Trekk tilbake"}
-                                        </button>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {invitations.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-sm italic">
+                                        Ingen ventende invitasjoner.
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                invitations.map((inv) => (
+                                    <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-6 py-4 min-w-[340px] text-sm font-medium text-gray-900 whitespace-nowrap">
+                                            {inv.email}
+                                        </td>
+                                        <td className="px-6 py-4 min-w-[150px] text-sm text-gray-600">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
+                                                {inv.role}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 min-w-[140px]">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">
+                                                {inv.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 min-w-[150px] text-sm text-gray-500 whitespace-nowrap">
+                                            {new Date(inv.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 min-w-[170px] text-right">
+                                            <button
+                                                onClick={() => handleRevoke(inv)}
+                                                disabled={loadingId === inv.id}
+                                                className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+                                            >
+                                                {loadingId === inv.id ? "Working..." : "Trekk tilbake"}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Invite Modal */}
