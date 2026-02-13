@@ -4,7 +4,7 @@ import { useState } from "react";
 // If sonner isn't installed, I'll valid check package.json or just use a local state for feedback.
 // Given I cannot easily check package.json right now without another step, I'll use local state for the feedback to be safe and robust.
 
-export function BankInfoCard({ memberId }: { memberId: string }) {
+export function BankInfoCard({ memberId, className = "" }: { memberId: string, className?: string }) {
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const handleCopy = (text: string, field: string) => {
@@ -16,7 +16,7 @@ export function BankInfoCard({ memberId }: { memberId: string }) {
     };
 
     return (
-        <div className="bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col relative overflow-hidden">
+        <div className={`bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col relative overflow-hidden min-h-[180px] lg:min-h-0 ${className}`}>
             {/* Background Icon */}
             <div className="absolute top-4 right-4 text-white/5 pointer-events-none">
                 <span className="material-symbols-outlined text-[5rem]">account_balance</span>
