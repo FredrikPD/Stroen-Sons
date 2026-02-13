@@ -220,12 +220,12 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">Administrer Eventbilder</h1>
-            <p className="text-gray-500 -mt-4 mb-6">Velg arrangement for å laste opp eller redigere bildearkivet.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Administrer Eventbilder</h1>
+            <p className="text-gray-500 mb-4 sm:mb-6">Velg arrangement for å laste opp eller redigere bildearkivet.</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Col: Event Details (2/3 width) */}
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-8 shadow-sm flex flex-col justify-between min-h-[320px]">
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-5 sm:p-8 shadow-sm flex flex-col gap-6 sm:gap-0 sm:justify-between min-h-[unset] sm:min-h-[320px]">
                     <div className="relative event-dropdown-container">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
                             VELG AKTIVT ARRANGEMENT
@@ -236,7 +236,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="group cursor-pointer flex items-center justify-between border-b-2 border-gray-100 py-2 hover:border-gray-300 transition-colors"
                         >
-                            <span className={`text-2xl font-bold truncate ${selectedEventId ? 'text-gray-900' : 'text-gray-500'}`}>
+                            <span className={`text-xl sm:text-2xl font-bold truncate pr-3 ${selectedEventId ? 'text-gray-900' : 'text-gray-500'}`}>
                                 {currentEvent ? currentEvent.title : "Alle Bilder"}
                             </span>
                             <span className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}>
@@ -273,26 +273,28 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-8 mt-8 pt-8 border-t border-gray-100 border-dashed">
-                        <div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-8 mt-0 sm:mt-8 pt-4 sm:pt-8 border-t border-gray-100 border-dashed">
+                        <div className="rounded-xl bg-gray-50 px-3 py-3 sm:bg-transparent sm:px-0 sm:py-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">EVENT DATO</p>
-                            <div className="flex items-center gap-2 text-gray-700 font-medium">
-                                <span className="material-symbols-outlined text-amber-500">calendar_today</span>
-                                {currentEvent ? new Date(currentEvent.startAt).toLocaleDateString("nb-NO", { day: 'numeric', month: 'long', year: 'numeric' }) : "—"}
+                            <div className="flex items-center gap-2 text-gray-700 font-medium text-sm sm:text-base">
+                                <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">calendar_today</span>
+                                <span className="truncate">
+                                    {currentEvent ? new Date(currentEvent.startAt).toLocaleDateString("nb-NO", { day: 'numeric', month: 'short', year: 'numeric' }) : "—"}
+                                </span>
                             </div>
                         </div>
-                        <div>
+                        <div className="rounded-xl bg-gray-50 px-3 py-3 sm:bg-transparent sm:px-0 sm:py-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">ARKIVSTATUS</p>
-                            <div className="flex items-center gap-2 text-gray-700 font-medium">
-                                <span className="material-symbols-outlined text-amber-500">photo_library</span>
-                                {currentEvent ? `${photoCount} bilder` : `${initialPhotos.length} totalt`}
+                            <div className="flex items-center gap-2 text-gray-700 font-medium text-sm sm:text-base">
+                                <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">photo_library</span>
+                                <span>{currentEvent ? `${photoCount} bilder` : `${initialPhotos.length} totalt`}</span>
                             </div>
                         </div>
-                        <div>
+                        <div className="rounded-xl bg-gray-50 px-3 py-3 sm:bg-transparent sm:px-0 sm:py-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">LAGRINGSPLASS</p>
-                            <div className="flex items-center gap-2 text-gray-700 font-medium">
-                                <span className="material-symbols-outlined text-amber-500">cloud</span>
-                                <span>
+                            <div className="flex items-center gap-2 text-gray-700 font-medium text-sm sm:text-base">
+                                <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">cloud</span>
+                                <span className="break-words">
                                     {storageStats
                                         ? `${(storageStats.totalBytes / (1024 * 1024 * 1024)).toFixed(2)} GB / 2 GB`
                                         : "—"}
