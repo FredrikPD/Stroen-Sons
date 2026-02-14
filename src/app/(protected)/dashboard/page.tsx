@@ -229,8 +229,8 @@ export default async function DashboardPage() {
                   </div>
 
                   <div className="flex flex-col gap-2.5 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 flex-1 overflow-hidden">
+                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                      <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 max-w-full overflow-hidden">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="material-symbols-outlined text-base">calendar_today</span>
                           <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
