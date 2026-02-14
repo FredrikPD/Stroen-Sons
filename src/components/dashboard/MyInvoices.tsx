@@ -56,7 +56,7 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
     }
 
     return (
-        <div className={`bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow ${className}`}>
+        <div className={`bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow min-w-0 ${className}`}>
             {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
 
@@ -66,15 +66,15 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
             </div>
 
             <div className="flex flex-col h-full relative z-10">
-                <div className="flex items-center justify-between mb-4 flex-none">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-3 mb-4 flex-none min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                         <div className="h-8 w-8 bg-blue-50 rounded-md flex items-center justify-center text-blue-600">
                             <span className="material-symbols-outlined text-[1.1rem]">receipt_long</span>
                         </div>
-                        <h3 className="font-bold text-gray-900 text-base">Mine Fakturaer</h3>
+                        <h3 className="font-bold text-gray-900 text-base truncate">Mine Fakturaer</h3>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         {pendingCount > 0 && (
                             <div className="bg-[#FFF8E1] text-[#785900] text-[10px] uppercase tracking-wide font-bold px-2.5 py-1 rounded-full border border-[#FFE082]/30">
                                 {pendingCount} til forfall

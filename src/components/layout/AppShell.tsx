@@ -33,7 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="flex h-[100dvh] w-full bg-background-main text-text-main overflow-hidden">
+    <div className="flex h-[100dvh] w-full max-w-full bg-background-main text-text-main overflow-hidden">
       <Sidebar role={member?.role} userRole={member?.userRole} />
 
       <MobileMenu
@@ -47,7 +47,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <main
         ref={mainRef}
-        className="flex-1 flex flex-col h-full overflow-y-auto relative bg-background-main"
+        className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto overflow-x-hidden relative bg-background-main"
       >
         <TopHeader
           loading={loading}
@@ -57,8 +57,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
 
         <div className={pathname === '/about'
-          ? "flex-1 w-full"
-          : "flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-8 lg:pb-12 w-full"
+          ? "flex-1 w-full min-w-0"
+          : "flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-8 lg:pb-12 w-full min-w-0"
         }>
           {children}
         </div>

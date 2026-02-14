@@ -166,7 +166,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 min-w-0 overflow-x-hidden">
       {/* Header Section */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">
@@ -177,9 +177,9 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
         {/* LEFT COLUMN (Content) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
 
           {/* Hero Card (Next Event) */}
           {nextEvent ? (
@@ -228,25 +228,25 @@ export default async function DashboardPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center gap-2">
-                      <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-lg border border-white/15 min-w-0">
+                  <div className="flex flex-col gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 flex-1 overflow-hidden">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="material-symbols-outlined text-base">calendar_today</span>
-                          <span className="font-semibold text-xs whitespace-nowrap">
+                          <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
                             {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
                           </span>
                         </div>
                         <div className="w-px h-4 bg-white/20 shrink-0" />
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="material-symbols-outlined text-base">schedule</span>
-                          <span className="font-semibold text-xs whitespace-nowrap">
+                          <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
                             {nextEvent.startAt.toLocaleTimeString("nb-NO", { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                       </div>
 
-                      <span className={`inline-flex items-center justify-center gap-1.5 h-[40px] px-3.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap border backdrop-blur-md ${isUserSignedUpForNextEvent
+                      <span className={`inline-flex shrink-0 items-center justify-center gap-1.5 h-[40px] px-2.5 sm:px-3.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap border backdrop-blur-md ${isUserSignedUpForNextEvent
                         ? "text-emerald-100 bg-emerald-500/25 border-emerald-300/40 shadow-[0_8px_20px_rgba(16,185,129,0.22)]"
                         : "text-white bg-[#4F46E5]/35 border-[#8A7BFF]/55 shadow-[0_8px_20px_rgba(79,70,229,0.28)] hover:bg-[#4F46E5]/45 hover:border-[#9A8DFF]/70"
                         }`}>
@@ -337,7 +337,7 @@ export default async function DashboardPage() {
 
 
         {/* RIGHT COLUMN (Sidebar) */}
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
 
           {/* Status Card & Transactions */}
           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-5">
