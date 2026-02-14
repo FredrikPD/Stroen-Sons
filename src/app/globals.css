@@ -63,3 +63,11 @@ body {
   color: var(--c-text-main);
   font-family: var(--font-display);
 }
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
