@@ -5,6 +5,7 @@ import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification, createNotificationsForMembers } from "@/server/actions/notifications";
 import { ensureMember } from "@/server/auth/ensureMember";
+import { withPrismaRetry } from "@/server/prismaResilience";
 
 const roundToTwo = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
 
@@ -227,10 +228,14 @@ export async function markRequestAsPaid(requestId: string) {
  */
 export async function getMemberPaymentRequests(memberId: string) {
     try {
-        const requests = await db.paymentRequest.findMany({
-            where: { memberId },
-            orderBy: { createdAt: 'desc' }
-        });
+        const requests = await withPrismaRetry(
+            () =>
+                db.paymentRequest.findMany({
+                    where: { memberId },
+                    orderBy: { createdAt: 'desc' }
+                }),
+            { operationName: "paymentRequests:getMemberPaymentRequests:findMany" }
+        );
         return {
             success: true,
             data: requests.map((request) => ({

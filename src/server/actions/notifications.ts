@@ -3,45 +3,76 @@
 import { db } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { NotificationType } from "@prisma/client";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { sendPushSignalToMember, sendPushSignalToMembers } from "@/server/push/web-push";
+import { withPrismaRetry } from "@/server/prismaResilience";
 
 export async function getNotifications() {
-    const member = await ensureMember();
+    try {
+        const member = await ensureMember();
 
-    const notifications = await db.notification.findMany({
-        where: { memberId: member.id },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-    });
+        const [notifications, unreadCount] = await Promise.all([
+            withPrismaRetry(
+                () =>
+                    db.notification.findMany({
+                        where: { memberId: member.id },
+                        orderBy: { createdAt: "desc" },
+                        take: 20,
+                    }),
+                { operationName: "notifications:getNotifications:findMany" }
+            ),
+            withPrismaRetry(
+                () =>
+                    db.notification.count({
+                        where: { memberId: member.id, read: false },
+                    }),
+                { operationName: "notifications:getNotifications:count" }
+            ),
+        ]);
 
-    const unreadCount = await db.notification.count({
-        where: { memberId: member.id, read: false },
-    });
-
-    return { notifications, unreadCount };
+        return { notifications, unreadCount };
+    } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+        return { notifications: [], unreadCount: 0 };
+    }
 }
 
 export async function markAsRead(notificationId: string) {
-    const member = await ensureMember();
+    try {
+        const member = await ensureMember();
 
-    await db.notification.update({
-        where: { id: notificationId, memberId: member.id },
-        data: { read: true },
-    });
+        await withPrismaRetry(
+            () =>
+                db.notification.update({
+                    where: { id: notificationId, memberId: member.id },
+                    data: { read: true },
+                }),
+            { operationName: "notifications:markAsRead:update" }
+        );
 
-    revalidatePath("/", "layout");
+        revalidatePath("/", "layout");
+    } catch (error) {
+        console.error("Failed to mark notification as read:", error);
+    }
 }
 
 export async function markAllAsRead() {
-    const member = await ensureMember();
+    try {
+        const member = await ensureMember();
 
-    await db.notification.updateMany({
-        where: { memberId: member.id, read: false },
-        data: { read: true },
-    });
+        await withPrismaRetry(
+            () =>
+                db.notification.updateMany({
+                    where: { memberId: member.id, read: false },
+                    data: { read: true },
+                }),
+            { operationName: "notifications:markAllAsRead:updateMany" }
+        );
 
-    revalidatePath("/", "layout");
+        revalidatePath("/", "layout");
+    } catch (error) {
+        console.error("Failed to mark all notifications as read:", error);
+    }
 }
 
 type CreateNotificationInput = {

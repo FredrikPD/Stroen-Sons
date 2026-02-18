@@ -3,6 +3,7 @@
 import { db } from "@/server/db";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { withPrismaRetry } from "@/server/prismaResilience";
 
 export async function getProfile() {
     const { userId } = await auth();
@@ -11,31 +12,35 @@ export async function getProfile() {
     }
 
     try {
-        const member = await db.member.findUnique({
-            where: { clerkId: userId },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-                email: true,
-                role: true,
-                userRole: true,
-                membershipType: true,
-                createdAt: true,
-                phoneNumber: true,
-                address: true,
-                zipCode: true,
-                city: true,
-                balance: true,
-                _count: {
+        const member = await withPrismaRetry(
+            () =>
+                db.member.findUnique({
+                    where: { clerkId: userId },
                     select: {
-                        eventsAttending: true,
-                        posts: true,
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        avatarUrl: true,
+                        email: true,
+                        role: true,
+                        userRole: true,
+                        membershipType: true,
+                        createdAt: true,
+                        phoneNumber: true,
+                        address: true,
+                        zipCode: true,
+                        city: true,
+                        balance: true,
+                        _count: {
+                            select: {
+                                eventsAttending: true,
+                                posts: true,
+                            },
+                        },
                     },
-                },
-            },
-        });
+                }),
+            { operationName: "account:getProfile:findMemberByClerkId" }
+        );
 
         if (!member) {
             return { success: false, error: "Fant ikke medlem" };
@@ -81,21 +86,25 @@ export async function updateProfile(data: {
         });
 
         // 2. Update DB
-        await db.member.update({
-            where: { clerkId: userId },
-            data: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                // We update email in DB, but if Clerk email isn't updated, they might be out of sync.
-                // ideally we shouldn't allow email update without flow.
-                // But for "creative freedom" I will allow it in DB and warn if it differs from Clerk.
-                email: data.email,
-                phoneNumber: data.phoneNumber,
-                address: data.address,
-                zipCode: data.zipCode,
-                city: data.city,
-            },
-        });
+        await withPrismaRetry(
+            () =>
+                db.member.update({
+                    where: { clerkId: userId },
+                    data: {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        // We update email in DB, but if Clerk email isn't updated, they might be out of sync.
+                        // ideally we shouldn't allow email update without flow.
+                        // But for "creative freedom" I will allow it in DB and warn if it differs from Clerk.
+                        email: data.email,
+                        phoneNumber: data.phoneNumber,
+                        address: data.address,
+                        zipCode: data.zipCode,
+                        city: data.city,
+                    },
+                }),
+            { operationName: "account:updateProfile:updateMemberByClerkId" }
+        );
 
         revalidatePath("/account");
         return { success: true };

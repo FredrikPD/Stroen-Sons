@@ -4,6 +4,7 @@ import { type Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
+import { withPrismaRetry } from "@/server/prismaResilience";
 
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
@@ -60,6 +61,14 @@ const getRecentMemories = async (): Promise<EventWithPhotos[]> => {
   return events as unknown as EventWithPhotos[];
 };
 
+function getSettledValue<T>(result: PromiseSettledResult<T>, fallback: T, label: string): T {
+  if (result.status === "fulfilled") {
+    return result.value;
+  }
+  console.error(`[dashboard] Failed to load ${label}:`, result.reason);
+  return fallback;
+}
+
 export const metadata = {
   title: "Oversikt",
 };
@@ -68,26 +77,37 @@ export default async function DashboardPage() {
   let member;
   try {
     member = await ensureMember();
-  } catch (error) {
+  } catch {
     redirect("/sign-in");
   }
 
   const period = currentPeriod();
 
-  const [cachedNextEvent, payment, cachedPosts, transactions, paymentRequestsRes, cachedMemories] = await Promise.all([
-    getNextEvent(),
-    prisma.payment.findUnique({
-      where: { memberId_period: { memberId: member.id, period } },
-    }),
-    getRecentPosts(),
-    prisma.transaction.findMany({
-      where: { memberId: member.id },
-      orderBy: { date: "desc" },
-      take: 3,
-    }),
+  const settledData = await Promise.allSettled([
+    withPrismaRetry(() => getNextEvent(), { operationName: "dashboard:getNextEvent" }),
+    withPrismaRetry(() => getRecentPosts(), { operationName: "dashboard:getRecentPosts" }),
+    withPrismaRetry(
+      () =>
+        prisma.transaction.findMany({
+          where: { memberId: member.id },
+          orderBy: { date: "desc" },
+          take: 3,
+        }),
+      { operationName: "dashboard:getRecentTransactions" }
+    ),
     getMemberPaymentRequests(member.id),
-    getRecentMemories()
-  ]);
+    withPrismaRetry(() => getRecentMemories(), { operationName: "dashboard:getRecentMemories" })
+  ] as const);
+
+  const cachedNextEvent = getSettledValue(settledData[0], null, "next event");
+  const cachedPosts = getSettledValue(settledData[1], [], "recent posts");
+  const transactions = getSettledValue(settledData[2], [], "recent transactions");
+  const paymentRequestsRes = getSettledValue(
+    settledData[3],
+    { success: false, error: "Failed to fetch requests" },
+    "payment requests"
+  );
+  const cachedMemories = getSettledValue(settledData[4], [], "recent memories");
 
   const invoices = paymentRequestsRes.success && paymentRequestsRes.data
     ? paymentRequestsRes.data
@@ -105,24 +125,42 @@ export default async function DashboardPage() {
     ...cachedNextEvent,
     startAt: new Date(cachedNextEvent.startAt)
   } : null;
-  const isUserSignedUpForNextEvent = nextEvent
-    ? (await prisma.event.count({
-      where: {
-        id: nextEvent.id,
-        attendees: {
-          some: { id: member.id },
-        },
-      },
-    })) > 0
-    : false;
+  let isUserSignedUpForNextEvent = false;
+  if (nextEvent) {
+    try {
+      isUserSignedUpForNextEvent = (await withPrismaRetry(
+        () =>
+          prisma.event.count({
+            where: {
+              id: nextEvent.id,
+              attendees: {
+                some: { id: member.id },
+              },
+            },
+          }),
+        { operationName: "dashboard:isUserSignedUpForNextEvent" }
+      )) > 0;
+    } catch (error) {
+      console.error("[dashboard] Failed to check event attendance:", error);
+    }
+  }
 
   let nextEventColor = "blue";
-  if (nextEvent?.category) {
-    const cat = await prisma.eventCategory.findFirst({
-      where: { name: nextEvent.category },
-      select: { color: true }
-    });
-    if (cat) nextEventColor = cat.color;
+  const nextEventCategory = nextEvent?.category ?? undefined;
+  if (nextEventCategory) {
+    try {
+      const cat = await withPrismaRetry(
+        () =>
+          prisma.eventCategory.findFirst({
+            where: { name: nextEventCategory },
+            select: { color: true }
+          }),
+        { operationName: "dashboard:getEventCategoryColor" }
+      );
+      if (cat) nextEventColor = cat.color;
+    } catch (error) {
+      console.error("[dashboard] Failed to load event category color:", error);
+    }
   }
 
   const posts = cachedPosts.map(post => ({
@@ -173,7 +211,7 @@ export default async function DashboardPage() {
           Hei, {firstName}
         </h1>
         <p className="text-gray-500 text-sm">
-          "Tidene forandres, men vi står støtt"
+          &quot;Tidene forandres, men vi står støtt&quot;
         </p>
       </div>
 

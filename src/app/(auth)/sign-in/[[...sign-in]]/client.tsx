@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { useAuth, useSignIn } from "@clerk/nextjs";
+
+type ClerkErrorItem = {
+  code?: string;
+  message?: string;
+  longMessage?: string;
+};
+
+type ClerkErrorEnvelope = {
+  errors?: ClerkErrorItem[];
+};
 
 export default function SignInPage() {
-  const router = useRouter();
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { isLoaded: isAuthLoaded, userId } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,9 +28,44 @@ export default function SignInPage() {
   const [code, setCode] = useState("");
   const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isAuthLoaded && userId) {
+      window.location.replace("/dashboard");
+    }
+  }, [isAuthLoaded, userId]);
+
+  function getFirstClerkError(err: unknown): ClerkErrorItem | null {
+    if (!err || typeof err !== "object") return null;
+
+    const maybeEnvelope = err as ClerkErrorEnvelope;
+    if (!Array.isArray(maybeEnvelope.errors) || maybeEnvelope.errors.length === 0) {
+      return null;
+    }
+
+    return maybeEnvelope.errors[0] ?? null;
+  }
+
+  function shouldRedirectSignedInError(err: unknown): boolean {
+    const firstError = getFirstClerkError(err);
+    const code = String(firstError?.code || "").toLowerCase();
+    const message = String(firstError?.longMessage || firstError?.message || "").toLowerCase();
+
+    return (
+      code === "session_exists" ||
+      code === "already_signed_in" ||
+      message.includes("already signed in") ||
+      message.includes("already logged in")
+    );
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (userId) {
+      window.location.replace("/dashboard");
+      return;
+    }
 
     if (!isLoaded || !signIn) return;
 
@@ -76,11 +120,17 @@ export default function SignInPage() {
         setError(`${message} (Status: ${res.status})`);
         setLoading(false);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (shouldRedirectSignedInError(err)) {
+        window.location.replace("/dashboard");
+        return;
+      }
+
       console.error(err);
+      const firstError = getFirstClerkError(err);
       const msg =
-        err?.errors?.[0]?.longMessage ||
-        err?.errors?.[0]?.message ||
+        firstError?.longMessage ||
+        firstError?.message ||
         "Kunne ikke logge inn. Sjekk brukernavn/e-post og passord.";
       setError(msg);
       setLoading(false);
@@ -108,11 +158,17 @@ export default function SignInPage() {
         setError(`Kunne ikke verifisere. Status: ${res.status}`);
         setLoading(false);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (shouldRedirectSignedInError(err)) {
+        window.location.replace("/dashboard");
+        return;
+      }
+
       console.error(err);
+      const firstError = getFirstClerkError(err);
       const msg =
-        err?.errors?.[0]?.longMessage ||
-        err?.errors?.[0]?.message ||
+        firstError?.longMessage ||
+        firstError?.message ||
         "Ugyldig kode. Prøv igjen.";
       setError(msg);
       setLoading(false);
