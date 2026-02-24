@@ -22,7 +22,7 @@ interface WelcomeEmailProps {
 export const WelcomeEmail = ({
     firstName = "Medlem",
     email = "medlem@eksempel.no",
-    password = "passord123",
+    password,
     loginUrl = "https://stroen-sons.com/sign-in",
 }: WelcomeEmailProps) => {
     return (
@@ -54,12 +54,16 @@ export const WelcomeEmail = ({
                                 {email}
                             </Text>
 
-                            <Text className="text-gray-500 text-[12px] uppercase tracking-wider font-bold m-0 mb-1">
-                                Midlertidig passord
-                            </Text>
-                            <Text className="text-gray-900 text-[16px] font-medium m-0 font-mono bg-white inline-block px-2 py-1 rounded border border-gray-200">
-                                {password}
-                            </Text>
+                            {password && (
+                                <>
+                                    <Text className="text-gray-500 text-[12px] uppercase tracking-wider font-bold m-0 mb-1">
+                                        Midlertidig passord
+                                    </Text>
+                                    <Text className="text-gray-900 text-[16px] font-medium m-0 font-mono bg-white inline-block px-2 py-1 rounded border border-gray-200">
+                                        {password}
+                                    </Text>
+                                </>
+                            )}
                         </Section>
 
                         <Section className="text-center mt-[32px] mb-[32px]">
