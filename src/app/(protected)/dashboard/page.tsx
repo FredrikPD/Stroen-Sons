@@ -74,10 +74,6 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  if (process.env.NODE_ENV === "development" && process.env.DEBUG_DASHBOARD_LOADING === "1") {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
-
   let member;
   try {
     member = await ensureMember();
