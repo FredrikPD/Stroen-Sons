@@ -38,7 +38,6 @@ src/
 prisma/
   schema.prisma         # Data model
   migrations/           # SQL migrations
-scripts/                # Operational and utility scripts
 public/                 # Static assets + service worker
 ```
 
@@ -52,29 +51,11 @@ public/                 # Static assets + service worker
 
 ## Environment Variables
 
-Create a `.env` file in the project root.
+Copy the template and fill in your values:
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DATABASE_URL` | Yes | Primary Prisma/Postgres connection used by the app |
-| `CLERK_SECRET_KEY` | Yes | Clerk server-side auth key |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Clerk client key |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Yes | Sign-in route (typically `/sign-in`) |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Yes | Sign-up route (typically `/sign-up`) |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Yes | Redirect after sign-in (typically `/dashboard`) |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Yes | Redirect after sign-up (typically `/dashboard`) |
-| `UPLOADTHING_TOKEN` | Yes | UploadThing token for file upload endpoints |
-| `CRON_SECRET` | Yes (prod) | Bearer secret for scheduled cron routes |
-| `NEXT_PUBLIC_APP_URL` | Recommended | Absolute app URL used in email links |
-| `RESEND_API_KEY` | Optional | Enables transactional email sending |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Optional | Public key for web push subscription |
-| `VAPID_PRIVATE_KEY` | Optional | Private key for sending push signals |
-| `VAPID_SUBJECT` | Optional | Web push contact, e.g. `mailto:team@example.com` |
-| `PRISMA_MGMT_TOKEN` | Optional | Prisma Data Platform usage metrics in admin system view |
-| `PRISMA_DATABASE_ID` | Optional | Database ID used with Prisma Management API |
-| `DIRECT_URL` | Optional | Dev direct Postgres URL for maintenance scripts |
-| `DIRECT_URL_PROD` | Optional | Prod direct Postgres URL for maintenance scripts |
-| `DATABASE_URL_PROD` | Optional | Prod DB URL used by `scripts/db-push-prod.sh` |
+```bash
+cp .env.example .env
+```
 
 ## Local Development
 
@@ -101,13 +82,6 @@ Create a `.env` file in the project root.
 - `npm run start` - run production server
 - `npm run lint` - run ESLint
 - `npm run pwa:vapid` - generate VAPID keys for push notifications
-
-### utility scripts (manual/ops)
-
-- `bash scripts/db-push-prod.sh` - push Prisma schema to production database URL
-- `bash scripts/db-copy-db-dev2prod.sh` - refresh dev DB from prod while keeping selected local tables
-- `npx tsx scripts/migrate-roles.ts` - migrate enum roles to dynamic `UserRole` records
-- `npx tsx scripts/seed-members.ts` - create dummy member records
 
 ## Background Jobs (Cron)
 
