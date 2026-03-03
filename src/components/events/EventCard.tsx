@@ -24,6 +24,7 @@ export type EventWithDetails = {
     };
     category: string | null;
     attendees: EventAttendee[];
+    hasPublishedRecap?: boolean;
 };
 
 export default function EventCard({ event, color = "blue" }: { event: EventWithDetails; color?: string }) {
@@ -134,10 +135,17 @@ export default function EventCard({ event, color = "blue" }: { event: EventWithD
                             )}
                         </div>
 
-                        {/* Link */}
-                        <div className="flex items-center gap-1 text-[#4F46E5] text-xs font-bold group-hover:gap-1.5 transition-all">
-                            <span>Les mer</span>
-                            <span className="material-symbols-outlined text-base">arrow_forward</span>
+                        {/* Link + Recap badge */}
+                        <div className="flex items-center gap-2">
+                            {!isUpcoming && event.hasPublishedRecap && (
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-wide">
+                                    Etterrapport
+                                </span>
+                            )}
+                            <div className="flex items-center gap-1 text-[#4F46E5] text-xs font-bold group-hover:gap-1.5 transition-all">
+                                <span>Les mer</span>
+                                <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            </div>
                         </div>
                     </div>
                 </div>

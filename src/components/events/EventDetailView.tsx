@@ -33,6 +33,35 @@ type PlanItem = {
     order: number;
 };
 
+type RecapGame = {
+    id: string;
+    title: string;
+    opponent: string | null;
+    ourScore: number | null;
+    theirScore: number | null;
+    result: "WIN" | "DRAW" | "LOSS" | null;
+    notes: string | null;
+};
+
+type EventRecap = {
+    id: string;
+    status: "DRAFT" | "PUBLISHED";
+    summaryPoints: string[];
+    story: string | null;
+    actionsTaken: string | null;
+    highlights: string[];
+    lessons: string | null;
+    nextTime: string | null;
+    publishedAt: string | null;
+    updatedAt: string;
+    author: {
+        firstName: string | null;
+        lastName: string | null;
+        email: string;
+    };
+    games: RecapGame[];
+};
+
 type EventDetail = {
     id: string;
     title: string;
@@ -48,6 +77,7 @@ type EventDetail = {
     clubSubsidy?: number | null;
     coverImage: string | null;
     category: string | null;
+    recap?: EventRecap | null;
     hasPassed: boolean;
     program?: PlanItem[];
 };
@@ -61,9 +91,10 @@ type EventDetailViewProps = {
     photos: Photo[];
     totalPhotoCount: number;
     categoryColor?: string;
+    canEditRecap?: boolean;
 };
 
-export default function EventDetailView({ event, attendees, currentUserIsAttending, attendeeCount, photos, totalPhotoCount, categoryColor = "blue" }: EventDetailViewProps) {
+export default function EventDetailView({ event, attendees, currentUserIsAttending, attendeeCount, photos, totalPhotoCount, categoryColor = "blue", canEditRecap = false }: EventDetailViewProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [showAttendees, setShowAttendees] = useState(false);
@@ -84,6 +115,23 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
     // Check if registration is closed
     const isRegistrationClosed = regDeadline ? new Date() > regDeadline : false;
+    const visibleRecap = event.recap && (event.recap.status === "PUBLISHED" || canEditRecap) ? event.recap : null;
+    const recapAuthorName = visibleRecap
+        ? `${visibleRecap.author.firstName || ""} ${visibleRecap.author.lastName || ""}`.trim() || visibleRecap.author.email
+        : null;
+    const recapUpdatedAt = visibleRecap?.updatedAt
+        ? new Date(visibleRecap.updatedAt).toLocaleDateString("no-NO", { day: "numeric", month: "long", year: "numeric" })
+        : null;
+    const recapLessons = [visibleRecap?.lessons, visibleRecap?.nextTime]
+        .filter(Boolean)
+        .join("\n\n");
+
+    const formatWinner = (game: RecapGame) => {
+        if (!game.result) return null;
+        if (game.result === "DRAW") return "Uavgjort";
+        if (game.result === "WIN") return game.title;
+        return game.opponent || "Lag 2";
+    };
 
     // Handle Join/Leave
     const handleAttendance = () => {
@@ -276,6 +324,117 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             </div>
                         )}
                     </div>
+
+                    {/* Recap Section */}
+                    {(event.hasPassed || visibleRecap || canEditRecap) && (
+                        <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    Etterrapport
+                                    {visibleRecap?.status === "DRAFT" && (
+                                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded bg-amber-100 text-amber-700">
+                                            Utkast
+                                        </span>
+                                    )}
+                                </h2>
+                                {canEditRecap && (
+                                    <Link
+                                        href={`/admin/events/${event.id}/recap`}
+                                        className="text-[#4F46E5] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all"
+                                    >
+                                        <span>{visibleRecap ? "Rediger" : "Skriv etterrapport"}</span>
+                                        <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
+                                    </Link>
+                                )}
+                            </div>
+
+                            {!visibleRecap ? (
+                                <div className="flex flex-col items-center justify-center py-10 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                                        <span className="material-symbols-outlined text-gray-400">article</span>
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-900">Ingen etterrapport publisert enda</p>
+                                    <p className="text-xs text-gray-500 mt-1 max-w-sm">
+                                        {canEditRecap ? "Skriv en oppsummering for å dokumentere hva som skjedde." : "Kom tilbake senere for oppsummering og resultater."}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {visibleRecap.summaryPoints.length > 0 && (
+                                        <div className="bg-white rounded-xl border border-gray-100 p-5">
+                                            <h3 className="text-sm font-bold text-gray-900 mb-3">Kort oppsummert</h3>
+                                            <ul className="space-y-2 list-disc pl-5 marker:text-[#4F46E5]">
+                                                {visibleRecap.summaryPoints.map((point, index) => (
+                                                    <li key={`${point}-${index}`} className="text-sm text-gray-700">
+                                                        {point}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {visibleRecap.story && (
+                                        <div>
+                                            <h3 className="text-base font-bold text-gray-900 mb-2">Hva skjedde</h3>
+                                            <div className="prose prose-sm text-gray-600 max-w-none">
+                                                <ReactMarkdown>{visibleRecap.story}</ReactMarkdown>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {visibleRecap.games.length > 0 && (
+                                        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                                            <div className="px-4 py-3 border-b border-gray-100">
+                                                <h3 className="text-sm font-bold text-gray-900">Kamper</h3>
+                                            </div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-sm">
+                                                    <thead className="bg-gray-50 text-gray-500">
+                                                        <tr>
+                                                            <th className="text-left px-4 py-2.5 font-semibold">Type</th>
+                                                            <th className="text-left px-4 py-2.5 font-semibold">Lag 1</th>
+                                                            <th className="text-left px-4 py-2.5 font-semibold">Lag 2</th>
+                                                            <th className="text-left px-4 py-2.5 font-semibold">Score</th>
+                                                            <th className="text-left px-4 py-2.5 font-semibold">Vinner</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {visibleRecap.games.map((game) => (
+                                                            <tr key={game.id} className="border-t border-gray-100">
+                                                                <td className="px-4 py-3 text-gray-700">{game.notes || "—"}</td>
+                                                                <td className="px-4 py-3 font-semibold text-gray-900">{game.title}</td>
+                                                                <td className="px-4 py-3 text-gray-700">{game.opponent || "—"}</td>
+                                                                <td className="px-4 py-3 text-gray-700">
+                                                                    {game.ourScore !== null && game.theirScore !== null
+                                                                        ? `${game.ourScore} - ${game.theirScore}`
+                                                                        : "—"}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-gray-700">
+                                                                    {formatWinner(game) || "—"}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {recapLessons && (
+                                        <div className="bg-white rounded-xl border border-gray-100 p-4">
+                                            <h3 className="text-sm font-bold text-gray-900 mb-2">Lærdom og neste gang</h3>
+                                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{recapLessons}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
+                                        Skrevet av {recapAuthorName}
+                                        {recapUpdatedAt ? ` · Oppdatert ${recapUpdatedAt}` : ""}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* RIGHT COLUMN (Sidebar) */}
@@ -418,7 +577,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                         {attendees.length > 0 ? (
                             <div className="flex items-center -space-x-3 overflow-hidden py-1">
-                                {attendees.slice(0, 5).map((a, i) => (
+                                {attendees.slice(0, 5).map((a) => (
                                     <Avatar
                                         key={a.id}
                                         src={a.avatarUrl ?? null}

@@ -49,16 +49,46 @@ export default async function EventDetailPage({ params }: Props) {
             photos: {
                 take: 6,
                 orderBy: { createdAt: 'desc' }
-            }
+            },
+            recap: {
+                include: {
+                    author: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                        },
+                    },
+                    games: {
+                        orderBy: { order: "asc" },
+                    },
+                },
+            },
         }
-    }) as any;
+    });
 
     if (!event) {
         notFound();
     }
 
-    const isAttending = event.attendees.some((a: any) => a.id === member.id);
+    const isAttending = event.attendees.some((attendee) => attendee.id === member.id);
     const hasPassed = new Date(event.startAt) < new Date();
+    const canEditRecap = member.role === "ADMIN" || member.role === "MODERATOR";
+
+    const serializedRecap = event.recap ? {
+        id: event.recap.id,
+        status: event.recap.status,
+        summaryPoints: event.recap.summaryPoints,
+        story: event.recap.story,
+        actionsTaken: event.recap.actionsTaken,
+        highlights: event.recap.highlights,
+        lessons: event.recap.lessons,
+        nextTime: event.recap.nextTime,
+        publishedAt: event.recap.publishedAt ? event.recap.publishedAt.toISOString() : null,
+        updatedAt: event.recap.updatedAt.toISOString(),
+        author: event.recap.author,
+        games: event.recap.games,
+    } : null;
 
     const serializedEvent = {
         id: event.id,
@@ -75,10 +105,11 @@ export default async function EventDetailPage({ params }: Props) {
         isTba: event.isTba,
         coverImage: event.coverImage,
         category: event.category,
-        program: event.program.map((p: any) => ({
+        program: event.program.map((p) => ({
             ...p,
             date: p.date ? p.date.toISOString() : null,
         })),
+        recap: serializedRecap,
         hasPassed,
         photos: event.photos,
     };
@@ -95,13 +126,14 @@ export default async function EventDetailPage({ params }: Props) {
         <>
             <PageTitleUpdater title={event.title} />
             <EventDetailView
-                event={serializedEvent as any}
+                event={serializedEvent}
                 attendees={event.attendees}
                 currentUserIsAttending={isAttending}
                 attendeeCount={event._count.attendees}
                 photos={event.photos}
                 totalPhotoCount={event._count.photos}
                 categoryColor={categoryColor}
+                canEditRecap={canEditRecap}
             />
         </>
     );

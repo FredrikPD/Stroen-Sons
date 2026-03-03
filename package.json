@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "pwa:vapid": "node scripts/generate-vapid-keys.mjs"
+    "pwa:vapid": "node scripts/generate-vapid-keys.mjs",
+    "migrate:prod": "bash -lc 'set -a; source .env; set +a; TARGET_DB=\"${DIRECT_URL_PROD:-$DATABASE_URL_PROD}\"; if [ -z \"$TARGET_DB\" ]; then echo \"Missing DIRECT_URL_PROD or DATABASE_URL_PROD in .env\"; exit 1; fi; DATABASE_URL=\"$TARGET_DB\" npx prisma migrate deploy'"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.2",

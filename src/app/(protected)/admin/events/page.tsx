@@ -2,7 +2,6 @@ import Link from "next/link";
 import { db } from "@/server/db";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { deleteEvent } from "@/server/actions/events";
 import { DeleteEventButton } from "./_components/DeleteEventButton";
 import { SetHeader } from "@/components/layout/SetHeader";
 
@@ -73,7 +72,7 @@ export default async function EventsListPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {events.map((event: any) => (
+                                {events.map((event) => (
                                     <tr key={event.id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-gray-900">{event.title}</div>
@@ -95,6 +94,13 @@ export default async function EventsListPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <Link
+                                                    href={`/admin/events/${event.id}/recap`}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-indigo-50 text-gray-400 hover:text-[#4F46E5] transition-colors"
+                                                    title="Etterrapport"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">article</span>
+                                                </Link>
                                                 <Link
                                                     href={`/admin/events/${event.id}/edit`}
                                                     className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors"

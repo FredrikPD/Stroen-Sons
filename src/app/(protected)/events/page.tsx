@@ -26,6 +26,9 @@ export default async function EventsPage() {
                     _count: {
                         select: { attendees: true },
                     },
+                    recap: {
+                        select: { status: true },
+                    },
                     attendees: {
                         take: 3,
                         select: {
@@ -44,7 +47,7 @@ export default async function EventsPage() {
         { revalidate: 60, tags: ["events"] }
     );
 
-    const events = await getEvents() as any;
+    const events = await getEvents();
 
     const categories = await prisma.eventCategory.findMany({
         select: { name: true, color: true }
@@ -55,16 +58,23 @@ export default async function EventsPage() {
         return acc;
     }, {} as Record<string, string>);
 
-    const serializedEvents = events.map((event: any) => ({
-        ...event,
+    const serializedEvents = events.map((event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        coverImage: event.coverImage,
+        location: event.location,
+        isTba: event.isTba,
+        _count: event._count,
+        category: event.category,
+        attendees: event.attendees,
+        hasPublishedRecap: event.recap?.status === "PUBLISHED",
         startAt: new Date(event.startAt).toISOString(),
-        createdAt: new Date(event.createdAt).toISOString(),
-        updatedAt: new Date(event.updatedAt).toISOString(),
     }));
 
     return (
         <div className="w-full bg-white min-h-full">
-            <EventsView initialEvents={serializedEvents as any} categoryColorMap={categoryColorMap} />
+            <EventsView initialEvents={serializedEvents} categoryColorMap={categoryColorMap} />
         </div>
     );
 }

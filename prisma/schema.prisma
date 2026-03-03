@@ -30,6 +30,7 @@ model Member {
   payments        Payment[]
   eventsCreated   Event[]          @relation("EventCreatedBy")
   eventsAttending Event[]          @relation("EventAttendees")
+  eventRecapsAuthored EventRecap[]
   posts           Post[]
   transactions    Transaction[]
   paymentRequests PaymentRequest[]
@@ -73,6 +74,7 @@ model Event {
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  recap           EventRecap?
   posts           Post[]
   photos          Photo[]
   transactions    Transaction[]
@@ -100,6 +102,38 @@ model PlanItem {
 
   eventId String
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model EventRecap {
+  id            String      @id @default(cuid())
+  eventId        String      @unique
+  event          Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         Member      @relation(fields: [authorId], references: [id])
+  status         RecapStatus @default(DRAFT)
+  summaryPoints  String[]    @default([])
+  story          String?
+  actionsTaken   String?
+  highlights     String[]    @default([])
+  lessons        String?
+  nextTime       String?
+  publishedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  games          EventRecapGame[]
+}
+
+model EventRecapGame {
+  id         String      @id @default(cuid())
+  recapId    String
+  recap      EventRecap  @relation(fields: [recapId], references: [id], onDelete: Cascade)
+  title      String
+  opponent   String?
+  ourScore   Int?
+  theirScore Int?
+  result     GameResult?
+  notes      String?
+  order      Int         @default(0)
 }
 
 model Post {
@@ -156,6 +190,17 @@ enum Role {
   MEMBER
   MODERATOR
   ADMIN
+}
+
+enum RecapStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum GameResult {
+  WIN
+  DRAW
+  LOSS
 }
 
 model UserRole {

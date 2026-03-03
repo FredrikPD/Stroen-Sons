@@ -241,15 +241,17 @@ export default async function DashboardPage() {
               {/* Content */}
               <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between text-white">
                 <div className="flex justify-between items-start gap-3">
-                  <div className="flex flex-wrap items-center gap-2 max-w-[72%]">
-                    <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                      Neste Samling
-                    </span>
-                    {nextEvent.category && (
-                      <span className={`max-w-[140px] truncate backdrop-blur-md border text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
-                        {nextEvent.category}
+                  <div className="flex flex-col gap-2 max-w-[72%]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                        Neste Samling
                       </span>
-                    )}
+                      {nextEvent.category && (
+                        <span className={`max-w-[140px] truncate backdrop-blur-md border text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
+                          {nextEvent.category}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Countdown Widget */}
@@ -267,21 +269,19 @@ export default async function DashboardPage() {
                   </div>
 
                   <div className="flex flex-col gap-2.5 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                      <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 max-w-full overflow-hidden">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="material-symbols-outlined text-base">calendar_today</span>
-                          <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
-                            {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
-                          </span>
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      {nextEvent.location && (
+                        <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 max-w-full sm:max-w-[240px]">
+                          <span className="material-symbols-outlined text-base">location_on</span>
+                          <span className="font-semibold text-[11px] sm:text-xs truncate">{nextEvent.location}</span>
                         </div>
-                        <div className="w-px h-4 bg-white/20 shrink-0" />
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="material-symbols-outlined text-base">schedule</span>
-                          <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
-                            {nextEvent.startAt.toLocaleTimeString("nb-NO", { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
+                      )}
+
+                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0">
+                        <span className="material-symbols-outlined text-base">calendar_today</span>
+                        <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
+                          {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
+                        </span>
                       </div>
 
                       <span className={`inline-flex shrink-0 items-center justify-center gap-1.5 h-[40px] px-2.5 sm:px-3.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap border backdrop-blur-md ${isUserSignedUpForNextEvent
@@ -295,12 +295,6 @@ export default async function DashboardPage() {
                       </span>
                     </div>
 
-                    {nextEvent.location && (
-                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 max-w-full sm:max-w-[240px]">
-                        <span className="material-symbols-outlined text-base">location_on</span>
-                        <span className="font-semibold text-xs truncate">{nextEvent.location}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
