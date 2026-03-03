@@ -269,15 +269,17 @@ export default async function DashboardPage() {
                   </div>
 
                   <div className="flex flex-col gap-2.5 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                       {nextEvent.location && (
-                        <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 max-w-full sm:max-w-[240px]">
-                          <span className="material-symbols-outlined text-base">location_on</span>
-                          <span className="font-semibold text-[11px] sm:text-xs truncate">{nextEvent.location}</span>
+                        <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 shrink overflow-hidden">
+                          <span className="material-symbols-outlined text-base shrink-0">location_on</span>
+                          <span className="font-semibold text-[11px] sm:text-xs truncate max-w-[150px] sm:max-w-[210px] lg:max-w-[260px]">
+                            {nextEvent.location}
+                          </span>
                         </div>
                       )}
 
-                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0">
+                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 shrink-0">
                         <span className="material-symbols-outlined text-base">calendar_today</span>
                         <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
                           {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
