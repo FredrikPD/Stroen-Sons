@@ -55,6 +55,10 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
         notFound();
     }
 
+    if (new Date(event.startAt) >= new Date()) {
+        notFound();
+    }
+
     const handleSubmit = async (data: EventRecapInput) => {
         "use server";
         return await upsertEventRecap(id, data);

@@ -326,7 +326,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     </div>
 
                     {/* Recap Section */}
-                    {(event.hasPassed || visibleRecap || canEditRecap) && (
+                    {event.hasPassed && (
                         <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
