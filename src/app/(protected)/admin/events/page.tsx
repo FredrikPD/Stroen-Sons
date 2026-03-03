@@ -6,7 +6,7 @@ import { DeleteEventButton } from "./_components/DeleteEventButton";
 import { SetHeader } from "@/components/layout/SetHeader";
 
 import { ensureRole } from "@/server/auth/ensureRole";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 
 export const metadata = {
     title: "Administrer Arrangementer",
@@ -14,6 +14,10 @@ export const metadata = {
 
 export default async function EventsListPage() {
     await ensureRole([Role.ADMIN, Role.MODERATOR]);
+    type EventWithAttendees = Prisma.EventGetPayload<{
+        include: { attendees: true };
+    }>;
+
     const events = await db.event.findMany({
         orderBy: {
             startAt: "desc",
@@ -21,7 +25,7 @@ export default async function EventsListPage() {
         include: {
             attendees: true,
         },
-    });
+    }) as EventWithAttendees[];
 
     return (
         <div className="space-y-8 pb-12">

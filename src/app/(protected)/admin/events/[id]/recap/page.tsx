@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { db } from "@/server/db";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { SetHeader } from "@/components/layout/SetHeader";
@@ -11,6 +11,16 @@ import { EventRecapInput } from "@/lib/validators/event-recaps";
 interface EditEventRecapPageProps {
     params: Promise<{ id: string }>;
 }
+
+type EventWithRecap = Prisma.EventGetPayload<{
+    include: {
+        recap: {
+            include: {
+                games: true;
+            };
+        };
+    };
+}>;
 
 export async function generateMetadata({ params }: EditEventRecapPageProps): Promise<Metadata> {
     const { id } = await params;
@@ -39,7 +49,7 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
                 },
             },
         },
-    });
+    }) as EventWithRecap | null;
 
     if (!event) {
         notFound();
@@ -50,9 +60,23 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
         return await upsertEventRecap(id, data);
     };
 
+    const normalizeStatus = (status: string): EventRecapInput["status"] => {
+        if (status === "PUBLISHED") {
+            return "PUBLISHED";
+        }
+        return "DRAFT";
+    };
+
+    const normalizeResult = (result: string | null): EventRecapInput["games"][number]["result"] => {
+        if (result === "WIN" || result === "DRAW" || result === "LOSS") {
+            return result;
+        }
+        return undefined;
+    };
+
     const initialData = event.recap
         ? {
-            status: event.recap.status,
+            status: normalizeStatus(event.recap.status),
             summaryPoints: event.recap.summaryPoints,
             story: event.recap.story || undefined,
             actionsTaken: event.recap.actionsTaken || undefined,
@@ -61,10 +85,10 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
             nextTime: event.recap.nextTime || undefined,
             games: event.recap.games.map((game) => ({
                 title: game.title,
-                opponent: game.opponent || undefined,
+                opponent: game.opponent || "",
                 ourScore: game.ourScore ?? undefined,
                 theirScore: game.theirScore ?? undefined,
-                result: game.result || undefined,
+                result: normalizeResult(game.result),
                 notes: game.notes || undefined,
             })),
         }

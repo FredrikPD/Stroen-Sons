@@ -10,6 +10,26 @@ export const metadata: Metadata = {
     description: "Kommende og tidligere arrangementer.",
 };
 
+type EventsListRow = {
+    id: string;
+    title: string;
+    description: string | null;
+    coverImage: string | null;
+    location: string | null;
+    isTba: boolean;
+    category: string | null;
+    startAt: Date | string;
+    _count: { attendees: number };
+    attendees: Array<{
+        firstName: string | null;
+        lastName: string | null;
+        avatarUrl: string | null;
+        role: string;
+        email: string | null;
+    }>;
+    recap: { status: string } | null;
+};
+
 export default async function EventsPage() {
     const member = await ensureMember();
     if (!member) {
@@ -47,7 +67,7 @@ export default async function EventsPage() {
         { revalidate: 60, tags: ["events"] }
     );
 
-    const events = await getEvents();
+    const events = (await getEvents()) as unknown as EventsListRow[];
 
     const categories = await prisma.eventCategory.findMany({
         select: { name: true, color: true }

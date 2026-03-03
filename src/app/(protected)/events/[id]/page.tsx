@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import EventDetailView from "@/components/events/EventDetailView";
 import { Metadata } from "next";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
+import { Prisma } from "@prisma/client";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -27,6 +28,21 @@ export default async function EventDetailPage({ params }: Props) {
     if (!member) {
         redirect("/sign-in");
     }
+
+    type EventDetailQuery = Prisma.EventGetPayload<{
+        include: {
+            program: true;
+            attendees: true;
+            _count: true;
+            photos: true;
+            recap: {
+                include: {
+                    author: true;
+                    games: true;
+                };
+            };
+        };
+    }>;
 
     const event = await prisma.event.findUnique({
         where: { id },
@@ -65,7 +81,7 @@ export default async function EventDetailPage({ params }: Props) {
                 },
             },
         }
-    });
+    }) as EventDetailQuery | null;
 
     if (!event) {
         notFound();

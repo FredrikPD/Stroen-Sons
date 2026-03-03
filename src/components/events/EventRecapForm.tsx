@@ -106,6 +106,7 @@ export function EventRecapForm({
         const payload: EventRecapInput = {
             status: values.status,
             summaryPoints: parseLineList(values.summaryPointsText),
+            highlights: [],
             story: values.story.trim() || undefined,
             lessons: values.lessons.trim() || undefined,
             games: values.games
