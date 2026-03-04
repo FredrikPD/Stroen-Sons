@@ -13,6 +13,7 @@ import { Metadata, Viewport } from 'next';
 
 export const viewport: Viewport = {
   themeColor: "#4F46E5",
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -55,7 +56,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body className="bg-background-main text-text-main font-display">
           <RegisterServiceWorker />
-          <Toaster position="top-right" richColors />
+          <Toaster
+            position="top-right"
+            richColors
+            mobileOffset={{
+              top: "calc(env(safe-area-inset-top) + 12px)",
+              right: "16px",
+              left: "16px",
+              bottom: "16px",
+            }}
+          />
           <NextTopLoader color="#4F46E5" showSpinner={false} />
           <NextSSRPlugin
             /**

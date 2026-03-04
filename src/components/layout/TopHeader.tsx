@@ -40,7 +40,7 @@ export default function TopHeader({
   const baseTitle = getPageTitle();
 
   return (
-    <header className="sticky top-0 h-14 border-b border-border-color bg-background-header backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 lg:px-10 shrink-0 z-20">
+    <header className="sticky top-0 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] border-b border-border-color bg-background-header backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 lg:px-10 shrink-0 z-20">
       {/* Left (Path) */}
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Hamburger (mobile) */}
