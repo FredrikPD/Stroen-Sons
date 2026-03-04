@@ -58,9 +58,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <RegisterServiceWorker />
           <Toaster
             position="top-right"
-            richColors
+            theme="light"
             mobileOffset={{
-              top: "calc(env(safe-area-inset-top) + 12px)",
+              top: "88px",
               right: "16px",
               left: "16px",
               bottom: "16px",

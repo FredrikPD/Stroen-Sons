@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 const urlBase64ToUint8Array = (base64String: string) => {
     const padding = "=".repeat((4 - (base64String.length % 4 || 4)) % 4);
@@ -84,7 +83,6 @@ export function PushNotificationSettings({ className = "" }: { className?: strin
 
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
         if (!vapidPublicKey) {
-            toast.error("Push er ikke konfigurert enda (mangler VAPID-nøkkel).");
             setStatusMessage({ type: "error", text: "Push mangler VAPID-nøkkel i miljøvariabler." });
             return;
         }
@@ -98,7 +96,6 @@ export function PushNotificationSettings({ className = "" }: { className?: strin
             }
 
             if (currentPermission !== "granted") {
-                toast.error("Du må tillate varsler i nettleseren for å aktivere push.");
                 setStatusMessage({ type: "error", text: "Tillat varsler i nettleseren for å aktivere push." });
                 return;
             }
@@ -115,11 +112,9 @@ export function PushNotificationSettings({ className = "" }: { className?: strin
 
             await syncSubscriptionToServer(subscription);
             setSubscribed(true);
-            toast.success("Push-varsler er aktivert.");
             setStatusMessage({ type: "success", text: "Push-varsler er aktivert på denne enheten." });
         } catch (error) {
             console.error("Failed to enable push notifications:", error);
-            toast.error("Kunne ikke aktivere push-varsler.");
             setStatusMessage({ type: "error", text: "Kunne ikke aktivere push-varsler. Sjekk nettlesertillatelse og prøv igjen." });
         } finally {
             setLoading(false);
@@ -149,11 +144,9 @@ export function PushNotificationSettings({ className = "" }: { className?: strin
             }
 
             setSubscribed(false);
-            toast.success("Push-varsler er deaktivert.");
             setStatusMessage({ type: "info", text: "Push-varsler er deaktivert på denne enheten." });
         } catch (error) {
             console.error("Failed to disable push notifications:", error);
-            toast.error("Kunne ikke deaktivere push-varsler.");
             setStatusMessage({ type: "error", text: "Kunne ikke deaktivere push-varsler. Prøv igjen." });
         } finally {
             setLoading(false);
@@ -174,7 +167,7 @@ export function PushNotificationSettings({ className = "" }: { className?: strin
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                     <p className="font-semibold">Push-varsler støttes ikke i denne nettleseren/enheten.</p>
                     <p className="mt-2 text-xs text-amber-800">
-                        På iPhone: åpne siden i Safari, trykk Del, velg "Legg til på Hjem-skjerm", og åpne appen fra hjemskjermen for å aktivere push-varsler.
+                        På iPhone: åpne siden i Safari, trykk Del, velg &quot;Legg til på Hjem-skjerm&quot;, og åpne appen fra hjemskjermen for å aktivere push-varsler.
                     </p>
                 </div>
             ) : permission === "denied" ? (

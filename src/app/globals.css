@@ -71,3 +71,17 @@ body {
   overflow-x: hidden;
   overscroll-behavior-x: none;
 }
+
+@supports (height: env(safe-area-inset-top)) {
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    background: var(--c-background-header);
+    pointer-events: none;
+    z-index: 25;
+  }
+}
