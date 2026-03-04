@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getAvailableRoles, getMembers, updateMemberRole, updateMemberType } from '@/actions/admin-roles';
+import { getAvailableRoles, getMembers, updateMemberRole, updateMemberType } from '@/server/actions/admin-roles';
 import { getMembershipTypes, MembershipTypeWithCount } from '@/server/actions/membership-types';
 import { Role } from '@prisma/client';
 import { Avatar } from '@/components/Avatar';

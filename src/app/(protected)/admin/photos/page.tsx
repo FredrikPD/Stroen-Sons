@@ -1,4 +1,4 @@
-import { getRecentEvents, getRecentPhotos } from "@/actions/admin-photos";
+import { getRecentEvents, getRecentPhotos } from "@/server/actions/admin-photos";
 import Link from "next/link";
 import { PhotoManager } from "@/components/admin/photo-manager";
 import { SetHeader } from "@/components/layout/SetHeader";

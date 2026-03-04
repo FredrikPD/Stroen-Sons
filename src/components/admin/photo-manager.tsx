@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useUploadThing } from "@/lib/uploadthing";
-import { deletePhotos, getRecentEvents, getRecentPhotos, getStorageStats } from "@/actions/admin-photos";
+import { deletePhotos, getRecentEvents, getRecentPhotos, getStorageStats } from "@/server/actions/admin-photos";
 import { notifyNewPhotos } from "@/server/actions/notifications";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
