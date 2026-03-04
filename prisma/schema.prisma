@@ -55,15 +55,15 @@ model Event {
   description String?
   category    String?
 
-  program              PlanItem[] // Relations
+  program              PlanItem[]
   coverImage           String?
   location             String?
   address              String?
   isTba                Boolean    @default(false)
   startAt              DateTime
-  endAt                DateTime? // Optional end date for multi-day events
-  registrationDeadline DateTime? // Deadline for signing up
-  maxAttendees         Int? // Capacity limit
+  endAt                DateTime?
+  registrationDeadline DateTime?
+  maxAttendees         Int?
   totalCost            Int?
   clubSubsidy          Int?
 
@@ -94,7 +94,7 @@ model EventCategory {
 model PlanItem {
   id          String    @id @default(cuid())
   time        String
-  date        DateTime? // Optional date for multi-day events
+  date        DateTime?
   title       String
   description String?
 
@@ -162,7 +162,7 @@ model PostAttachment {
   url  String
   name String
   size Int
-  type String // MIME type or simple type
+  type String
 
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -254,15 +254,12 @@ model PaymentRequest {
   status      RequestStatus   @default(PENDING)
   category    PaymentCategory @default(OTHER)
 
-  // Who owes the money?
   memberId String
   member   Member @relation(fields: [memberId], references: [id])
 
-  // Is this linked to a specific event? (Optional)
   eventId String?
   event   Event?  @relation(fields: [eventId], references: [id])
 
-  // When paid, link to the actual accounting transaction
   transactionId String?      @unique
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
 
