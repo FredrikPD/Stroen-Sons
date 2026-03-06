@@ -4,7 +4,13 @@ import { useState } from "react";
 // If sonner isn't installed, I'll valid check package.json or just use a local state for feedback.
 // Given I cannot easily check package.json right now without another step, I'll use local state for the feedback to be safe and robust.
 
-export function BankInfoCard({ memberId, className = "" }: { memberId: string, className?: string }) {
+export function BankInfoCard({
+    className = "",
+    mode = "card"
+}: {
+    className?: string,
+    mode?: "card" | "embedded"
+}) {
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const handleCopy = (text: string, field: string) => {
@@ -15,14 +21,9 @@ export function BankInfoCard({ memberId, className = "" }: { memberId: string, c
         setTimeout(() => setCopiedField(null), 2000);
     };
 
-    return (
-        <div className={`bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col relative overflow-hidden min-h-[180px] lg:min-h-0 ${className}`}>
-            {/* Background Icon */}
-            <div className="absolute top-4 right-4 text-white/5 pointer-events-none">
-                <span className="material-symbols-outlined text-[5rem]">account_balance</span>
-            </div>
-
-            <h3 className="font-bold text-sm mb-6 relative z-10">Klubbens Konto</h3>
+    const content = (
+        <>
+            <h3 className="font-bold text-sm mb-4 relative z-10">Klubbens Konto</h3>
 
             <div className="space-y-4 relative z-10">
                 <div>
@@ -40,6 +41,24 @@ export function BankInfoCard({ memberId, className = "" }: { memberId: string, c
                     </button>
                 </div>
             </div>
+        </>
+    );
+
+    if (mode === "embedded") {
+        return (
+            <div className={`relative z-10 mt-4 pt-4 border-t border-white/10 ${className}`}>
+                {content}
+            </div>
+        );
+    }
+
+    return (
+        <div className={`bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col relative overflow-hidden min-h-[180px] lg:min-h-0 ${className}`}>
+            {/* Background Icon */}
+            <div className="absolute top-4 right-4 text-white/5 pointer-events-none">
+                <span className="material-symbols-outlined text-[5rem]">account_balance</span>
+            </div>
+            {content}
         </div>
     );
 }

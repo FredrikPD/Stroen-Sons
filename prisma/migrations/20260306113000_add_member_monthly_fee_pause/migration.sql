@@ -1,0 +1,2 @@
+ALTER TABLE "Member"
+ADD COLUMN "pauseMonthlyFees" BOOLEAN NOT NULL DEFAULT false;

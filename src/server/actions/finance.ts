@@ -42,6 +42,25 @@ const splitAmountIntoShares = (totalAmount: number, count: number) => {
     return Array.from({ length: count }, (_, i) => (baseCents + (i < remainder ? 1 : 0)) / 100);
 };
 
+const MONTHLY_FEE_PAUSE_CAP_NOK = 4500;
+
+const isMonthlyFeePauseEligible = (balance: number | Prisma.Decimal) =>
+    Number(balance) > MONTHLY_FEE_PAUSE_CAP_NOK;
+
+const resetIneligibleMonthlyFeePauses = async () => {
+    await prisma.member.updateMany({
+        where: {
+            pauseMonthlyFees: true,
+            balance: {
+                lte: MONTHLY_FEE_PAUSE_CAP_NOK
+            }
+        },
+        data: {
+            pauseMonthlyFees: false
+        }
+    });
+};
+
 /**
  * Generate (or ensure existence of) monthly fee requests for all active members.
  */
@@ -55,10 +74,16 @@ export async function generateMonthlyFees(year: number, month: number) {
         const title = getFeeTitle(year, month);
         const dueDate = getMonthEndDate(year, month); // Due date is end of month
 
-        // 1. Get all active members
+        await resetIneligibleMonthlyFeePauses();
+
+        // 1. Get all members that have NOT paused monthly fees
         const members = await prisma.member.findMany({
             where: {
-                // Add logic for active members if "status" exists, otherwise all
+                pauseMonthlyFees: false
+            },
+            select: {
+                id: true,
+                membershipType: true
             }
         });
 
@@ -396,6 +421,20 @@ export async function createFutureMonthlyFees(memberId: string, startYear: numbe
 
         const member = await prisma.member.findUnique({ where: { id: memberId } });
         if (!member) return { success: false, error: "Fant ikke medlem" };
+        const memberBalance = member.balance.toNumber();
+        const pauseEligible = isMonthlyFeePauseEligible(memberBalance);
+
+        if (member.pauseMonthlyFees && !pauseEligible) {
+            await prisma.member.update({
+                where: { id: member.id },
+                data: { pauseMonthlyFees: false }
+            });
+        } else if (member.pauseMonthlyFees) {
+            return {
+                success: false,
+                error: `Medlemmet har pauset månedlige avgifter mens saldo er over ${MONTHLY_FEE_PAUSE_CAP_NOK} kr.`
+            };
+        }
 
         let createdCount = 0;
         let skippedCount = 0;
@@ -466,7 +505,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
         const member = await ensureMember();
         if (member.role !== 'ADMIN') throw new Error("Unauthorized");
 
-        const pad = (n: number) => n.toString().padStart(2, '0');
+        await resetIneligibleMonthlyFeePauses();
 
         // We look at 3 periods: Current, Prev, PrevPrev
         const periods = [];
@@ -491,6 +530,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
                 lastName: true,
                 avatarUrl: true,
                 membershipType: true,
+                pauseMonthlyFees: true,
                 paymentRequests: {
                     where: {
                         title: { in: titles },
@@ -510,6 +550,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
             lastName: string | null;
             avatarUrl: string | null;
             membershipType: string;
+            pauseMonthlyFees: boolean;
             paymentRequests: Array<{
                 id: string;
                 title: string;
@@ -553,6 +594,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
                 name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Ukjent Navn',
                 membershipType: member.membershipType,
                 avatarUrl: member.avatarUrl,
+                pauseMonthlyFees: member.pauseMonthlyFees,
                 history: {
                     // Return the Request Object, or Status?
                     // UI expects status string currently.
@@ -1431,9 +1473,71 @@ export async function getCurrentMember() {
     }
 }
 
+export async function setMonthlyFeePausePreference(enabled: boolean) {
+    try {
+        const member = await ensureMember();
+        const balance = member.balance.toNumber();
+        const eligible = isMonthlyFeePauseEligible(balance);
+        const nextEnabled = enabled && eligible;
+
+        if (enabled && !eligible) {
+            if (member.pauseMonthlyFees) {
+                await prisma.member.update({
+                    where: { id: member.id },
+                    data: { pauseMonthlyFees: false }
+                });
+            }
+
+            revalidatePath("/balance");
+            revalidatePath("/admin/finance/income");
+
+            return {
+                success: false,
+                error: `Saldo må være over ${MONTHLY_FEE_PAUSE_CAP_NOK} kr for å pause månedlige avgifter.`,
+                enabled: false,
+                eligible,
+                cap: MONTHLY_FEE_PAUSE_CAP_NOK,
+                balance
+            };
+        }
+
+        if (member.pauseMonthlyFees !== nextEnabled) {
+            await prisma.member.update({
+                where: { id: member.id },
+                data: { pauseMonthlyFees: nextEnabled }
+            });
+        }
+
+        revalidatePath("/balance");
+        revalidatePath("/admin/finance/income");
+
+        return {
+            success: true,
+            enabled: nextEnabled,
+            eligible,
+            cap: MONTHLY_FEE_PAUSE_CAP_NOK,
+            balance
+        };
+    } catch (error) {
+        console.error("Failed to update monthly fee pause preference:", error);
+        return { success: false, error: "Kunne ikke oppdatere innstillingen." };
+    }
+}
+
 export async function getMyFinancialData() {
     try {
         const member = await ensureMember();
+        const balance = member.balance.toNumber();
+        const monthlyFeePauseEligible = isMonthlyFeePauseEligible(balance);
+        let monthlyFeePauseEnabled = member.pauseMonthlyFees;
+
+        if (monthlyFeePauseEnabled && !monthlyFeePauseEligible) {
+            await prisma.member.update({
+                where: { id: member.id },
+                data: { pauseMonthlyFees: false }
+            });
+            monthlyFeePauseEnabled = false;
+        }
 
         const [paymentRequests, transactions] = await Promise.all([
             // Get unpaid or pending requests
@@ -1456,7 +1560,12 @@ export async function getMyFinancialData() {
 
         return {
             memberId: member.id,
-            balance: member.balance.toNumber(),
+            balance,
+            monthlyFeePause: {
+                enabled: monthlyFeePauseEnabled,
+                eligible: monthlyFeePauseEligible,
+                cap: MONTHLY_FEE_PAUSE_CAP_NOK
+            },
             paymentRequests: paymentRequests.map(pr => ({
                 ...pr,
                 amount: Number(pr.amount),

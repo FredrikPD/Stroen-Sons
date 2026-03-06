@@ -2,6 +2,7 @@ import { getMyFinancialData } from "@/server/actions/finance";
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { BankInfoCard } from "@/components/dashboard/BankInfoCard";
 import { UserTransactions } from "@/components/dashboard/UserTransactions";
+import { MonthlyFeePauseCard } from "@/components/dashboard/MonthlyFeePauseCard";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -17,18 +18,13 @@ import { redirect } from "next/navigation";
 export default async function BalancePage() {
     try {
         await ensureMember();
-    } catch (e) {
+    } catch {
         redirect("/sign-in");
     }
 
     const data = await getMyFinancialData();
 
-    // Sort transactions by date descending
-    const sortedTransactions = data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const visibleInvoices = data.paymentRequests.filter((invoice) => invoice.status !== "PAID");
-
-    // Mock ID if not available (should be available now)
-    const memberId = data.memberId || "Ukjent";
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 max-w-6xl mx-auto">
@@ -39,11 +35,11 @@ export default async function BalancePage() {
             </div>
 
             {/* Main Grid: Balance/Bank Card (Left) vs Invoices (Right) */}
-            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
-                <div className="lg:w-1/3 flex flex-col gap-4 lg:h-[350px]">
-                    {/* Balance Card */}
-                    <div className="bg-[#0F172A] text-white p-6 rounded-xl shadow-md flex flex-col justify-between min-h-[180px] lg:min-h-0 lg:flex-1 relative overflow-hidden group shrink-0">
-                        {/* Background Icon */}
+            <div className="flex flex-col lg:flex-row gap-4 items-start">
+                <div className="lg:w-1/3 w-full">
+                    <div
+                        className="bg-[#0F172A] text-white p-6 rounded-xl shadow-md relative overflow-hidden lg:h-[410px]"
+                    >
                         <div className="absolute top-4 right-4 text-white/5 pointer-events-none">
                             <span className="material-symbols-outlined text-[5rem]">account_balance_wallet</span>
                         </div>
@@ -58,23 +54,20 @@ export default async function BalancePage() {
                             </div>
                         </div>
 
-                        <div className="relative z-10 mt-auto pt-4 border-t border-white/10">
-                            <div className="flex items-center gap-2 text-xs text-white/50">
-                                <span className="material-symbols-outlined text-[1.1em]">info</span>
-                                <p>Saldo oppdateres automatisk.</p>
-                            </div>
-                        </div>
-                    </div>
+                        <BankInfoCard mode="embedded" />
 
-                    {/* Klubbens Konto Card */}
-                    <BankInfoCard memberId={memberId} className="lg:flex-1" />
+                        <MonthlyFeePauseCard
+                            initialEnabled={data.monthlyFeePause.enabled}
+                            balance={data.balance}
+                            cap={data.monthlyFeePause.cap}
+                            mode="embedded"
+                        />
+                    </div>
                 </div>
 
                 {/* Unpaid Invoices (Right - 2/3 width) */}
-                <div className="lg:w-2/3 relative min-h-0 lg:min-h-[350px]">
-                    <div className="lg:absolute lg:inset-0">
-                        <MyInvoices invoices={visibleInvoices} className="h-full" />
-                    </div>
+                <div className="lg:w-2/3 w-full min-w-0 lg:h-[410px]">
+                    <MyInvoices invoices={visibleInvoices} className="h-full" />
                 </div>
             </div>
 

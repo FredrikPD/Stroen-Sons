@@ -23,6 +23,7 @@ model Member {
   role           Role         @default(MEMBER)
   status         MemberStatus @default(ACTIVE)
   balance        Decimal      @default(0.0)
+  pauseMonthlyFees Boolean    @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   lastActiveAt   DateTime     @default(now())

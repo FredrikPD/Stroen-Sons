@@ -27,6 +27,7 @@ type MemberPaymentData = {
     name: string;
     membershipType: string;
     avatarUrl?: string | null;
+    pauseMonthlyFees: boolean;
     history: {
         [title: string]: PaymentRequestInfo | null;
     };
@@ -304,6 +305,28 @@ export default function IncomePage() {
         return getMonthName(parseInt(m) - 1);
     };
 
+    const renderNoRequestBadge = (member: MemberPaymentData, compact: boolean) => {
+        if (!member.pauseMonthlyFees) {
+            return compact
+                ? <span className="text-gray-300">-</span>
+                : <span className="text-xs text-gray-400 italic">Ingen krav</span>;
+        }
+
+        return compact ? (
+            <span
+                className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-50 border border-amber-200 text-amber-700"
+                title="Månedlige avgifter er pauset av medlemmet"
+            >
+                <span className="material-symbols-outlined text-sm leading-none">pause</span>
+            </span>
+        ) : (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
+                <span className="material-symbols-outlined text-[1rem] leading-none">pause_circle</span>
+                Pauset av medlem
+            </span>
+        );
+    };
+
     // Generate period options (+/- 9 months)
     const periodOptions = [];
     for (let i = -9; i <= 9; i++) {
@@ -538,7 +561,7 @@ export default function IncomePage() {
                                                 :
                                                 <span className="w-2 h-2 rounded-full bg-red-400"></span>
                                         ) : (
-                                            <span className="text-gray-300">-</span>
+                                            renderNoRequestBadge(member, true)
                                         )}
                                     </div>
 
@@ -550,7 +573,7 @@ export default function IncomePage() {
                                                 :
                                                 <span className="w-2 h-2 rounded-full bg-red-400"></span>
                                         ) : (
-                                            <span className="text-gray-300">-</span>
+                                            renderNoRequestBadge(member, true)
                                         )}
                                     </div>
 
@@ -583,7 +606,7 @@ export default function IncomePage() {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <span className="text-xs text-gray-400 italic">Ingen krav</span>
+                                            renderNoRequestBadge(member, false)
                                         )}
                                     </div>
                                 </div>
