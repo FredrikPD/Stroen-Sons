@@ -6,15 +6,39 @@ import { getTransactionDetails } from "@/server/actions/finance";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Avatar } from "@/components/Avatar";
 
+type TransactionAllocation = {
+    id: string;
+    amount: number;
+    member: {
+        id: string;
+        name: string;
+        email: string;
+        avatarUrl: string | null;
+    } | null;
+};
+
+type TransactionDetailData = {
+    description: string;
+    date: string | Date;
+    category: string;
+    totalAmount: number;
+    type: string;
+    event?: { id: string; title: string } | null;
+    allocations: TransactionAllocation[];
+    isSplit: boolean;
+    createdAt: string | Date;
+    receiptUrl: string | null;
+};
+
 export default function TransactionDetailClient({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<TransactionDetailData | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchDetails = async () => {
             const res = await getTransactionDetails(id, "OWN");
-            if (res.success) {
+            if (res.success && res.data) {
                 setData(res.data);
             } else {
                 setError(res.error || "Kunne ikke hente detaljer");
@@ -65,37 +89,37 @@ export default function TransactionDetailClient({ id }: { id: string }) {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
             {/* Header Card */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 md:p-8 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
                     <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">
+                        <div className="flex flex-wrap items-center gap-2.5 mb-3">
+                            <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">
                                 {category}
                             </span>
-                            <span className="text-sm text-gray-400">
+                            <span className="text-xs sm:text-sm text-gray-400">
                                 {new Date(date).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{description}</h1>
-                        <p className="text-gray-500 text-sm">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-2">{description}</h1>
+                        <p className="text-gray-500 text-xs sm:text-sm">
                             Registrert: {new Date(createdAt).toLocaleString('nb-NO')}
                         </p>
                     </div>
 
-                    <div className="text-right">
-                        <div className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">TOTALBELØP</div>
-                        <div className={`text-4xl font-medium ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                    <div className="w-full md:w-auto text-left md:text-right bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 md:bg-transparent md:border-0 md:p-0">
+                        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">TOTALBELØP</div>
+                        <div className={`text-3xl sm:text-4xl font-semibold leading-none ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
                             {type === 'INNTEKT' ? '+' : ''}{formatCurrency(totalAmount)}
                         </div>
                     </div>
                 </div>
 
                 {event && (
-                    <div className="mt-8 pt-6 border-t border-gray-100">
+                    <div className="mt-6 pt-5 border-t border-gray-100">
                         <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3">Tilknyttet Arrangement</h3>
-                        <Link href={`/events/${event.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-indigo-50 hover:border-indigo-100 border border-transparent transition-all group">
+                        <Link href={`/events/${event.id}`} className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-indigo-50 hover:border-indigo-100 border border-transparent transition-all group">
                             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
                                 <span className="material-symbols-outlined">event</span>
                             </div>
@@ -111,7 +135,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
 
             {/* Receipt / Kvittering */}
             {receiptUrl && (
-                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 md:p-8 shadow-sm">
                     <h2 className="text-lg font-bold text-gray-900 mb-4">Kvittering</h2>
 
                     {isReceiptImage(receiptUrl) && (
@@ -119,7 +143,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
                             <img
                                 src={receiptUrl}
                                 alt="Kvittering"
-                                className="w-full max-h-[500px] object-contain"
+                                className="w-full max-h-[320px] sm:max-h-[500px] object-contain"
                             />
                         </div>
                     )}
@@ -129,7 +153,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         download
-                        className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors group"
+                        className="flex items-start sm:items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors group"
                     >
                         <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200 text-indigo-600 group-hover:border-indigo-200 transition-colors">
                             <span className="material-symbols-outlined">
@@ -151,29 +175,60 @@ export default function TransactionDetailClient({ id }: { id: string }) {
 
             {/* Allocations / Split Details */}
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="px-5 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                     <h2 className="text-lg font-bold text-gray-900">
                         {isSplit ? "Fordeling (Splittet)" : "Detaljer"}
                     </h2>
                     {isSplit && (
-                        <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-100">
+                        <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-100 self-start sm:self-auto">
                             {allocations.length} {allocations.length === 1 ? 'person' : 'personer'} involvert
                         </span>
                     )}
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="md:hidden divide-y divide-gray-100">
+                    {allocations.map((alloc) => (
+                        <div key={alloc.id} className="px-5 py-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    {alloc.member ? (
+                                        <div className="flex items-start gap-3">
+                                            <Avatar
+                                                src={alloc.member.avatarUrl ?? null}
+                                                initials={alloc.member.name.substring(0, 2).toUpperCase()}
+                                                alt={alloc.member.name}
+                                                className="w-9 h-9 text-xs font-bold text-gray-600 bg-gradient-to-br from-gray-100 to-white border border-gray-200 shrink-0"
+                                                size="sm"
+                                            />
+                                            <div className="min-w-0">
+                                                <div className="font-semibold text-gray-900 leading-tight">{alloc.member.name}</div>
+                                                <div className="text-xs text-gray-500 truncate">{alloc.member.email}</div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-sm text-gray-500 italic">Ingen medlem tilknyttet (Felles)</span>
+                                    )}
+                                </div>
+                                <div className={`text-lg font-semibold whitespace-nowrap ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                    {formatCurrency(alloc.amount)}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase font-medium tracking-wider">
                             <tr>
-                                <th className="px-8 py-4">Medlem / Beskrivelse</th>
-                                <th className="px-8 py-4 text-right">Beløp</th>
+                                <th className="px-6 lg:px-8 py-4">Medlem / Beskrivelse</th>
+                                <th className="px-6 lg:px-8 py-4 text-right">Beløp</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {allocations.map((alloc: any) => (
+                            {allocations.map((alloc) => (
                                 <tr key={alloc.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-8 py-4">
+                                    <td className="px-6 lg:px-8 py-4">
                                         {alloc.member ? (
                                             <div className="flex items-center gap-3">
                                                 <Avatar
@@ -192,7 +247,7 @@ export default function TransactionDetailClient({ id }: { id: string }) {
                                             <span className="text-gray-500 italic">Ingen medlem tilknyttet (Felles)</span>
                                         )}
                                     </td>
-                                    <td className={`px-8 py-4 text-right font-medium ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                    <td className={`px-6 lg:px-8 py-4 text-right font-medium ${type === 'INNTEKT' ? 'text-emerald-600' : 'text-gray-900'}`}>
                                         {formatCurrency(alloc.amount)}
                                     </td>
                                 </tr>
