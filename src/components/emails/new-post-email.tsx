@@ -25,7 +25,7 @@ export const NewPostEmail = ({
     postTitle = "Nytt innlegg",
     postContent = "Det har kommet et nytt innlegg på Strøen Søns.",
     authorName = "Styret",
-    postUrl = "https://stroen-sons.com/posts",
+    postUrl = "https://xn--strensns-74ad.no/posts",
     category = "NYHET",
 }: NewPostEmailProps) => {
     // Truncate content for preview if it's too long

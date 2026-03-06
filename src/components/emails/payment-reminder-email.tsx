@@ -31,7 +31,7 @@ interface PaymentReminderEmailProps {
 export const PaymentReminderEmail = ({
     memberName = "Medlem",
     invoices = [],
-    paymentUrl = "https://stroen-sons.com/dashboard",
+    paymentUrl = "https://xn--strensns-74ad.no/dashboard",
 }: PaymentReminderEmailProps) => {
 
     const totalAmount = invoices.reduce((sum, item) => sum + item.amount, 0);

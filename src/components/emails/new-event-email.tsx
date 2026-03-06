@@ -26,7 +26,7 @@ export const NewEventEmail = ({
     eventDescription = "Det har kommet et nytt arrangement i kalenderen.",
     eventDate = "",
     eventLocation = "",
-    eventUrl = "https://stroen-sons.com/events",
+    eventUrl = "https://xn--strensns-74ad.no/events",
 }: NewEventEmailProps) => {
     // Truncate description for preview if it's too long
     const previewText = eventDescription.length > 150

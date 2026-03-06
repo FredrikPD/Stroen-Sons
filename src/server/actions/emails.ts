@@ -10,6 +10,52 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Fallback email if domain verification is an issue, but usually 'onboarding@resend.dev' for testing
 // In prod it should be a verified domain.
 const FROM_EMAIL = "Strøen Søns <varsel@xn--strensns-74ad.no>";
+const FALLBACK_APP_ORIGIN = "https://xn--strensns-74ad.no";
+const ALLOWED_EMAIL_HOSTS = new Set([
+    "strøensøns.no",
+    "xn--strensns-74ad.no",
+    "www.strøensøns.no",
+    "www.xn--strensns-74ad.no",
+]);
+
+const resolveAppOrigin = () => {
+    const rawCandidates = [
+        process.env.NEXT_PUBLIC_APP_URL,
+        process.env.APP_URL,
+        process.env.VERCEL_PROJECT_PRODUCTION_URL,
+        process.env.VERCEL_URL,
+    ].filter((value): value is string => Boolean(value && value.trim()));
+
+    for (const rawValue of rawCandidates) {
+        const trimmed = rawValue.trim();
+        const withProtocol =
+            trimmed.startsWith("http://") || trimmed.startsWith("https://")
+                ? trimmed
+                : `https://${trimmed}`;
+
+        try {
+            const candidate = new URL(withProtocol);
+            const hostAscii = candidate.hostname.toLowerCase();
+            const hostUnicode = hostAscii
+                .normalize("NFKD")
+                .toLowerCase();
+
+            if (ALLOWED_EMAIL_HOSTS.has(hostAscii) || ALLOWED_EMAIL_HOSTS.has(hostUnicode)) {
+                return candidate.origin;
+            }
+        } catch {
+            continue;
+        }
+    }
+
+    return FALLBACK_APP_ORIGIN;
+};
+
+const buildAppUrl = (path: string) => {
+    const origin = resolveAppOrigin();
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return new URL(normalizedPath, origin).toString();
+};
 
 interface SendPostNotificationParams {
     postTitle: string;
@@ -46,7 +92,7 @@ export async function sendPostNotification({
         }
 
         const emailList = members.map(m => m.email);
-        const postUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/posts/${postId}`;
+        const postUrl = buildAppUrl(`/posts/${postId}`);
 
         // Clean content for email preview (remove markdown roughly if needed, or just pass as is)
         // For simplicity we pass it as is, but ReactMarkdown in email might be complex. 
@@ -144,7 +190,7 @@ export async function sendPostUpdateNotification({
         }
 
         const emailList = members.map(m => m.email);
-        const postUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/posts/${postId}`;
+        const postUrl = buildAppUrl(`/posts/${postId}`);
 
         const cleanContent = postContent
             .replace(/[#*`_]/g, '')
@@ -223,7 +269,7 @@ export async function sendPaymentReminder(memberId: string, requestIds: string[]
             return { success: false, error: "No unpaid invoices found for these IDs" };
         }
 
-        const paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/dashboard`;
+        const paymentUrl = buildAppUrl("/dashboard");
 
         const { error } = await resend.emails.send({
             from: FROM_EMAIL,
@@ -290,7 +336,7 @@ export async function sendBulkPaymentReminders() {
         // If list is huge (1000+), we should use a queue. For < 100 members, loop is fine.
 
         const emailObjects = membersWithUnpaid.map((member: any) => {
-            const paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/dashboard`;
+            const paymentUrl = buildAppUrl("/dashboard");
             return {
                 from: FROM_EMAIL,
                 to: member.email,
@@ -366,7 +412,7 @@ export async function sendEventNotification({
         }
 
         const emailList = members.map(m => m.email);
-        const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/events/${eventId}`;
+        const eventUrl = buildAppUrl(`/events/${eventId}`);
 
         // Clean content for email preview
         const cleanDescription = eventDescription
@@ -430,7 +476,7 @@ export async function sendEventUpdateNotification({
         }
 
         const emailList = members.map(m => m.email);
-        const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://stroen-sons.com"}/events/${eventId}`;
+        const eventUrl = buildAppUrl(`/events/${eventId}`);
 
         const cleanDescription = eventDescription
             ? eventDescription.replace(/[#*`_]/g, '').split('\n')[0]

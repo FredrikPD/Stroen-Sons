@@ -26,7 +26,7 @@ export const UpdatedEventEmail = ({
     eventDescription = "Det har kommet oppdateringer til arrangementet i kalenderen.",
     eventDate = "",
     eventLocation = "",
-    eventUrl = "https://stroen-sons.com/events",
+    eventUrl = "https://xn--strensns-74ad.no/events",
 }: UpdatedEventEmailProps) => {
     const previewText = eventDescription.length > 150
         ? `${eventDescription.substring(0, 150)}...`

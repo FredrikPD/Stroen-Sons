@@ -23,7 +23,7 @@ export const WelcomeEmail = ({
     firstName = "Medlem",
     email = "medlem@eksempel.no",
     password,
-    loginUrl = "https://stroen-sons.com/sign-in",
+    loginUrl = "https://xn--strensns-74ad.no/sign-in",
 }: WelcomeEmailProps) => {
     return (
         <Html>
