@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/icon.png?v=2", type: "image/png" },
+      { url: "/icon.png?v=3", type: "image/png" },
       { url: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
     ],
