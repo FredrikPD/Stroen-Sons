@@ -65,6 +65,19 @@ interface SendPostNotificationParams {
     category: string;
 }
 
+const pickTargetInvoiceId = (invoices: Array<{ id: string; dueDate: Date | null }>) => {
+    if (invoices.length === 0) return null;
+
+    const sorted = [...invoices].sort((a, b) => {
+        const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Number.POSITIVE_INFINITY;
+        const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Number.POSITIVE_INFINITY;
+        if (dateA !== dateB) return dateA - dateB;
+        return a.id.localeCompare(b.id);
+    });
+
+    return sorted[0]?.id ?? null;
+};
+
 export async function sendPostNotification({
     postTitle,
     postContent,
@@ -269,7 +282,10 @@ export async function sendPaymentReminder(memberId: string, requestIds: string[]
             return { success: false, error: "No unpaid invoices found for these IDs" };
         }
 
-        const paymentUrl = buildAppUrl("/dashboard");
+        const targetInvoiceId = pickTargetInvoiceId(invoices);
+        const paymentUrl = targetInvoiceId
+            ? buildAppUrl(`/invoices/${targetInvoiceId}`)
+            : buildAppUrl("/invoices");
 
         const { error } = await resend.emails.send({
             from: FROM_EMAIL,
@@ -318,6 +334,7 @@ export async function sendBulkPaymentReminders() {
                 firstName: true,
                 paymentRequests: {
                     where: { status: "PENDING" },
+                    orderBy: { dueDate: "asc" },
                     select: {
                         id: true,
                         title: true,
@@ -336,7 +353,10 @@ export async function sendBulkPaymentReminders() {
         // If list is huge (1000+), we should use a queue. For < 100 members, loop is fine.
 
         const emailObjects = membersWithUnpaid.map((member: any) => {
-            const paymentUrl = buildAppUrl("/dashboard");
+            const targetInvoiceId = pickTargetInvoiceId(member.paymentRequests);
+            const paymentUrl = targetInvoiceId
+                ? buildAppUrl(`/invoices/${targetInvoiceId}`)
+                : buildAppUrl("/invoices");
             return {
                 from: FROM_EMAIL,
                 to: member.email,

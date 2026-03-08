@@ -99,7 +99,7 @@ export const PaymentReminderEmail = ({
                                 className="px-5 py-3 bg-[#4F46E5] text-white rounded-xl text-[14px] font-bold no-underline"
                                 href={paymentUrl}
                             >
-                                Gå til betaling
+                                Gå til faktura
                             </Link>
                         </Section>
 

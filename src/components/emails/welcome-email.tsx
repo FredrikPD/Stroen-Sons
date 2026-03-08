@@ -23,7 +23,7 @@ export const WelcomeEmail = ({
     firstName = "Medlem",
     email = "medlem@eksempel.no",
     password,
-    loginUrl = "https://xn--strensns-74ad.no/sign-in",
+    loginUrl = "https://xn--strensns-74ad.no/dashboard",
 }: WelcomeEmailProps) => {
     return (
         <Html>
@@ -71,7 +71,7 @@ export const WelcomeEmail = ({
                                 className="px-5 py-3 bg-gray-900 text-white rounded text-[14px] font-bold no-underline"
                                 href={loginUrl}
                             >
-                                Logg inn
+                                Gå til dashboard
                             </Link>
                         </Section>
 
