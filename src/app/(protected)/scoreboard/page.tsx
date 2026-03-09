@@ -2,6 +2,7 @@ import { ensureMember } from "@/server/auth/ensureMember";
 import { db } from "@/server/db";
 import { Avatar } from "@/components/Avatar";
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
 
 export const metadata = {
     title: "Scoreboard",
@@ -125,6 +126,41 @@ type EventWithPodium = {
         teamMembers: { firstName: string | null; lastName: string | null; avatarUrl: string | null }[];
     }[];
 };
+
+type ScoreboardEvent = Prisma.EventGetPayload<{
+    include: {
+        recap: {
+            include: {
+                podium: {
+                    include: {
+                        entries: {
+                            include: {
+                                member: {
+                                    select: {
+                                        firstName: true;
+                                        lastName: true;
+                                        avatarUrl: true;
+                                    };
+                                };
+                                teamMembers: {
+                                    include: {
+                                        member: {
+                                            select: {
+                                                firstName: true;
+                                                lastName: true;
+                                                avatarUrl: true;
+                                            };
+                                        };
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+}>;
 
 function EventCard({ event }: { event: EventWithPodium }) {
     const dateStr = event.startAt.toLocaleDateString("nb-NO", {
@@ -277,7 +313,7 @@ export default async function ScoreboardPage({ searchParams }: ScoreboardPagePro
             },
         },
         orderBy: { startAt: "desc" },
-    });
+    }) as ScoreboardEvent[];
 
     // Transform and group by year
     const eventsWithPodium: EventWithPodium[] = events
