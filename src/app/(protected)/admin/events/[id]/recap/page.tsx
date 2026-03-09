@@ -5,6 +5,7 @@ import { db } from "@/server/db";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { SetHeader } from "@/components/layout/SetHeader";
 import { EventRecapForm } from "@/components/events/EventRecapForm";
+import { PodiumCard } from "@/components/events/PodiumCard";
 import { upsertEventRecap } from "@/server/actions/event-recaps";
 import { EventRecapInput } from "@/lib/validators/event-recaps";
 
@@ -17,6 +18,15 @@ type EventWithRecap = Prisma.EventGetPayload<{
         recap: {
             include: {
                 games: true;
+                podium: {
+                    include: {
+                        entries: {
+                            include: {
+                                teamMembers: true;
+                            };
+                        };
+                    };
+                };
             };
         };
     };
@@ -46,10 +56,31 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
                     games: {
                         orderBy: { order: "asc" },
                     },
+                    podium: {
+                        include: {
+                            entries: {
+                                orderBy: { place: "asc" },
+                                include: {
+                                    teamMembers: true,
+                                },
+                            },
+                        },
+                    },
                 },
             },
         },
     }) as EventWithRecap | null;
+
+    // Fetch all members for the podium selector
+    const allMembers = await db.member.findMany({
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+        },
+        orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+    });
 
     if (!event) {
         notFound();
@@ -101,7 +132,7 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
 
     return (
         <div className="space-y-8 pb-12">
-            <SetHeader backHref="/admin/events" backLabel="Arrangementer" />
+            <SetHeader backHref={`/events/${event.id}`} backLabel={event.title} />
             <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Etterrapport</h1>
@@ -125,6 +156,20 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
                 onSubmit={handleSubmit}
                 redirectOnSuccess={`/events/${event.id}`}
                 formId={recapFormId}
+            />
+
+            <PodiumCard
+                recapId={event.recap?.id ?? null}
+                members={allMembers}
+                existingPodium={event.recap?.podium ? {
+                    type: event.recap.podium.type as "INDIVIDUAL" | "TEAM",
+                    entries: event.recap.podium.entries.map((e) => ({
+                        place: e.place,
+                        teamName: e.teamName,
+                        memberId: e.memberId,
+                        teamMembers: e.teamMembers,
+                    })),
+                } : null}
             />
         </div>
     );

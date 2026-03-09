@@ -10,6 +10,7 @@ export const MAIN_NAV: NavItem[] = [
   { href: "/posts", label: "Innlegg", icon: "news" },
   { href: "/events", label: "Arrangementer", icon: "calendar_month" },
   { href: "/gallery", label: "Bildearkiv", icon: "photo_library" },
+  { href: "/scoreboard", label: "Scoreboard", icon: "emoji_events" },
   { href: "/members", label: "Medlemmer", icon: "group" },
   { href: "/about", label: "Om klubben", icon: "info" },
 ];

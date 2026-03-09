@@ -53,8 +53,8 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
         </div>
       </div>
 
-      {/* Scrollable Nav Area */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-4">
+      {/* Nav Area */}
+      <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
         {/* Main Nav */}
         <div>

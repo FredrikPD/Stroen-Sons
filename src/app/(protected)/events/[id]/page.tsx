@@ -39,6 +39,20 @@ export default async function EventDetailPage({ params }: Props) {
                 include: {
                     author: true;
                     games: true;
+                    podium: {
+                        include: {
+                            entries: {
+                                include: {
+                                    member: true;
+                                    teamMembers: {
+                                        include: {
+                                            member: true;
+                                        };
+                                    };
+                                };
+                            };
+                        };
+                    };
                 };
             };
         };
@@ -78,6 +92,35 @@ export default async function EventDetailPage({ params }: Props) {
                     games: {
                         orderBy: { order: "asc" },
                     },
+                    podium: {
+                        include: {
+                            entries: {
+                                orderBy: { place: "asc" },
+                                include: {
+                                    member: {
+                                        select: {
+                                            id: true,
+                                            firstName: true,
+                                            lastName: true,
+                                            avatarUrl: true,
+                                        },
+                                    },
+                                    teamMembers: {
+                                        include: {
+                                            member: {
+                                                select: {
+                                                    id: true,
+                                                    firstName: true,
+                                                    lastName: true,
+                                                    avatarUrl: true,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             },
         }
@@ -104,6 +147,25 @@ export default async function EventDetailPage({ params }: Props) {
         updatedAt: event.recap.updatedAt.toISOString(),
         author: event.recap.author,
         games: event.recap.games,
+        podium: event.recap.podium ? {
+            type: event.recap.podium.type,
+            entries: event.recap.podium.entries.map((e) => ({
+                place: e.place,
+                teamName: e.teamName,
+                member: e.member ? {
+                    id: e.member.id,
+                    firstName: e.member.firstName,
+                    lastName: e.member.lastName,
+                    avatarUrl: e.member.avatarUrl,
+                } : null,
+                teamMembers: e.teamMembers.map((tm) => ({
+                    id: tm.member.id,
+                    firstName: tm.member.firstName,
+                    lastName: tm.member.lastName,
+                    avatarUrl: tm.member.avatarUrl,
+                })),
+            })),
+        } : null,
     } : null;
 
     const serializedEvent = {

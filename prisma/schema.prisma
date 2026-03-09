@@ -37,6 +37,8 @@ model Member {
   paymentRequests PaymentRequest[]
   notifications   Notification[]
   pushSubscriptions PushSubscription[]
+  podiumWins        EventPodiumEntry[] @relation("PodiumIndividualWinner")
+  podiumTeams       PodiumTeamMember[] @relation("PodiumTeamMember")
 
   @@index([firstName])
 }
@@ -122,6 +124,7 @@ model EventRecap {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   games          EventRecapGame[]
+  podium         EventPodium?
 }
 
 model EventRecapGame {
@@ -202,6 +205,44 @@ enum GameResult {
   WIN
   DRAW
   LOSS
+}
+
+enum PodiumType {
+  INDIVIDUAL
+  TEAM
+}
+
+model EventPodium {
+  id        String             @id @default(cuid())
+  recapId   String             @unique
+  recap     EventRecap         @relation(fields: [recapId], references: [id], onDelete: Cascade)
+  type      PodiumType
+  entries   EventPodiumEntry[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model EventPodiumEntry {
+  id          String               @id @default(cuid())
+  podiumId    String
+  podium      EventPodium          @relation(fields: [podiumId], references: [id], onDelete: Cascade)
+  place       Int
+  teamName    String?
+  memberId    String?
+  member      Member?              @relation("PodiumIndividualWinner", fields: [memberId], references: [id])
+  teamMembers PodiumTeamMember[]
+
+  @@unique([podiumId, place])
+}
+
+model PodiumTeamMember {
+  id       String           @id @default(cuid())
+  entryId  String
+  entry    EventPodiumEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  memberId String
+  member   Member           @relation("PodiumTeamMember", fields: [memberId], references: [id])
+
+  @@unique([entryId, memberId])
 }
 
 model UserRole {

@@ -43,6 +43,25 @@ type RecapGame = {
     notes: string | null;
 };
 
+type PodiumMember = {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    avatarUrl: string | null;
+};
+
+type PodiumEntry = {
+    place: number;
+    teamName: string | null;
+    member: PodiumMember | null;
+    teamMembers: PodiumMember[];
+};
+
+type RecapPodium = {
+    type: "INDIVIDUAL" | "TEAM";
+    entries: PodiumEntry[];
+};
+
 type EventRecap = {
     id: string;
     status: "DRAFT" | "PUBLISHED";
@@ -60,6 +79,7 @@ type EventRecap = {
         email: string;
     };
     games: RecapGame[];
+    podium?: RecapPodium | null;
 };
 
 type EventDetail = {
@@ -416,6 +436,77 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                                         ))}
                                                     </tbody>
                                                 </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Podium Display */}
+                                    {visibleRecap.podium && visibleRecap.podium.entries.length > 0 && (
+                                        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                                            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-[#F5C518] text-lg">emoji_events</span>
+                                                <h3 className="text-sm font-bold text-gray-900">Podium</h3>
+                                            </div>
+                                            <div className="p-4 flex flex-col gap-3">
+                                                {visibleRecap.podium.entries.map((entry) => {
+                                                    const badgeClass = entry.place === 1
+                                                        ? "bg-[#F5C518] text-[#7a5c00]"
+                                                        : entry.place === 2
+                                                            ? "bg-[#C0C0C0] text-[#4a4a4a]"
+                                                            : "bg-[#CD7F32] text-white";
+                                                    const placeLabel = entry.place === 1 ? "Vinner" : `${entry.place}. plass`;
+
+                                                    return (
+                                                        <div key={entry.place} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50/60">
+                                                            <span className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-bold shadow-sm shrink-0 ${badgeClass}`}>
+                                                                {entry.place}
+                                                            </span>
+
+                                                            {visibleRecap.podium!.type === "INDIVIDUAL" && entry.member ? (
+                                                                <div className="flex items-center gap-2.5">
+                                                                    <Avatar
+                                                                        src={entry.member.avatarUrl}
+                                                                        initials={`${entry.member.firstName?.[0] || ""}${entry.member.lastName?.[0] || ""}`}
+                                                                        size="sm"
+                                                                    />
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-bold text-gray-900">
+                                                                            {entry.member.firstName} {entry.member.lastName}
+                                                                        </span>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                                            {placeLabel}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex flex-col gap-1.5">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-sm font-bold text-gray-900">{entry.teamName}</span>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                                            {placeLabel}
+                                                                        </span>
+                                                                    </div>
+                                                                    {entry.teamMembers.length > 0 && (
+                                                                        <div className="flex flex-wrap gap-x-3 gap-y-1">
+                                                                            {entry.teamMembers.map((m) => (
+                                                                                <div key={m.id} className="flex items-center gap-1.5">
+                                                                                    <Avatar
+                                                                                        src={m.avatarUrl}
+                                                                                        initials={`${m.firstName?.[0] || ""}${m.lastName?.[0] || ""}`}
+                                                                                        size="xs"
+                                                                                    />
+                                                                                    <span className="text-xs text-gray-600">
+                                                                                        {m.firstName} {m.lastName}
+                                                                                    </span>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}
