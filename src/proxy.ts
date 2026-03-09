@@ -31,7 +31,7 @@ export default clerkMiddleware(async (auth, req) => {
 
         if (userId && (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))) {
             const url = new URL("/dashboard", req.url);
-            return Response.redirect(url);
+            return NextResponse.redirect(url);
         }
     }
 
@@ -40,7 +40,7 @@ export default clerkMiddleware(async (auth, req) => {
         const { userId } = await auth();
         if (!userId) {
             const signInUrl = new URL("/sign-in", req.url);
-            return Response.redirect(signInUrl);
+            return NextResponse.redirect(signInUrl);
         }
     }
 

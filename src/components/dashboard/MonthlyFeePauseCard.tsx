@@ -72,12 +72,14 @@ export function MonthlyFeePauseCard({
                     : "bg-white/10 border-white/20 text-white/85"
                     } ${eligible && !isPending && !enabled ? "hover:bg-white/15" : ""} ${(!eligible || isPending) ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
             >
-                <span className={`flex items-center min-w-0 ${enabled ? "gap-2" : ""}`}>
-                    {enabled && (
+                <span className="flex items-center gap-2 min-w-0">
+                    {isPending ? (
+                        <span className="h-5 w-5 shrink-0 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    ) : enabled ? (
                         <span className="h-5 w-5 rounded-full flex items-center justify-center shrink-0 bg-emerald-100/20 text-emerald-100">
                             <span className="material-symbols-outlined text-[0.95rem] leading-none">check</span>
                         </span>
-                    )}
+                    ) : null}
                     <span className="leading-tight truncate">Stopp medlemskontigent</span>
                 </span>
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border shrink-0 ${enabled
