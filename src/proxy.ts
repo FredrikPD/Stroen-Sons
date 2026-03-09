@@ -37,7 +37,11 @@ export default clerkMiddleware(async (auth, req) => {
 
     // 3. Protected Routes (Everything else not public)
     if (!isPublicRoute(req)) {
-        await auth.protect();
+        const { userId } = await auth();
+        if (!userId) {
+            const signInUrl = new URL("/sign-in", req.url);
+            return Response.redirect(signInUrl);
+        }
     }
 
     // Pass current path in headers for server components
