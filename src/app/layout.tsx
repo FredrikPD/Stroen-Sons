@@ -25,11 +25,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/icon.png?v=3", type: "image/png" },
-      { url: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon/favicon.ico", sizes: "48x48" },
+      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     title: "Strøen Søns",

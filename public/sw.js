@@ -1,14 +1,13 @@
-const CACHE_NAME = "stroen-sons-pwa-v4";
+const CACHE_NAME = "stroen-sons-pwa-v7";
 const OFFLINE_URL = "/offline";
 const PUSH_META_CACHE_NAME = "stroen-sons-pwa-push-meta-v1";
 const PUSH_SEEN_KEY = "/__push_seen_notifications";
 const PRECACHE_ASSETS = [
   OFFLINE_URL,
   "/manifest.webmanifest",
-  "/icon.png",
-  "/apple-touch-icon.png",
-  "/pwa-192x192.png",
-  "/pwa-512x512.png",
+  "/favicon/apple-touch-icon.png",
+  "/favicon/web-app-manifest-192x192.png",
+  "/favicon/web-app-manifest-512x512.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -111,8 +110,8 @@ const setSeenNotificationIds = async (ids) => {
 const showGenericNotification = async () => {
   await self.registration.showNotification("Ny varsling", {
     body: "Du har en ny oppdatering i Strøen Søns.",
-    icon: "/pwa-192x192.png",
-    badge: "/pwa-192x192.png",
+    icon: "/favicon/web-app-manifest-192x192.png",
+    badge: "/favicon/web-app-manifest-192x192.png",
     data: { url: "/dashboard" },
     tag: "notification-generic",
   });
@@ -173,8 +172,8 @@ self.addEventListener("push", (event) => {
 
       await self.registration.showNotification(candidate.title || "Ny varsling", {
         body: candidate.message || "",
-        icon: "/pwa-192x192.png",
-        badge: "/pwa-192x192.png",
+        icon: "/favicon/web-app-manifest-192x192.png",
+        badge: "/favicon/web-app-manifest-192x192.png",
         data: {
           url: candidate.link || "/dashboard",
           notificationId: candidate.id,
