@@ -388,36 +388,36 @@ function formatHallOfFameNames(members: MemberMedalTally[]): string {
     return names.slice(0, -1).join(", ") + " & " + names[names.length - 1];
 }
 
-const podiumConfig: Record<number, { bg: string; border: string; textColor: string; trophyColor: string; height: string; placeLabel: string; ringColor: string; avatarSize: "lg" | "xl" }> = {
+const podiumConfig: Record<number, { bg: string; border: string; textColor: string; trophyColor: string; height: string; placeLabel: string; ringColor: string; avatarSize: "md" | "lg" }> = {
     1: {
-        bg: "bg-gradient-to-t from-green-200 via-green-100 to-green-50",
+        bg: "bg-gradient-to-t from-yellow-200 via-yellow-100 to-yellow-50",
         border: "border-[#F5C518]",
-        textColor: "text-green-700",
+        textColor: "text-yellow-700",
         trophyColor: "text-[#F5C518]",
-        height: "min-h-[180px] sm:min-h-[210px]",
+        height: "min-h-[140px] sm:min-h-[160px]",
         placeLabel: "1st",
-        ringColor: "ring-green-400",
-        avatarSize: "xl",
+        ringColor: "ring-yellow-400",
+        avatarSize: "lg",
     },
     2: {
         bg: "bg-gradient-to-t from-slate-200 via-slate-100 to-slate-50",
         border: "border-slate-400",
         textColor: "text-slate-600",
         trophyColor: "text-slate-400",
-        height: "min-h-[140px] sm:min-h-[170px]",
+        height: "min-h-[110px] sm:min-h-[130px]",
         placeLabel: "2nd",
         ringColor: "ring-slate-300",
-        avatarSize: "lg",
+        avatarSize: "md",
     },
     3: {
         bg: "bg-gradient-to-t from-orange-200 via-orange-100 to-orange-50",
         border: "border-[#CD7F32]",
         textColor: "text-[#8B5E14]",
         trophyColor: "text-[#CD7F32]",
-        height: "min-h-[110px] sm:min-h-[140px]",
+        height: "min-h-[50px] sm:min-h-[80px]",
         placeLabel: "3rd",
         ringColor: "ring-orange-300",
-        avatarSize: "lg",
+        avatarSize: "md",
     },
 };
 
@@ -428,7 +428,7 @@ function PodiumColumn({ placeData }: { placeData: HallOfFamePlace }) {
     return (
         <div className={`flex flex-col items-center ${isFirst ? "order-2" : placeData.place === 2 ? "order-1" : "order-3"}`} style={{ flex: 1 }}>
             {/* Avatars */}
-            <div className="flex items-center justify-center -space-x-3 mb-3">
+            <div className="flex items-center justify-center -space-x-2 mb-2">
                 {placeData.members.map((m) => (
                     <Avatar
                         key={m.memberId}
@@ -436,18 +436,18 @@ function PodiumColumn({ placeData }: { placeData: HallOfFamePlace }) {
                         initials={`${m.firstName?.[0] || ""}${m.lastName?.[0] || ""}`}
                         alt={`${m.firstName} ${m.lastName}`}
                         size={config.avatarSize}
-                        className={`ring-3 ${config.ringColor}`}
+                        className={`ring-2 ${config.ringColor}`}
                     />
                 ))}
             </div>
 
             {/* Names */}
-            <p className={`font-bold text-gray-900 text-center mb-0.5 ${isFirst ? "text-sm sm:text-base max-w-[220px]" : "text-xs sm:text-sm max-w-[170px]"}`}>
+            <p className="text-xs font-bold text-gray-900 text-center mb-0.5 max-w-[160px]">
                 {formatHallOfFameNames(placeData.members)}
             </p>
 
             {/* Medal tally */}
-            <div className={`flex items-center gap-2 font-bold ${config.textColor} mb-3 ${isFirst ? "text-base" : "text-sm"}`}>
+            <div className={`flex items-center gap-1.5 font-bold ${config.textColor} mb-2 text-sm`}>
                 {placeData.members[0].gold > 0 && <span>🥇{placeData.members[0].gold}</span>}
                 {placeData.members[0].silver > 0 && <span>🥈{placeData.members[0].silver}</span>}
                 {placeData.members[0].bronze > 0 && <span>🥉{placeData.members[0].bronze}</span>}
@@ -455,12 +455,12 @@ function PodiumColumn({ placeData }: { placeData: HallOfFamePlace }) {
 
             {/* Podium block */}
             <div
-                className={`w-full ${config.height} ${config.bg} border-t-3 ${config.border} rounded-t-xl flex flex-col items-center justify-center gap-1.5`}
+                className={`w-full ${config.height} ${config.bg} border-t-2 ${config.border} rounded-t-lg flex flex-col items-center justify-center gap-1`}
             >
-                <span className={`material-symbols-outlined ${config.trophyColor} ${isFirst ? "text-5xl" : "text-3xl"}`}>
+                <span className={`material-symbols-outlined ${config.trophyColor} ${isFirst ? "text-3xl" : "text-2xl"}`}>
                     emoji_events
                 </span>
-                <span className={`font-black ${config.textColor} ${isFirst ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl"}`}>
+                <span className={`font-black ${config.textColor} ${isFirst ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"}`}>
                     {config.placeLabel}
                 </span>
             </div>
@@ -485,7 +485,7 @@ function HallOfFame({ places }: { places: HallOfFamePlace[] }) {
             </div>
 
             {/* Podium */}
-            <div className="flex items-end gap-2 sm:gap-4 max-w-2xl mx-auto mt-6 mb-8">
+            <div className="flex items-end gap-2 sm:gap-3 max-w-2xl mx-auto mt-6 mb-8">
                 {[2, 1, 3].map((place) => {
                     const placeData = places.find((p) => p.place === place);
                     if (!placeData) return <div key={place} className={`${place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3"}`} style={{ flex: 1 }} />;
