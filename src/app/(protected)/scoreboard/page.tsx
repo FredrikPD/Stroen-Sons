@@ -45,7 +45,7 @@ function PlaceBadge({ place }: { place: number }) {
 }
 
 function MemberList({ members }: { members: { name: string; avatarUrl?: string | null }[] }) {
-    const MAX_SHOWN = 3;
+    const MAX_SHOWN = 5;
     const shown = members.slice(0, MAX_SHOWN);
     const overflow = members.length - MAX_SHOWN;
 
