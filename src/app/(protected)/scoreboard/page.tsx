@@ -593,7 +593,7 @@ export default async function ScoreboardPage({ searchParams }: ScoreboardPagePro
                 <p className="text-gray-400 text-sm">Ingen arrangementer med podium ennå.</p>
             )}
 
-            {allYears.length > 1 && (
+            {allYears.length > 0 && (
                     <YearFilter years={allYears} selected={selectedYear} />
             )}
 
