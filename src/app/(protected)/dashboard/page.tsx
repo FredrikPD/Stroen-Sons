@@ -42,10 +42,7 @@ const getRecentMemories = async (): Promise<EventWithPhotos[]> => {
   const events = await prisma.event.findMany({
     where: {
       startAt: { lt: new Date() },
-      OR: [
-        { coverImage: { not: null } },
-        { photos: { some: {} } }
-      ]
+      photos: { some: {} },
     },
     orderBy: { startAt: "desc" },
     take: 4,
