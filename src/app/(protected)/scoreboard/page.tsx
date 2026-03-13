@@ -89,13 +89,17 @@ type IndividualEntry = {
 };
 
 function TeamResultCard({ entry }: { entry: TeamEntry }) {
-    const style = placeStyles[entry.place];
+    const medals: Record<number, string> = { 1: "#F5C518", 2: "#C0C0C0", 3: "#CD7F32" };
+    const color = medals[entry.place] || "#9ca3af";
     return (
-        <div className={`flex flex-col gap-2 rounded-xl border ${style.border} bg-white p-3 min-w-[140px] flex-1`}>
+        <div
+            className="flex flex-col gap-2 rounded-xl bg-white p-4 min-w-[140px] flex-1 border border-gray-200 shadow-sm"
+            style={{ borderTopColor: color, borderTopWidth: "3px" }}
+        >
             <div className="flex items-center gap-2">
                 <PlaceBadge place={entry.place} />
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {style.label}
+                    {placeStyles[entry.place]?.label}
                 </span>
             </div>
             <p className="text-sm font-bold text-gray-900">{entry.teamName}</p>
@@ -105,10 +109,14 @@ function TeamResultCard({ entry }: { entry: TeamEntry }) {
 }
 
 function IndividualResultCard({ entry }: { entry: IndividualEntry }) {
-    const style = placeStyles[entry.place];
+    const medals: Record<number, string> = { 1: "#F5C518", 2: "#C0C0C0", 3: "#CD7F32" };
+    const color = medals[entry.place] || "#9ca3af";
     return (
-        <div className="flex items-center gap-0 flex-1">
-            <div className={`flex items-center justify-center size-12 shrink-0 rounded-lg border-l-5 ${style.accentBorder} text-lg font-bold text-gray-800`}>
+        <div className="flex items-center gap-3 flex-1 rounded-xl bg-white border border-gray-200 shadow-sm px-4 py-3" style={{ borderLeftColor: color, borderLeftWidth: "3px" }}>
+            <div
+                className="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-sm font-black"
+                style={{ background: color, color: entry.place === 1 ? "#7a5c00" : entry.place === 2 ? "#4a4a4a" : "#fff" }}
+            >
                 {entry.place}
             </div>
             <Avatar
@@ -118,7 +126,7 @@ function IndividualResultCard({ entry }: { entry: IndividualEntry }) {
                 size="sm"
                 className="shrink-0"
             />
-            <span className="text-sm font-bold text-gray-900 pl-3">{entry.name}</span>
+            <span className="text-sm font-bold text-gray-900">{entry.name}</span>
         </div>
     );
 }
@@ -182,26 +190,23 @@ function EventCard({ event }: { event: EventWithPodium }) {
     });
 
     return (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-md">
             <div className="flex flex-col lg:flex-row">
                 {/* Left: event info */}
-                <div className="p-5 lg:w-1/4 flex flex-col gap-2 justify-center">
-                    <h3 className="text-lg font-bold text-gray-900">{event.title}</h3>
-                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                        <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                        {dateStr}
-                    </div>
+                <div className="p-5 lg:w-56 flex flex-col gap-2 justify-center border-b lg:border-b-0 lg:border-r border-gray-100">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#BFA181]">{dateStr}</p>
+                    <h3 className="text-base font-bold text-gray-900 leading-tight">{event.title}</h3>
                     <Link
                         href={`/events/${event.id}`}
-                        className="text-sm font-semibold text-[#0d1419] hover:text-slate-600 transition-colors mt-1 inline-flex items-center gap-1"
+                        className="text-xs font-semibold text-gray-400 hover:text-[#BFA181] transition-colors mt-0.5 inline-flex items-center gap-1"
                     >
                         Se arrangement
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
                     </Link>
                 </div>
 
                 {/* Right: results */}
-                <div className="flex-1 p-5 flex flex-col sm:flex-row gap-3 items-stretch border-t lg:border-t-0 lg:border-l border-gray-100">
+                <div className="flex-1 p-5 flex flex-col sm:flex-row gap-3 items-stretch">
                     {event.entries.map((entry) =>
                         event.podiumType === "TEAM" ? (
                             <TeamResultCard
@@ -234,18 +239,16 @@ function EventCard({ event }: { event: EventWithPodium }) {
 
 function SeasonSection({ year, events, isCurrent }: { year: number; events: EventWithPodium[]; isCurrent: boolean }) {
     return (
-        <section className="flex flex-col gap-5">
-            {/* Year header */}
+        <section className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
-                <h2 className="text-3xl font-bold text-[#0d1419] shrink-0">{year}</h2>
-                <div className="flex-1 h-px bg-slate-200" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 shrink-0">
-                    {isCurrent ? "Nåværende sesong" : "Fullført sesong"}
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#BFA181]">
+                    {isCurrent ? "Nåværende sesong" : "Sesong"}
                 </span>
+                <h2 className="text-2xl font-black text-[#0d1419]">{year}</h2>
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-xs text-gray-300">{events.length} {events.length === 1 ? "arrangement" : "arrangementer"}</span>
             </div>
-
-            {/* Events */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
                 {events.map((event) => (
                     <EventCard key={event.id} event={event} />
                 ))}
@@ -256,21 +259,25 @@ function SeasonSection({ year, events, isCurrent }: { year: number; events: Even
 
 function YearFilter({ years, selected }: { years: number[]; selected: number | null }) {
     return (
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1 border-b border-gray-100 pb-0 overflow-x-auto">
             <Link
                 href="/scoreboard"
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                    !selected ? "bg-[#0d1419] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider shrink-0 border-b-2 transition-colors ${
+                    !selected
+                        ? "border-[#0d1419] text-[#0d1419]"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
             >
-                Alle
+                Alle år
             </Link>
             {years.map((year) => (
                 <Link
                     key={year}
                     href={`/scoreboard?year=${year}`}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                        selected === year ? "bg-[#0d1419] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider shrink-0 border-b-2 transition-colors ${
+                        selected === year
+                            ? "border-[#BFA181] text-[#0d1419]"
+                            : "border-transparent text-gray-400 hover:text-gray-600"
                     }`}
                 >
                     {year}
@@ -323,7 +330,6 @@ function computeHallOfFame(events: EventWithPodium[]): HallOfFamePlace[] {
             };
             tallyMap.set(memberId, tally);
         }
-        // Update name/avatar if we get a non-empty value
         if (firstName) tally.firstName = firstName;
         if (lastName) tally.lastName = lastName;
         if (avatarUrl) tally.avatarUrl = avatarUrl;
@@ -356,7 +362,6 @@ function computeHallOfFame(events: EventWithPodium[]): HallOfFamePlace[] {
 
     if (sorted.length === 0) return [];
 
-    // Assign places with ties
     const places: HallOfFamePlace[] = [];
     let currentPlace = 1;
 
@@ -382,52 +387,67 @@ function computeHallOfFame(events: EventWithPodium[]): HallOfFamePlace[] {
 }
 
 function formatHallOfFameNames(members: MemberMedalTally[]): string {
-    const names = members.map((m) => (m.firstName || m.lastName || "?").split(" ")[0]);
+    const firstName = (m: MemberMedalTally) => (m.firstName || m.lastName || "?").split(" ")[0];
+    const fullName = (m: MemberMedalTally) => [m.firstName, m.lastName].filter(Boolean).join(" ") || "?";
+    const names = members.map(members.length === 1 ? fullName : firstName);
     if (names.length <= 1) return names[0] || "";
     if (names.length === 2) return `${names[0]} & ${names[1]}`;
     return names.slice(0, -1).join(", ") + " & " + names[names.length - 1];
 }
 
-const podiumConfig: Record<number, { bg: string; border: string; textColor: string; trophyColor: string; height: string; placeLabel: string; ringColor: string; avatarSize: "md" | "lg" }> = {
+const hofConfig: Record<number, {
+    columnBg: string;
+    capBg: string;
+    capText: string;
+    ringClass: string;
+    heightClass: string;
+    placeNumeral: string;
+    avatarSize: "md" | "lg";
+    order: string;
+    medalColor: string;
+}> = {
     1: {
-        bg: "bg-gradient-to-t from-yellow-200 via-yellow-100 to-yellow-50",
-        border: "border-[#F5C518]",
-        textColor: "text-yellow-700",
-        trophyColor: "text-[#F5C518]",
-        height: "min-h-[140px] sm:min-h-[160px]",
-        placeLabel: "1st",
-        ringColor: "ring-yellow-400",
+        columnBg: "bg-[#1a1814]",
+        capBg: "bg-[#F5C518]",
+        capText: "text-[#7a5c00]",
+        ringClass: "ring-[#F5C518]",
+        heightClass: "h-36 sm:h-44",
+        placeNumeral: "I",
         avatarSize: "lg",
+        order: "order-2",
+        medalColor: "#F5C518",
     },
     2: {
-        bg: "bg-gradient-to-t from-slate-200 via-slate-100 to-slate-50",
-        border: "border-slate-400",
-        textColor: "text-slate-600",
-        trophyColor: "text-slate-400",
-        height: "min-h-[110px] sm:min-h-[130px]",
-        placeLabel: "2nd",
-        ringColor: "ring-slate-300",
+        columnBg: "bg-[#232220]",
+        capBg: "bg-[#C0C0C0]",
+        capText: "text-[#4a4a4a]",
+        ringClass: "ring-[#C0C0C0]",
+        heightClass: "h-24 sm:h-32",
+        placeNumeral: "II",
         avatarSize: "md",
+        order: "order-1",
+        medalColor: "#C0C0C0",
     },
     3: {
-        bg: "bg-gradient-to-t from-orange-200 via-orange-100 to-orange-50",
-        border: "border-[#CD7F32]",
-        textColor: "text-[#8B5E14]",
-        trophyColor: "text-[#CD7F32]",
-        height: "min-h-[50px] sm:min-h-[80px]",
-        placeLabel: "3rd",
-        ringColor: "ring-orange-300",
+        columnBg: "bg-[#201e1b]",
+        capBg: "bg-[#CD7F32]",
+        capText: "text-white",
+        ringClass: "ring-[#CD7F32]",
+        heightClass: "h-14 sm:h-20",
+        placeNumeral: "III",
         avatarSize: "md",
+        order: "order-3",
+        medalColor: "#CD7F32",
     },
 };
 
 function PodiumColumn({ placeData }: { placeData: HallOfFamePlace }) {
-    const config = podiumConfig[placeData.place];
+    const cfg = hofConfig[placeData.place];
     const isFirst = placeData.place === 1;
 
     return (
-        <div className={`flex flex-col items-center ${isFirst ? "order-2" : placeData.place === 2 ? "order-1" : "order-3"}`} style={{ flex: 1 }}>
-            {/* Avatars */}
+        <div className={`flex flex-col items-center ${cfg.order} flex-1`}>
+            {/* Floating avatars */}
             <div className="flex items-center justify-center -space-x-2 mb-2">
                 {placeData.members.map((m) => (
                     <Avatar
@@ -435,33 +455,39 @@ function PodiumColumn({ placeData }: { placeData: HallOfFamePlace }) {
                         src={m.avatarUrl}
                         initials={`${m.firstName?.[0] || ""}${m.lastName?.[0] || ""}`}
                         alt={`${m.firstName} ${m.lastName}`}
-                        size={config.avatarSize}
-                        className={`ring-2 ${config.ringColor}`}
+                        size={cfg.avatarSize}
+                        className={`ring-2 ${cfg.ringClass}`}
                     />
                 ))}
             </div>
 
-            {/* Names */}
-            <p className="text-xs font-bold text-gray-900 text-center mb-0.5 max-w-[160px]">
+            {/* Name */}
+            <p className={`font-bold text-center mb-1 max-w-[130px] leading-tight ${isFirst ? "text-white text-sm" : "text-gray-300 text-xs"}`}>
                 {formatHallOfFameNames(placeData.members)}
             </p>
 
             {/* Medal tally */}
-            <div className={`flex items-center gap-1.5 font-bold ${config.textColor} mb-2 text-sm`}>
-                {placeData.members[0].gold > 0 && <span>🥇{placeData.members[0].gold}</span>}
-                {placeData.members[0].silver > 0 && <span>🥈{placeData.members[0].silver}</span>}
-                {placeData.members[0].bronze > 0 && <span>🥉{placeData.members[0].bronze}</span>}
+            <div className="flex items-center gap-1.5 mb-2 text-xs font-bold">
+                {placeData.members[0].gold > 0 && (
+                    <span style={{ color: "#F5C518" }}>🥇{placeData.members[0].gold}</span>
+                )}
+                {placeData.members[0].silver > 0 && (
+                    <span style={{ color: "#C0C0C0" }}>🥈{placeData.members[0].silver}</span>
+                )}
+                {placeData.members[0].bronze > 0 && (
+                    <span style={{ color: "#CD7F32" }}>🥉{placeData.members[0].bronze}</span>
+                )}
             </div>
 
-            {/* Podium block */}
-            <div
-                className={`w-full ${config.height} ${config.bg} border-t-2 ${config.border} rounded-t-lg flex flex-col items-center justify-center gap-1`}
-            >
-                <span className={`material-symbols-outlined ${config.trophyColor} ${isFirst ? "text-3xl" : "text-2xl"}`}>
-                    emoji_events
-                </span>
-                <span className={`font-black ${config.textColor} ${isFirst ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"}`}>
-                    {config.placeLabel}
+            {/* Column */}
+            <div className={`w-full ${cfg.heightClass} ${cfg.columnBg} flex flex-col items-center justify-end pb-4 rounded-t-lg relative overflow-hidden`}>
+                {/* Subtle top cap line */}
+                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: cfg.medalColor, opacity: 0.8 }} />
+                <span
+                    className={`font-black tracking-tight ${isFirst ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl"}`}
+                    style={{ color: cfg.medalColor, opacity: 0.9 }}
+                >
+                    {cfg.placeNumeral}
                 </span>
             </div>
         </div>
@@ -472,26 +498,40 @@ function HallOfFame({ places }: { places: HallOfFamePlace[] }) {
     if (places.length === 0) return null;
 
     return (
-        <section className="overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-[#0d1419]">
-                    Wall of <span className="italic text-green-600">Fame</span>
+        <section className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(160deg, #1a1814 0%, #0f0e0c 100%)" }}>
+            {/* Header bar */}
+            <div className="flex items-center gap-3 px-5 pt-5 pb-0">
+                <span className="material-symbols-outlined text-[#F5C518] text-xl">emoji_events</span>
+                <h2 className="text-base font-black tracking-widest uppercase text-white">
+                    Wall of Fame
                 </h2>
-                <div className="flex-1 h-px bg-slate-200" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 shrink-0">
+                <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, #BFA18133 0%, transparent 100%)" }} />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
                     All-Time
                 </span>
             </div>
 
-            {/* Podium */}
-            <div className="flex items-end gap-2 sm:gap-3 max-w-2xl mx-auto mt-6 mb-8">
-                {[2, 1, 3].map((place) => {
-                    const placeData = places.find((p) => p.place === place);
-                    if (!placeData) return <div key={place} className={`${place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3"}`} style={{ flex: 1 }} />;
-                    return <PodiumColumn key={place} placeData={placeData} />;
-                })}
+            {/* Podium stage */}
+            <div className="px-4 sm:px-8 pt-6 pb-0">
+                <div className="flex items-end gap-3 sm:gap-4 w-full max-w-2xl mx-auto">
+                    {[2, 1, 3].map((place) => {
+                        const placeData = places.find((p) => p.place === place);
+                        if (!placeData) {
+                            const cfg = hofConfig[place];
+                            return (
+                                <div
+                                    key={place}
+                                    className={`${cfg.order} ${cfg.heightClass} ${cfg.columnBg} rounded-t-lg flex-1 opacity-20`}
+                                />
+                            );
+                        }
+                        return <PodiumColumn key={place} placeData={placeData} />;
+                    })}
+                </div>
             </div>
+
+            {/* Stage floor */}
+            <div className="h-3 mx-0" style={{ background: "linear-gradient(90deg, #2c2a26 0%, #3a3630 50%, #2c2a26 100%)" }} />
         </section>
     );
 }
@@ -578,7 +618,6 @@ export default async function ScoreboardPage({ searchParams }: ScoreboardPagePro
     const allYears = [...grouped.keys()].sort((a, b) => b - a);
     const visibleYears = selectedYear && grouped.has(selectedYear) ? [selectedYear] : allYears;
 
-    // Compute all-time hall of fame
     const hallOfFamePlaces = computeHallOfFame(eventsWithPodium);
 
     return (
@@ -594,18 +633,20 @@ export default async function ScoreboardPage({ searchParams }: ScoreboardPagePro
             )}
 
             {allYears.length > 0 && (
-                    <YearFilter years={allYears} selected={selectedYear} />
+                <YearFilter years={allYears} selected={selectedYear} />
             )}
 
             {/* Seasons */}
-            {visibleYears.map((year) => (
-                <SeasonSection
-                    key={year}
-                    year={year}
-                    events={grouped.get(year)!}
-                    isCurrent={year === currentYear}
-                />
-            ))}
+            <div className="space-y-8">
+                {visibleYears.map((year) => (
+                    <SeasonSection
+                        key={year}
+                        year={year}
+                        events={grouped.get(year)!}
+                        isCurrent={year === currentYear}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
