@@ -2,20 +2,18 @@ import { getProfile } from "@/server/actions/account";
 import { getMemberPaymentRequests } from "@/server/actions/payment-requests";
 import { Metadata } from "next";
 import AccountClient from "./AccountClient";
-import { Avatar } from "@/components/Avatar";
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
     title: "Min Konto",
     description: "Administrer din konto og dine innstillinger",
 };
 
-import { ensureMember } from "@/server/auth/ensureMember";
-import { redirect } from "next/navigation";
-
 export default async function AccountPage() {
     try {
         await ensureMember();
-    } catch (e) {
+    } catch {
         redirect("/sign-in");
     }
 
@@ -23,150 +21,148 @@ export default async function AccountPage() {
 
     if (!success || !profile) {
         return (
-            <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                    <span className="material-symbols-outlined text-3xl text-red-500">error</span>
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Kunne ikke laste profil</h2>
-                <p className="text-gray-500 max-w-sm">
-                    Vi fant ikke din brukerinformasjon. Forsøk å laste siden på nytt eller logg ut og inn igjen.
+            <div className="text-center py-8 rounded-xl border border-dashed border-gray-200">
+                <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>
+                    Kunne ikke laste inn profil.
                 </p>
             </div>
         );
     }
 
-    const initials = (
-        (profile.firstName?.charAt(0) || "") +
-        (profile.lastName?.charAt(0) || "")
-    ).toUpperCase();
-
-    // Determine account active/inactive status using PaymentRequest
-    const paymentRequestsRes = await getMemberPaymentRequests(profile.id);
+const paymentRequestsRes = await getMemberPaymentRequests(profile.id);
     const membershipRequest = paymentRequestsRes.success && paymentRequestsRes.data
         ? paymentRequestsRes.data.find(r => r.category === "MEMBERSHIP_FEE" && r.status === "PENDING")
         : null;
 
-    let isAccountActive = true;
-    if (membershipRequest?.dueDate && new Date() > new Date(membershipRequest.dueDate)) {
-        isAccountActive = false;
-    }
+    const isAccountActive = !(membershipRequest?.dueDate && new Date() > new Date(membershipRequest.dueDate));
+
+    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || profile.email;
 
     return (
-        <div className="space-y-6 lg:space-y-8">
-            {/* Top Row: Profile & Role */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-                {/* Profile Card (Larger) */}
-                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-5 sm:p-6 flex items-start">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-80" />
+        <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
 
-                    <div className="relative z-10 flex items-center gap-4 w-full">
-                        {/* Big Avatar */}
-                        <Avatar
-                            src={profile.avatarUrl ?? null}
-                            initials={initials}
-                            size="lg"
-                            alt={`${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.email}
-                            className="shrink-0 min-w-14 w-14 h-14 sm:min-w-16 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-xl sm:text-2xl lg:text-3xl shadow-lg ring-4 ring-white bg-gradient-to-br from-zinc-800 to-black"
-                        />
+            {/* ── Page Header ─────────────────────────────────────────── */}
+            <div className="flex items-end justify-between gap-4 pt-1">
+                <div>
+                    <h1
+                        className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        <em>Min konto</em>
+                    </h1>
+                </div>
+                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
+                    Siden {new Date(profile.createdAt).getFullYear()}
+                </p>
+            </div>
 
-                        <div className="flex-1 min-w-0 text-left">
-                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-1 leading-tight break-words">
-                                {profile.firstName} {profile.lastName}
-                            </h1>
-                            <p className="text-gray-500 text-base sm:text-lg mb-2 break-all">{profile.email}</p>
+            {/* ── Profile + Membership ─────────────────────────────────── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                            <div className="flex flex-wrap gap-3 sm:gap-4 mb-1">
-                                <div className="flex items-center gap-2 text-xs text-gray-400">
-                                    Medlem siden {new Date(profile.createdAt).getFullYear()}
-                                </div>
+                {/* Profile card */}
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between px-6 py-5 gap-4">
+                    {/* Top: name + meta */}
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                            <h2
+                                className="text-2xl font-normal text-gray-900 leading-tight truncate"
+                                style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                            >
+                                {fullName}
+                            </h2>
+                            <p className="text-sm text-gray-400 truncate mt-0.5">{profile.email}</p>
+                            <div className="flex flex-wrap items-center gap-3 mt-2">
+                                {profile.phoneNumber && (
+                                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                                        <span className="material-symbols-outlined text-[13px] text-gray-300">call</span>
+                                        {profile.phoneNumber}
+                                    </div>
+                                )}
+                                {profile.city && (
+                                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                                        <span className="material-symbols-outlined text-[13px] text-gray-300">location_on</span>
+                                        {profile.city}
+                                    </div>
+                                )}
                             </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Medlem siden</p>
+                            <p className="text-sm font-normal text-gray-900 mt-0.5" style={{ fontFamily: "'Georgia', serif" }}>
+                                {new Date(profile.createdAt).toLocaleDateString("nb-NO", { month: "short", year: "numeric" })}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-gray-100" />
+
+                    {/* Bottom: stats */}
+                    <div className="flex flex-wrap gap-6">
+                        <div>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Saldo</p>
+                            <p className="text-sm font-bold text-gray-900 mt-0.5">
+                                {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(profile.balance))}
+                            </p>
+                        </div>
+                        <div className="w-px bg-gray-100" />
+                        <div>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Arrangementer</p>
+                            <p className="text-sm font-bold text-gray-900 mt-0.5">{profile._count.eventsAttending}</p>
+                        </div>
+                        <div className="w-px bg-gray-100" />
+                        <div>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Innlegg</p>
+                            <p className="text-sm font-bold text-gray-900 mt-0.5">{profile._count.posts}</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Member Card */}
-                <div className="flex flex-col justify-center relative">
-                    {/* The Card */}
-                    <div className="w-full h-full bg-gray-900 text-white rounded-2xl p-5 sm:p-6 relative overflow-hidden shadow-2xl">
+                {/* Membership card — dark */}
+                <div
+                    className="rounded-2xl p-5 flex flex-col gap-5"
+                    style={{ background: "linear-gradient(145deg, #1a1a1a 0%, #111111 100%)", boxShadow: "0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+                >
+                    <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500">Medlemsstatus</span>
+                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${isAccountActive ? "bg-emerald-500/15 border border-emerald-500/25" : "bg-red-500/15 border border-red-500/25"}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isAccountActive ? "bg-emerald-400" : "bg-red-400"}`} />
+                            <span className={`text-[9px] font-bold uppercase tracking-wide ${isAccountActive ? "text-emerald-300" : "text-red-300"}`}>
+                                {isAccountActive ? "Aktiv" : "Inaktiv"}
+                            </span>
+                        </div>
+                    </div>
 
-                        {/* Decorative Background Elements */}
-                        <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
-                        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
+                    <div className="h-px bg-white/8" />
 
-                        {/* Card Content */}
-                        <div className="relative z-10 flex flex-col justify-between h-full">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Medlemskort</p>
-                                    <h3 className="text-lg font-bold mt-1 tracking-wide">STRØEN SØNS</h3>
-                                </div>
-                                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-base">verified</span>
-                                </div>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 mb-1">Rolle</p>
+                                <p className="font-bold text-gray-100 text-base leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+                                    {profile.userRole?.name || profile.role}
+                                </p>
                             </div>
-
-                            <div className="mt-4">
-                                <div className="grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
-                                        <span className="text-sm font-semibold tracking-wide mt-1 block truncate">
-                                            {profile.userRole?.name || profile.role}
-                                        </span>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Medlemstype</p>
-                                        <p className="text-sm font-semibold tracking-wide mt-1 truncate">{profile.membershipType || "Standard"}</p>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Status</p>
-                                        <div className="flex items-center gap-1.5 mt-1 min-w-0">
-                                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isAccountActive ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
-                                            <span className="text-sm font-semibold tracking-wide truncate">{isAccountActive ? "Aktiv" : "Inaktiv"}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="p-2.5 rounded-xl material-symbols-outlined text-lg bg-white/10 text-gray-300">
+                                verified
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 mb-1">Medlemstype</p>
+                                <p className="font-bold text-gray-100 text-base leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+                                    {profile.membershipType || "Standard"}
+                                </p>
+                            </div>
+                            <div className="p-2.5 rounded-xl material-symbols-outlined text-lg bg-white/10 text-gray-300">
+                                card_membership
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Premium Stats Cards (New Row) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Balance Card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="material-symbols-outlined text-emerald-500 text-base">account_balance_wallet</span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo</span>
-                    </div>
-                    <p className="text-xl font-bold text-gray-900">
-                        {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(profile.balance))}
-                    </p>
-                </div>
-
-                {/* Events Card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="material-symbols-outlined text-purple-500 text-base">event_available</span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Arrangementer</span>
-                    </div>
-                    <p className="text-xl font-bold text-gray-900">{profile._count.eventsAttending}</p>
-                </div>
-
-                {/* Posts Card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-4 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="material-symbols-outlined text-blue-500 text-base">post_add</span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Innlegg</span>
-                    </div>
-                    <p className="text-xl font-bold text-gray-900">{profile._count.posts}</p>
-                </div>
-            </div>
-
-            {/* Content Form */}
+            {/* ── Account form ────────────────────────────────────────── */}
             <AccountClient initialProfile={profile} />
         </div>
     );

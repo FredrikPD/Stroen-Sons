@@ -22,12 +22,10 @@ export default async function MyEventsPage() {
 
     if (!success || !data) {
         return (
-            <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                    <span className="material-symbols-outlined text-3xl text-red-500">error</span>
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Noe gikk galt</h2>
-                <p className="text-gray-500 max-w-sm">{error || "Kunne ikke laste arrangementer."}</p>
+            <div className="text-center py-8 rounded-xl border border-dashed border-gray-200">
+                <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>
+                    {error || "Kunne ikke laste arrangementer."}
+                </p>
             </div>
         );
     }

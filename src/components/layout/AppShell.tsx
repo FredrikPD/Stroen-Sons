@@ -56,10 +56,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onMenuClick={() => setMenuOpen(true)}
         />
 
-        <div className={pathname === '/about'
-          ? "flex-1 w-full min-w-0"
-          : "flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-8 lg:pb-12 w-full min-w-0"
-        }>
+        <div className="flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-6 lg:pb-12 w-full min-w-0">
           {children}
         </div>
         <Footer />

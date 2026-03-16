@@ -200,26 +200,43 @@ export default async function DashboardPage() {
     }
   }
 
+  const todayStr = new Date().toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" });
+
   return (
-    <div className="flex flex-col gap-6 min-w-0 overflow-x-hidden">
-      {/* Header Section */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">
-          Hei, {firstName}
-        </h1>
-        <p className="text-gray-500 text-sm">
-          &quot;Tidene forandres, men vi står støtt&quot;
+    <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
+
+      {/* ── Page Header ─────────────────────────────────────────── */}
+      <div className="flex items-end justify-between gap-4 pt-1">
+        <div>
+          <h1
+            className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+          >
+            Hei, <em>{firstName}</em>
+          </h1>
+          <div className="flex items-center gap-3 mt-3">
+            <div className="h-px w-8 bg-gray-300" />
+            <p className="text-[11px] text-gray-400 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+              &ldquo;Tidene forandres, men vi står støtt&rdquo;
+            </p>
+          </div>
+        </div>
+        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
+          {todayStr}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
-        {/* LEFT COLUMN (Content) */}
-        <div className="lg:col-span-2 space-y-6 min-w-0">
+
+        {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
+        <div className="lg:col-span-2 space-y-8 min-w-0">
 
           {/* Hero Card (Next Event) */}
           {nextEvent ? (
-            <Link href={`/events/${nextEvent.id}`} className="relative w-full h-[320px] sm:h-[300px] lg:h-[280px] rounded-2xl overflow-hidden shadow-sm group block border border-gray-200">
-              {/* Background Image */}
+            <Link
+              href={`/events/${nextEvent.id}`}
+              className="relative w-full h-[340px] sm:h-[320px] rounded-2xl overflow-hidden group block border border-gray-200 shadow-sm"
+            >
               {nextEvent.coverImage ? (
                 <Image
                   src={nextEvent.coverImage}
@@ -228,226 +245,266 @@ export default async function DashboardPage() {
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-full h-full bg-neutral-900" />
+                <div className="w-full h-full bg-gray-900" />
               )}
 
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-black/15 sm:bg-black/10" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/15 sm:from-black/80 sm:via-black/40 sm:to-transparent" />
+              {/* Layered gradients */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/25 to-transparent" />
 
-              {/* Content */}
-              <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between text-white">
+              <div className="absolute inset-0 p-5 sm:p-7 flex flex-col justify-between text-white">
+                {/* Top row */}
                 <div className="flex justify-between items-start gap-3">
-                  <div className="flex flex-col gap-2 max-w-[72%]">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="bg-white/20 backdrop-blur-md border border-white/10 text-white text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                        Neste Samling
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
+                      Neste Samling
+                    </span>
+                    {nextEvent.category && (
+                      <span className={`max-w-[140px] truncate backdrop-blur-md border text-[9px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-widest ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
+                        {nextEvent.category}
                       </span>
-                      {nextEvent.category && (
-                        <span className={`max-w-[140px] truncate backdrop-blur-md border text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm ${getCategoryColorClasses(nextEventColor).bg} ${getCategoryColorClasses(nextEventColor).text} ${getCategoryColorClasses(nextEventColor).border}`}>
-                          {nextEvent.category}
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
-
-                  {/* Countdown Widget */}
                   <EventCountdown targetDate={nextEvent.startAt} />
                 </div>
 
-                <div className="space-y-3 sm:space-y-4">
+                {/* Bottom content */}
+                <div className="space-y-4">
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold mb-1 leading-tight text-white drop-shadow-sm">
+                    <h2
+                      className="text-2xl sm:text-3xl font-normal mb-2 leading-tight text-white"
+                      style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
                       {nextEvent.title}
                     </h2>
-                    <p className="text-white/90 max-w-lg text-sm font-medium leading-relaxed drop-shadow-sm line-clamp-2 sm:line-clamp-1">
+                    <p className="text-white/65 max-w-lg text-xs leading-relaxed line-clamp-2">
                       {nextEvent.description || "Gjør deg klar for årets høydepunkt."}
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-2.5 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                      {nextEvent.location && (
-                        <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 min-w-0 shrink overflow-hidden">
-                          <span className="material-symbols-outlined text-base shrink-0">location_on</span>
-                          <span className="font-semibold text-[11px] sm:text-xs truncate max-w-[150px] sm:max-w-[210px] lg:max-w-[260px]">
-                            {nextEvent.location}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/15 shrink-0">
-                        <span className="material-symbols-outlined text-base">calendar_today</span>
-                        <span className="font-semibold text-[11px] sm:text-xs whitespace-nowrap">
-                          {nextEvent.startAt.toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
+                  <div className="flex items-center gap-2">
+                    {nextEvent.location && (
+                      <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 min-w-0 shrink overflow-hidden">
+                        <span className="material-symbols-outlined text-[14px] shrink-0 text-white/70">location_on</span>
+                        <span className="font-medium text-[11px] truncate">
+                          {nextEvent.location}
                         </span>
                       </div>
-
-                      <span className={`inline-flex shrink-0 items-center justify-center gap-1.5 h-[40px] px-2.5 sm:px-3.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap border backdrop-blur-md ${isUserSignedUpForNextEvent
-                        ? "text-emerald-100 bg-emerald-500/25 border-emerald-300/40 shadow-[0_8px_20px_rgba(16,185,129,0.22)]"
-                        : "text-white bg-[#4F46E5]/35 border-[#8A7BFF]/55 shadow-[0_8px_20px_rgba(79,70,229,0.28)] hover:bg-[#4F46E5]/45 hover:border-[#9A8DFF]/70"
-                        }`}>
-                        <span className="material-symbols-outlined text-[14px]">
-                          {isUserSignedUpForNextEvent ? "task_alt" : "arrow_forward"}
-                        </span>
-                        {isUserSignedUpForNextEvent ? "Påmeldt" : "Meld deg på"}
+                    )}
+                    <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 shrink-0">
+                      <span className="material-symbols-outlined text-[14px] text-white/70">calendar_today</span>
+                      <span className="font-medium text-[11px] whitespace-nowrap">
+                        {nextEvent.startAt.toLocaleDateString("nb-NO", { day: "numeric", month: "long" })}
                       </span>
                     </div>
-
+                    <span className={`inline-flex shrink-0 items-center justify-center gap-1.5 h-[38px] px-4 rounded-lg font-bold text-[11px] transition-all whitespace-nowrap ${
+                      isUserSignedUpForNextEvent
+                        ? "text-emerald-100 bg-emerald-500/20 border border-emerald-400/30"
+                        : "text-white bg-white/15 border border-white/25 hover:bg-white/25 backdrop-blur-md"
+                    }`}>
+                      <span className="material-symbols-outlined text-[13px]">
+                        {isUserSignedUpForNextEvent ? "task_alt" : "arrow_forward"}
+                      </span>
+                      {isUserSignedUpForNextEvent ? "Påmeldt" : "Meld deg på"}
+                    </span>
                   </div>
                 </div>
               </div>
             </Link>
           ) : (
-            <div className="w-full h-[180px] rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm text-sm">
+            <div className="w-full h-[180px] rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-gray-400 shadow-sm text-sm italic" style={{ fontFamily: "'Georgia', serif" }}>
               Ingen kommende arrangementer.
             </div>
           )}
 
-          {/* Siste Nytt (News Feed) */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900">Siste Nytt</h3>
-              <Link href="/posts" className="text-[#4F46E5] text-xs font-semibold hover:underline">Se alle</Link>
+          {/* ── Siste Nytt ──────────────────────────────────────── */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Siste Nytt</span>
+              <div className="flex-1 h-px bg-gray-100" />
+              <Link href="/posts" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors">Se alle</Link>
             </div>
 
-            <div className="grid gap-3">
-              {posts.map(post => (
-                <Link key={post.id} href={`/posts/${post.id}`} className="bg-white border border-gray-200 p-4 rounded-xl flex items-start gap-3 hover:border-[#4F46E5]/50 transition-all cursor-pointer group shadow-sm hover:shadow-md block">
-                  <div className="bg-gray-50 p-2.5 rounded-lg text-gray-400 group-hover:text-[#4F46E5] group-hover:bg-[#4F46E5]/10 transition-colors">
-                    <span className="material-symbols-outlined text-lg">article</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between">
-                      <h4 className="font-bold text-sm text-gray-900 truncate pr-4 group-hover:text-[#4F46E5] transition-colors">{post.title}</h4>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {post.createdAt.toLocaleDateString("nb-NO", { month: 'short', day: 'numeric' })}
+            <div className="flex flex-col gap-2">
+              {posts.length === 0 && (
+                <p className="text-xs text-gray-400 italic py-4" style={{ fontFamily: "'Georgia', serif" }}>Ingen innlegg ennå.</p>
+              )}
+              {posts.map(post => {
+                const day = post.createdAt.toLocaleDateString("nb-NO", { day: "numeric" });
+                const mon = post.createdAt.toLocaleDateString("nb-NO", { month: "short" }).replace(".", "").toUpperCase();
+                return (
+                  <Link
+                    key={post.id}
+                    href={`/posts/${post.id}`}
+                    className="group flex items-stretch bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all"
+                  >
+                    {/* Date column */}
+                    <div className="flex flex-col items-center justify-center px-4 py-4 bg-gray-50 border-r border-gray-100 shrink-0 w-16">
+                      <span
+                        className="text-xl font-normal leading-none text-gray-900"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                      >
+                        {day}
                       </span>
+                      <span className="text-[9px] font-bold tracking-widest text-gray-400 mt-0.5">{mon}</span>
                     </div>
-                    <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">{post.content}</p>
-                  </div>
-                </Link>
-              ))}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 px-4 py-3.5 flex flex-col justify-center">
+                      <h4 className="font-bold text-sm text-gray-900 group-hover:text-gray-600 transition-colors leading-snug truncate">{post.title}</h4>
+                      <p className="text-gray-500 text-xs leading-relaxed line-clamp-1 mt-0.5">{post.content}</p>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="flex items-center pr-4 text-gray-300 group-hover:text-gray-500 transition-colors">
+                      <span className="material-symbols-outlined text-base">chevron_right</span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
-          {/* Nylige Minner */}
+
+          {/* ── Nylige Minner ───────────────────────────────────── */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-gray-900">Nylige Minner</h3>
-              <Link href="/gallery" className="text-[#4F46E5] text-xs font-bold hover:underline">Arkiv</Link>
+            <div className="flex items-center gap-4 mb-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Nylige Minner</span>
+              <div className="flex-1 h-px bg-gray-100" />
+              <Link href="/gallery" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors">Arkiv</Link>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {memories.length > 0 ? (
                 memories.map((event) => (
-                  <Link key={event.id} href={`/gallery/${event.id}`} className="aspect-video bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer border border-gray-200 block">
+                  <Link
+                    key={event.id}
+                    href={`/gallery/${event.id}`}
+                    className="aspect-video rounded-xl overflow-hidden relative group block border border-gray-200"
+                  >
                     <Image
                       src={event.displayImage!}
                       alt={event.title}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-10 flex flex-col justify-end transition-opacity duration-300">
-                      <p className="text-white text-xs font-bold leading-tight line-clamp-2 drop-shadow-sm">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-300" />
+                    <div className="absolute inset-x-0 bottom-0 p-3">
+                      <p className="text-white text-[11px] font-bold leading-tight line-clamp-2 drop-shadow-sm">
                         {event.title}
                       </p>
-                      <p className="text-xs text-white/70 font-medium mt-0.5 uppercase tracking-wider">
+                      <p className="text-[9px] font-bold text-white/50 mt-1 uppercase tracking-widest">
                         {event.startAt.getFullYear()}
                       </p>
                     </div>
                   </Link>
                 ))
               ) : (
-                <div className="col-span-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
-                  <p className="text-xs text-gray-400 italic">Ingen minner å vise enda.</p>
+                <div className="col-span-2 text-center py-8 rounded-xl border border-dashed border-gray-200">
+                  <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>Ingen minner å vise enda.</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
+        {/* ── RIGHT COLUMN (Sidebar) ───────────────────────────── */}
+        <div className="space-y-5 min-w-0">
 
-
-        {/* RIGHT COLUMN (Sidebar) */}
-        <div className="space-y-6 min-w-0">
-
-          {/* Status Card & Transactions */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-5">
+          {/* Membership Card — dark */}
+          <div
+            className="rounded-2xl p-5 flex flex-col gap-5"
+            style={{ background: "linear-gradient(145deg, #1a1a1a 0%, #111111 100%)", boxShadow: "0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+          >
+            {/* Header */}
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Medlemsstatus</h4>
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${paymentStatus === "UNPAID_OVERDUE"
-                ? "bg-red-50 border-red-100 text-red-700"
-                : "bg-emerald-50 border-emerald-100 text-emerald-700"
-                }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${paymentStatus === "UNPAID_OVERDUE" ? "bg-red-500" : "bg-emerald-500"
-                  }`} />
-                <span className="text-[9px] font-bold uppercase tracking-wide">
-                  {paymentStatus === "PAID" ? "Aktivt" : paymentStatus === "NO_INVOICE" ? "Aktivt" : paymentStatus === "UNPAID_ACTIVE" ? "Inaktivt" : "Inaktivt"}
+              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-400">Medlemsstatus</span>
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${
+                paymentStatus === "UNPAID_OVERDUE"
+                  ? "bg-red-500/15 border border-red-500/25"
+                  : "bg-emerald-500/15 border border-emerald-500/25"
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${paymentStatus === "UNPAID_OVERDUE" ? "bg-red-400" : "bg-emerald-400"}`} />
+                <span className={`text-[9px] font-bold uppercase tracking-wide ${paymentStatus === "UNPAID_OVERDUE" ? "text-red-300" : "text-emerald-300"}`}>
+                  {paymentStatus === "PAID" || paymentStatus === "NO_INVOICE" ? "Aktivt" : "Inaktivt"}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className={`p-2.5 rounded-lg material-symbols-outlined text-lg ${paymentStatus === "UNPAID_OVERDUE" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
-                  }`}>
-                  {paymentStatus === "PAID" ? "check_circle" : paymentStatus === "NO_INVOICE" ? "receipt_long" : paymentStatus === "UNPAID_ACTIVE" ? "schedule" : "warning"}
-                </div>
+            <div className="h-px bg-white/8" />
+
+            {/* Status rows */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Kontigent {period}</p>
-                  <p className="text-gray-900 font-bold text-lg">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Kontigent {period}</p>
+                  <p className="font-bold text-gray-100 text-base leading-none" style={{ fontFamily: "'Georgia', serif" }}>
                     {paymentStatus === "PAID" ? "Betalt" : paymentStatus === "NO_INVOICE" ? "Ingen faktura" : paymentStatus === "UNPAID_ACTIVE" ? "Ikke betalt" : "Forfalt"}
                   </p>
                 </div>
+                <div className={`p-2.5 rounded-xl material-symbols-outlined text-lg ${
+                  paymentStatus === "UNPAID_OVERDUE"
+                    ? "bg-red-500/15 text-red-400"
+                    : paymentStatus === "UNPAID_ACTIVE"
+                    ? "bg-amber-500/15 text-amber-400"
+                    : "bg-white/10 text-gray-300"
+                }`}>
+                  {paymentStatus === "PAID" ? "check_circle" : paymentStatus === "NO_INVOICE" ? "receipt_long" : paymentStatus === "UNPAID_ACTIVE" ? "schedule" : "warning"}
+                </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="bg-gray-50 text-gray-400 p-2.5 rounded-lg material-symbols-outlined text-lg">
-                  verified
-                </div>
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Medlem siden</p>
-                  <p className="text-gray-900 font-bold text-lg">
-                    {member.createdAt.toLocaleDateString("nb-NO", { month: 'short', year: 'numeric' })}
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Medlem siden</p>
+                  <p className="font-bold text-gray-100 text-base leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+                    {member.createdAt.toLocaleDateString("nb-NO", { month: "short", year: "numeric" })}
                   </p>
+                </div>
+                <div className="p-2.5 rounded-xl material-symbols-outlined text-lg bg-white/10 text-gray-300">
+                  verified
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="w-full h-px bg-gray-100" />
-
-            {/* Recent Transactions */}
-            <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Siste Transaksjoner</h4>
-              <div className="space-y-2">
-                {transactions.length > 0 ? (
-                  transactions.map((tx) => {
-                    const isPositive = Number(tx.amount) > 0;
-                    return (
-                      <Link key={tx.id} href={`/balance/transactions/${tx.id}`} className="flex items-center justify-between text-xs group p-1.5 hover:bg-gray-50 rounded-lg transition-colors -mx-1.5 cursor-pointer">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center ${isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-                            <span className="material-symbols-outlined text-sm">
-                              {isPositive ? "arrow_upward" : "arrow_downward"}
-                            </span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-gray-900 group-hover:text-[#4F46E5] transition-colors line-clamp-1">{tx.description}</span>
-                            <span className="text-[9px] text-gray-400">
-                              {new Date(tx.date).toLocaleDateString("nb-NO", { day: 'numeric', month: 'short' })}
-                            </span>
-                          </div>
+          {/* Recent Transactions */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">Transaksjoner</span>
+              <div className="flex-1 h-px bg-gray-100" />
+            </div>
+            <div className="px-4 py-3 space-y-0.5">
+              {transactions.length > 0 ? (
+                transactions.map((tx) => {
+                  const isPositive = Number(tx.amount) > 0;
+                  return (
+                    <Link
+                      key={tx.id}
+                      href={`/balance/transactions/${tx.id}`}
+                      className="flex items-center justify-between py-2.5 px-1 -mx-1 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isPositive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"}`}>
+                          <span className="material-symbols-outlined text-[13px]">
+                            {isPositive ? "arrow_upward" : "arrow_downward"}
+                          </span>
                         </div>
-                        <span className={`font-mono font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
-                          {isPositive ? "+" : ""}
-                          {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(Number(tx.amount))}
-                        </span>
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <p className="text-xs text-gray-400 italic">Ingen transaksjoner funnet.</p>
-                )}
-              </div>
+                        <div className="min-w-0">
+                          <span className="font-semibold text-[12px] text-gray-800 group-hover:text-gray-600 transition-colors line-clamp-1 block">{tx.description}</span>
+                          <span className="text-[9px] text-gray-400 font-medium">
+                            {new Date(tx.date).toLocaleDateString("nb-NO", { day: "numeric", month: "short" })}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`font-mono font-bold text-xs shrink-0 ml-2 ${isPositive ? "text-emerald-600" : "text-red-500"}`}>
+                        {isPositive ? "+" : ""}
+                        {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(tx.amount))}
+                      </span>
+                    </Link>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-gray-400 italic py-3" style={{ fontFamily: "'Georgia', serif" }}>Ingen transaksjoner funnet.</p>
+              )}
             </div>
           </div>
 

@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
 import { Avatar } from "@/components/Avatar";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
@@ -25,27 +23,31 @@ export type PostWithDetails = {
         email: string;
         role?: string;
     };
-    event?: {
-        id: string;
-        title: string;
-    } | null;
-    attachments: {
-        id: string;
-        url: string;
-        name: string;
-        size: number;
-        type: string;
-    }[];
+    event?: { id: string; title: string } | null;
+    attachments: { id: string; url: string; name: string; size: number; type: string }[];
 };
 
-export default function PostItem({ post, isAdmin, onDelete, categoryColorMap = {} }: { post: PostWithDetails, isAdmin: boolean, onDelete?: (id: string) => void, categoryColorMap?: Record<string, string> }) {
-    // Fallback for name
-    const authorName = [post.author.firstName, post.author.lastName]
-        .filter(Boolean)
-        .join(" ") || post.author.email;
+export default function PostItem({
+    post,
+    isAdmin,
+    onDelete,
+    categoryColorMap = {},
+}: {
+    post: PostWithDetails;
+    isAdmin: boolean;
+    onDelete?: (id: string) => void;
+    categoryColorMap?: Record<string, string>;
+}) {
+    const authorName =
+        [post.author.firstName, post.author.lastName].filter(Boolean).join(" ") || post.author.email;
 
+    const categoryStyle = categoryColorMap[post.category] || "bg-gray-50 text-gray-500 border-gray-200";
 
-    const categoryStyle = categoryColorMap[post.category] || "bg-blue-50 text-blue-600 border-blue-100";
+    const dateDisplay = new Date(post.createdAt).toLocaleDateString("nb-NO", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
 
     const [isTruncated, setIsTruncated] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -57,101 +59,111 @@ export default function PostItem({ post, isAdmin, onDelete, categoryColorMap = {
     }, [post.content]);
 
     return (
-        <article className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
-            {/* Header Group: Author & Title */}
-            <div className="flex flex-col gap-3 pb-2">
-                {/* Author Row */}
-                <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                        <Avatar
-                            src={post.author.avatarUrl ?? null}
-                            initials={post.author.firstName ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}` : "?"}
-                            size="md"
-                        />
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold text-gray-900">{authorName}</span>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${categoryStyle}`}>
-                                    {post.category}
-                                </span>
-                                <span className="text-[10px] text-gray-400">•</span>
-                                <span className="text-xs text-gray-500">
-                                    {new Date(post.createdAt).toLocaleDateString("no-NO", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                    })}
-                                </span>
-                            </div>
-                        </div>
+        <article className="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all overflow-hidden">
+            <div className="px-5 pt-5 flex flex-col gap-4">
+
+                {/* Top row: title + date + menu */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                    <div className="flex items-start gap-2 min-w-0">
+                        {post.isPinned && (
+                            <span className="material-symbols-outlined text-[13px] text-gray-400 mt-1 shrink-0">push_pin</span>
+                        )}
+                        <h2
+                            className="text-xl font-normal text-gray-900 leading-snug"
+                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                        >
+                            {post.title}
+                        </h2>
                     </div>
-                    {/* Menu */}
-                    <PostMenu post={post} isAdmin={isAdmin} onDelete={onDelete} />
+                    <div className="flex items-center gap-2 sm:shrink-0 sm:mt-0.5">
+                        <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] border ${categoryStyle}`}>
+                            {post.category}
+                        </span>
+                        <span className="text-[10px] text-gray-400">{dateDisplay}</span>
+                        <PostMenu post={post} isAdmin={isAdmin} onDelete={onDelete} />
+                    </div>
                 </div>
 
-                {/* Title */}
-                <h2 className="text-xl font-bold text-gray-900 leading-tight">
-                    {post.title}
-                </h2>
-            </div>
+                {/* Hairline */}
+                <div className="h-px bg-gray-100" />
 
-            {/* Divider (Invisible spacer or visible line, using Spacer for now) */}
-            <div className="h-px w-full bg-gray-200" />
-
-            {/* Content Body */}
-            <div className="py-2">
+                {/* Content preview */}
                 <div
                     ref={contentRef}
-                    className="text-gray-600 text-sm leading-relaxed prose prose-sm prose-zinc max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-indigo-600 prose-li:text-gray-600 line-clamp-5"
+                    className="text-gray-500 text-[13px] leading-relaxed line-clamp-6 prose prose-sm prose-zinc max-w-none prose-p:text-gray-500 prose-p:my-0 prose-a:text-gray-700"
                 >
                     <ReactMarkdown>{post.content}</ReactMarkdown>
                 </div>
-            </div>
 
-            {/* Attachments */}
-            {post.attachments && post.attachments.length > 0 && (
-                <div className="space-y-2 mt-2">
-                    {post.attachments.map((file) => (
-                        <a
-                            key={file.id}
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors group"
+                {/* Attachments */}
+                {post.attachments && post.attachments.length > 0 && (
+                    <div className="space-y-1.5">
+                        {post.attachments.map((file) => (
+                            <a
+                                key={file.id}
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2.5 p-2.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors group/att"
+                            >
+                                <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center border border-gray-200 shrink-0">
+                                    <span className="material-symbols-outlined text-[14px] text-gray-400">description</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <span className="text-[12px] font-semibold text-gray-700 group-hover/att:text-gray-900 transition-colors truncate block">
+                                        {file.name}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                        {(file.size / 1024 / 1024).toFixed(2)} MB &middot;{" "}
+                                        {file.type.split("/")[1]?.toUpperCase() || "FIL"}
+                                    </span>
+                                </div>
+                                <span className="material-symbols-outlined text-[16px] text-gray-400 shrink-0">download</span>
+                            </a>
+                        ))}
+                    </div>
+                )}
+
+                {/* Footer: author + read more */}
+                <div className="flex items-center justify-between gap-2 py-4 border-t border-gray-100">
+                    <div className="flex items-center gap-2">
+                        <Avatar
+                            src={post.author.avatarUrl ?? null}
+                            initials={
+                                post.author.firstName
+                                    ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}`
+                                    : "?"
+                            }
+                            size="sm"
+                        />
+                        <span className="text-[11px] text-gray-400">{authorName}</span>
+                    </div>
+                    {isTruncated && (
+                        <Link
+                            href={`/posts/${post.id}`}
+                            className="flex items-center gap-1 text-gray-400 hover:text-gray-900 transition-colors group/link"
                         >
-                            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200 text-indigo-600 group-hover:border-indigo-200 transition-colors">
-                                <span className="material-symbols-outlined">description</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{file.name}</span>
-                                <span className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB • {file.type.split("/")[1]?.toUpperCase() || "FIL"}</span>
-                            </div>
-                            <span className="material-symbols-outlined text-gray-400 ml-auto group-hover:text-indigo-600">download</span>
-                        </a>
-                    ))}
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Les mer</span>
+                            <span className="material-symbols-outlined text-[13px] group-hover/link:translate-x-0.5 transition-transform">
+                                arrow_forward
+                            </span>
+                        </Link>
+                    )}
                 </div>
-            )}
-
-            {/* Action Bar / Footer - Only show if truncated or has attachments logic? No, just truncation for now based on request */}
-            {isTruncated && (
-                <div className="pt-4 mt-2 border-t border-gray-100 flex items-center justify-between">
-                    <Link
-                        href={`/posts/${post.id}`}
-                        className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 transition-colors group"
-                    >
-                        <span className="text-sm font-bold">Les mer</span>
-                        <span className="material-symbols-outlined text-lg group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
-                    </Link>
-                </div>
-            )}
+            </div>
         </article>
     );
 }
 
-function PostMenu({ post, isAdmin, onDelete }: { post: PostWithDetails, isAdmin: boolean, onDelete?: (id: string) => void }) {
-    // Client-side state for open/close would be needed if we don't use a library.
-    // Simplifying for now: using a simple active state or just a button that toggles visibility
-    // Actually, let's keep it simple: just buttons if we can, or a simple relative div.
+function PostMenu({
+    post,
+    isAdmin,
+    onDelete,
+}: {
+    post: PostWithDetails;
+    isAdmin: boolean;
+    onDelete?: (id: string) => void;
+}) {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -164,7 +176,7 @@ function PostMenu({ post, isAdmin, onDelete }: { post: PostWithDetails, isAdmin:
             message: `Er du sikker på at du vil slette "${post.title}"? Dette kan ikke angres.`,
             type: "error",
             confirmText: "Slett",
-            cancelText: "Avbryt"
+            cancelText: "Avbryt",
         });
 
         if (!confirmed) return;
@@ -174,31 +186,18 @@ function PostMenu({ post, isAdmin, onDelete }: { post: PostWithDetails, isAdmin:
             if (result.success) {
                 toast.success("Innlegget ble slettet");
                 router.refresh();
-                if (onDelete) {
-                    onDelete(post.id);
-                }
+                if (onDelete) onDelete(post.id);
             } else {
-                await openAlert({
-                    title: "Feil",
-                    message: result.error || "Kunne ikke slette innlegget",
-                    type: "error"
-                });
+                await openAlert({ title: "Feil", message: result.error || "Kunne ikke slette innlegget", type: "error" });
             }
-        } catch (error) {
-            await openAlert({
-                title: "Feil",
-                message: "En feil oppstod",
-                type: "error"
-            });
+        } catch {
+            await openAlert({ title: "Feil", message: "En feil oppstod", type: "error" });
         }
     };
 
-    // Close on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) setIsOpen(false);
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -207,17 +206,16 @@ function PostMenu({ post, isAdmin, onDelete }: { post: PostWithDetails, isAdmin:
     if (!isAdmin) return null;
 
     return (
-        <div className="relative" ref={menuRef}>
+        <div className="relative shrink-0" ref={menuRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
-                title="Handlinger"
+                className="text-gray-400 hover:text-gray-600 w-7 h-7 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
             >
-                <span className="material-symbols-outlined text-lg">more_horiz</span>
+                <span className="material-symbols-outlined text-[18px]">more_horiz</span>
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10 animate-in fade-in zoom-in-95 duration-200">
                     <button
                         onClick={async () => {
                             setIsOpen(false);
@@ -242,7 +240,6 @@ function PostMenu({ post, isAdmin, onDelete }: { post: PostWithDetails, isAdmin:
                         <span className="material-symbols-outlined text-lg text-gray-400">edit</span>
                         Rediger
                     </Link>
-
 
                     <button
                         onClick={handleDelete}

@@ -81,12 +81,14 @@ export default function TopHeader({
                       className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
                     >
                       <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
-                      <span>{parent.label}</span>
+                      <span style={{ fontFamily: "Georgia, serif" }} className="text-base">{parent.label}</span>
                     </Link>
                   )
                 }
 
-                // Fallback: Just show current page title (static)
+                // Fallback: hide title if we're on a direct nav page (it has its own h1)
+                const isDirectNavPage = allNavItems.some(item => pathname === item.href);
+                if (isDirectNavPage) return null;
                 return <span className="font-bold">{baseTitle}</span>
               })()
             )

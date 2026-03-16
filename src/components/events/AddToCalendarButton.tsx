@@ -14,7 +14,7 @@ export default function AddToCalendarButton({ event }: AddToCalendarButtonProps)
     return (
         <a
             href={icsUrl}
-            className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2.5 border border-white/20 rounded-lg text-xs font-bold text-white/80 hover:bg-white/10 hover:text-white transition-colors"
         >
             <span className="material-symbols-outlined text-lg">calendar_add_on</span>
             Legg til kalender

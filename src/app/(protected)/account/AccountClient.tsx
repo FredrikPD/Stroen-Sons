@@ -8,24 +8,25 @@ import { PushNotificationSettings } from "@/components/notifications/PushNotific
 import { LoadingState } from "@/components/ui/LoadingState";
 
 interface AccountClientProps {
-    initialProfile: any; // Ideally stricter type from Prisma
+    initialProfile: any;
 }
 
 type PasswordStep = "initial" | "ready" | "success";
+
+const inputClass = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-gray-400 transition-colors";
+const labelClass = "text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 block mb-1.5";
 
 export default function AccountClient({ initialProfile }: AccountClientProps) {
     const { user, isLoaded } = useUser();
     const { session } = useSession();
     const avatarInputRef = useRef<HTMLInputElement>(null);
 
-    // Password Update State
     const [passwordStep, setPasswordStep] = useState<PasswordStep>("initial");
     const [code, setCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
 
-    // Profile Edit State
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: initialProfile?.firstName || "",
@@ -41,11 +42,6 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
         return <LoadingState className="h-96" />;
     }
 
-    const formatPhoneNumber = (phone: string) => phone;
-
-    /**
-     * Start the verification process by sending a code.
-     */
     const handleStartVerification = async () => {
         setLoading(true);
         try {
@@ -54,21 +50,11 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                 toast.error("Ingen primær e-postadresse funnet for verifisering.");
                 return;
             }
-
-            // Start step-up / reverification flow
             await session.startVerification({ level: "first_factor" });
-
-            // Send code
-            await session.prepareFirstFactorVerification({
-                strategy: "email_code",
-                emailAddressId,
-            });
-
+            await session.prepareFirstFactorVerification({ strategy: "email_code", emailAddressId });
             toast.info("Bekreftelseskode sendt til din e-post.");
             setPasswordStep("ready");
         } catch (err: any) {
-            console.error("Error sending code:", err);
-            // If already prepared, proceed to ready step
             if (err?.errors?.[0]?.code === "verification_already_prepared") {
                 setPasswordStep("ready");
                 toast.info("Bekreftelseskode allerede sendt. Sjekk e-posten din.");
@@ -80,40 +66,18 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
         }
     };
 
-    /**
-     * Verify the code AND update the password in one go.
-     */
     const handleVerifyAndUpdate = async () => {
-        if (!code || code.length < 6) {
-            toast.error("Vennligst skriv inn en gyldig 6-sifret kode.");
-            return;
-        }
-        if (!newPassword || newPassword.length < 8) {
-            toast.error("Passordet må være på minst 8 tegn.");
-            return;
-        }
+        if (!code || code.length < 6) { toast.error("Vennligst skriv inn en gyldig 6-sifret kode."); return; }
+        if (!newPassword || newPassword.length < 8) { toast.error("Passordet må være på minst 8 tegn."); return; }
 
         setLoading(true);
         try {
-            // 1. Attempt verification
-            const verifyRes = await session.attemptFirstFactorVerification({
-                strategy: "email_code",
-                code,
-            });
-
-            if (verifyRes.status !== "complete") {
-                toast.error("Verifisering feilet eller ufullstendig.");
-                // If failed, user might need to re-enter code, but stay on "ready" step
-                return;
-            }
-
-            // 2. Verification complete -> Update Password
+            const verifyRes = await session.attemptFirstFactorVerification({ strategy: "email_code", code });
+            if (verifyRes.status !== "complete") { toast.error("Verifisering feilet eller ufullstendig."); return; }
             await user.updatePassword({ newPassword });
-
             setPasswordStep("success");
             toast.success("Passord oppdatert!");
         } catch (err: any) {
-            console.error("Error updating password:", err);
             toast.error(err?.errors?.[0]?.message || "Kunne ikke oppdatere passord.");
         } finally {
             setLoading(false);
@@ -131,8 +95,7 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
             } else {
                 toast.error(res.error || "Kunne ikke oppdatere profil.");
             }
-        } catch (err) {
-            console.error("Error updating profile:", err);
+        } catch {
             toast.error("En uventet feil oppstod.");
         } finally {
             setLoading(false);
@@ -142,18 +105,8 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
     const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        const maxBytes = 8 * 1024 * 1024;
-        if (!file.type.startsWith("image/")) {
-            toast.error("Velg en bildefil.");
-            e.target.value = "";
-            return;
-        }
-        if (file.size > maxBytes) {
-            toast.error("Bildet er for stort. Maks 8 MB.");
-            e.target.value = "";
-            return;
-        }
+        if (!file.type.startsWith("image/")) { toast.error("Velg en bildefil."); e.target.value = ""; return; }
+        if (file.size > 8 * 1024 * 1024) { toast.error("Bildet er for stort. Maks 8 MB."); e.target.value = ""; return; }
 
         setAvatarUploading(true);
         try {
@@ -161,7 +114,6 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
             await user.reload();
             toast.success("Profilbildet er oppdatert.");
         } catch (err: any) {
-            console.error("Error updating profile image:", err);
             toast.error(err?.errors?.[0]?.message || "Kunne ikke oppdatere profilbildet.");
         } finally {
             setAvatarUploading(false);
@@ -170,193 +122,127 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-            {/* Left Column: Account Info (Editable) */}
-            <div className="space-y-6">
-                <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm relative">
-                    <div className="absolute top-8 right-8">
-                        {!isEditing ? (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">edit</span>
-                                Rediger
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => setIsEditing(false)}
-                                className="text-sm font-bold text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">close</span>
-                                Avbryt
-                            </button>
-                        )}
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600">person</span>
-                        Kontoinformasjon
-                    </h2>
-
+            {/* ── Kontoinformasjon ────────────────────────────────────── */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-4 px-5 pt-5 pb-4 border-b border-gray-100">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Kontoinformasjon</span>
+                    <div className="flex-1 h-px bg-gray-100" />
                     {!isEditing ? (
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-gray-700 transition-colors flex items-center gap-1"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">edit</span>
+                            Rediger
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-gray-700 transition-colors flex items-center gap-1"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                            Avbryt
+                        </button>
+                    )}
+                </div>
+
+                <div className="p-5">
+                    {!isEditing ? (
+                        <div className="space-y-5">
+                            {/* Avatar row */}
+                            <div className="flex items-center gap-4 pb-5 border-b border-gray-100">
                                 <div className="relative shrink-0">
                                     <img
                                         src={user.imageUrl}
                                         alt="Profilbilde"
-                                        className="w-16 h-16 rounded-full border-2 border-white shadow-sm object-cover"
+                                        className="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover ring-2 ring-gray-100"
                                     />
-                                    <input
-                                        ref={avatarInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleAvatarFileChange}
-                                        className="hidden"
-                                    />
+                                    <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFileChange} className="hidden" />
                                     <button
                                         type="button"
                                         onClick={() => avatarInputRef.current?.click()}
                                         disabled={avatarUploading}
-                                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-indigo-600 text-white border-2 border-white flex items-center justify-center hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                                        className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gray-900 text-white border-2 border-white flex items-center justify-center hover:bg-gray-700 transition-colors disabled:opacity-60"
                                         title="Bytt profilbilde"
                                     >
-                                        {avatarUploading ? (
-                                            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                                        ) : (
-                                            <span className="material-symbols-outlined text-sm">photo_camera</span>
-                                        )}
+                                        {avatarUploading
+                                            ? <span className="material-symbols-outlined text-[10px] animate-spin">progress_activity</span>
+                                            : <span className="material-symbols-outlined text-[10px]">photo_camera</span>
+                                        }
                                     </button>
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">
-                                        {formData.firstName} {formData.lastName}
-                                    </h3>
-                                    <p className="text-sm text-gray-500">
-                                        Medlem siden {user.createdAt ? new Date(user.createdAt).getFullYear() : "N/A"}
-                                    </p>
+                                    <p className="font-bold text-sm text-gray-900">{formData.firstName} {formData.lastName}</p>
                                     <button
                                         type="button"
                                         onClick={() => avatarInputRef.current?.click()}
                                         disabled={avatarUploading}
-                                        className="mt-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                        className="text-xs text-gray-400 hover:text-gray-700 transition-colors mt-0.5 disabled:opacity-60"
                                     >
                                         {avatarUploading ? "Laster opp..." : "Bytt profilbilde"}
                                     </button>
                                 </div>
                             </div>
-                            {/* Display fields... I'll keep the existing structure but shortened request here */}
-                            <div className="grid grid-cols-1 gap-4">
+
+                            {/* Fields */}
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">E-post</label>
-                                    <div className="text-gray-900 font-medium">{formData.email}</div>
+                                    <p className={labelClass}>E-post</p>
+                                    <p className="text-sm text-gray-900">{formData.email}</p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Telefon</label>
-                                    <div className="text-gray-900 font-medium">
-                                        {formData.phoneNumber ? formatPhoneNumber(formData.phoneNumber) : <span className="text-gray-400 italic">Ikke satt</span>}
-                                    </div>
+                                    <p className={labelClass}>Telefon</p>
+                                    <p className="text-sm text-gray-900">
+                                        {formData.phoneNumber || <span className="text-gray-400 italic">Ikke satt</span>}
+                                    </p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Adresse</label>
-                                    <div className="text-gray-900 font-medium">
-                                        {formData.address ? (
-                                            <>
-                                                {formData.address}<br />
-                                                {formData.zipCode} {formData.city}
-                                            </>
-                                        ) : (
-                                            <span className="text-gray-400 italic">Ingen adresse oppgitt</span>
-                                        )}
-                                    </div>
+                                    <p className={labelClass}>Adresse</p>
+                                    <p className="text-sm text-gray-900">
+                                        {formData.address
+                                            ? <>{formData.address}<br />{formData.zipCode} {formData.city}</>
+                                            : <span className="text-gray-400 italic">Ingen adresse oppgitt</span>
+                                        }
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     ) : (
                         <form onSubmit={handleProfileSubmit} className="space-y-4">
-                            {/* Form fields same as before... */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Fornavn</label>
-                                    <input
-                                        type="text"
-                                        value={formData.firstName}
-                                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                                        required
-                                    />
+                                    <label className={labelClass}>Fornavn</label>
+                                    <input type="text" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className={inputClass} required />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Etternavn</label>
-                                    <input
-                                        type="text"
-                                        value={formData.lastName}
-                                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                                        required
-                                    />
+                                    <label className={labelClass}>Etternavn</label>
+                                    <input type="text" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className={inputClass} required />
                                 </div>
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">E-post</label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    readOnly
-                                    disabled
-                                    className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-500 cursor-not-allowed"
-                                />
-                                <p className="text-[10px] text-gray-400 mt-1">Kontakt support for å endre e-post.</p>
+                                <label className={labelClass}>E-post</label>
+                                <input type="email" value={formData.email} readOnly disabled className="w-full px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-400 cursor-not-allowed" />
+                                <p className="text-[10px] text-gray-300 mt-1">Kontakt support for å endre e-post.</p>
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Telefon</label>
-                                <input
-                                    type="tel"
-                                    value={formData.phoneNumber}
-                                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                                />
+                                <label className={labelClass}>Telefon</label>
+                                <input type="tel" value={formData.phoneNumber} onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })} className={inputClass} />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Adresse</label>
-                                <input
-                                    type="text"
-                                    value={formData.address}
-                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                    placeholder="Gateadresse"
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none mb-2"
-                                />
+                                <label className={labelClass}>Adresse</label>
+                                <input type="text" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Gateadresse" className={`${inputClass} mb-2`} />
                                 <div className="grid grid-cols-3 gap-2">
-                                    <input
-                                        type="text"
-                                        value={formData.zipCode}
-                                        onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                                        placeholder="Postnummer"
-                                        className="col-span-1 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={formData.city}
-                                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                        placeholder="Poststed"
-                                        className="col-span-2 w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                                    />
+                                    <input type="text" value={formData.zipCode} onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })} placeholder="Postnr." className={inputClass} />
+                                    <input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} placeholder="Poststed" className={`${inputClass} col-span-2`} />
                                 </div>
                             </div>
-                            <div className="pt-2 flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditing(false)}
-                                    className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors"
-                                >
+                            <div className="pt-1 flex justify-end gap-2">
+                                <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors">
                                     Avbryt
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-70"
-                                >
+                                <button type="submit" disabled={loading} className="px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-700 transition-colors disabled:opacity-60">
                                     {loading ? "Lagrer..." : "Lagre endringer"}
                                 </button>
                             </div>
@@ -365,104 +251,91 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                 </div>
             </div>
 
-            {/* Right Column: Password Reset */}
-            <div className="flex flex-col gap-4 lg:h-full">
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col lg:flex-1">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600">lock_reset</span>
-                        Bytt passord
-                    </h2>
+            {/* ── Right column ────────────────────────────────────────── */}
+            <div className="flex flex-col gap-6">
 
-                    {passwordStep === "initial" && (
-                        <div className="space-y-3">
-                            <p className="text-gray-600 text-sm leading-snug">
-                                Send en bekreftelseskode til e-post for å oppdatere passordet.
-                            </p>
-                            <button
-                                onClick={handleStartVerification}
-                                disabled={loading}
-                                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {loading ? "Sender..." : "Send bekreftelseskode"}
-                            </button>
-                        </div>
-                    )}
+                {/* Password */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-4 px-5 pt-5 pb-4 border-b border-gray-100">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Bytt passord</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                    </div>
 
-                    {passwordStep === "ready" && (
-                        <div className="space-y-3">
-                            <p className="text-gray-600 text-sm">
-                                En bekreftelseskode er sendt til <strong>{user.primaryEmailAddress?.emailAddress}</strong>.
-                            </p>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                    Bekreftelseskode
-                                </label>
-                                <input
-                                    type="text"
-                                    value={code}
-                                    onChange={(e) => setCode(e.target.value)}
-                                    placeholder="Skriv inn 6-sifret kode"
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-mono tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                                />
+                    <div className="p-5">
+                        {passwordStep === "initial" && (
+                            <div className="space-y-4">
+                                <p className="text-sm text-gray-400 leading-relaxed">
+                                    Send en bekreftelseskode til e-post for å oppdatere passordet.
+                                </p>
+                                <button
+                                    onClick={handleStartVerification}
+                                    disabled={loading}
+                                    className="w-full py-2.5 px-4 bg-gray-900 hover:bg-gray-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? "Sender..." : "Send bekreftelseskode"}
+                                </button>
                             </div>
+                        )}
 
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                    Nytt passord
-                                </label>
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    placeholder="Skriv inn nytt passord"
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                                />
+                        {passwordStep === "ready" && (
+                            <div className="space-y-4">
+                                <p className="text-sm text-gray-400">
+                                    Kode sendt til <span className="font-bold text-gray-700">{user.primaryEmailAddress?.emailAddress}</span>.
+                                </p>
+                                <div>
+                                    <label className={labelClass}>Bekreftelseskode</label>
+                                    <input
+                                        type="text"
+                                        value={code}
+                                        onChange={(e) => setCode(e.target.value)}
+                                        placeholder="6-sifret kode"
+                                        className={`${inputClass} font-mono tracking-widest`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Nytt passord</label>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        placeholder="Minst 8 tegn"
+                                        className={inputClass}
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleVerifyAndUpdate}
+                                    disabled={loading || code.length < 6 || newPassword.length < 8}
+                                    className="w-full py-2.5 px-4 bg-gray-900 hover:bg-gray-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-60"
+                                >
+                                    {loading ? "Oppdaterer..." : "Oppdater passord"}
+                                </button>
+                                <button
+                                    onClick={() => { setPasswordStep("initial"); setCode(""); setNewPassword(""); }}
+                                    className="w-full py-2 text-xs text-gray-400 hover:text-gray-700 font-bold transition-colors"
+                                >
+                                    Avbryt
+                                </button>
                             </div>
+                        )}
 
-                            <button
-                                onClick={handleVerifyAndUpdate}
-                                disabled={loading || code.length < 6 || newPassword.length < 8}
-                                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {loading ? "Oppdaterer..." : "Oppdater passord"}
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    setPasswordStep("initial");
-                                    setCode("");
-                                    setNewPassword("");
-                                }}
-                                className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
-                            >
-                                Avbryt
-                            </button>
-                        </div>
-                    )}
-
-                    {passwordStep === "success" && (
-                        <div className="flex flex-col items-center justify-center text-center py-2 space-y-3">
-                            <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                                <span className="material-symbols-outlined text-2xl">check</span>
+                        {passwordStep === "success" && (
+                            <div className="flex flex-col items-center text-center py-4 gap-3">
+                                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-xl">check</span>
+                                </div>
+                                <p className="text-sm font-bold text-gray-900">Passord oppdatert</p>
+                                <button
+                                    onClick={() => { setPasswordStep("initial"); setCode(""); setNewPassword(""); }}
+                                    className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl text-xs font-bold transition-colors"
+                                >
+                                    Ferdig
+                                </button>
                             </div>
-                            <h3 className="text-base font-bold text-gray-900">Suksess!</h3>
-                            <p className="text-gray-500 text-sm">Ditt passord er oppdatert.</p>
-                            <button
-                                onClick={() => {
-                                    setPasswordStep("initial");
-                                    setCode("");
-                                    setNewPassword("");
-                                }}
-                                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-bold text-sm transition-colors"
-                            >
-                                Ferdig
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
-                <PushNotificationSettings className="flex flex-col lg:flex-1" />
+                <PushNotificationSettings className="flex flex-col" />
             </div>
         </div>
     );

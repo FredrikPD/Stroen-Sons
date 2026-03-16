@@ -46,7 +46,7 @@ export function BankInfoCard({
 
     if (mode === "embedded") {
         return (
-            <div className={`relative z-10 mt-4 pt-4 border-t border-white/10 ${className}`}>
+            <div className={`relative z-10 ${className}`}>
                 {content}
             </div>
         );

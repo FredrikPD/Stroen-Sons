@@ -15,7 +15,6 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
     const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set());
     const [filter, setFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
 
-    // Group transactions by month within year
     const groupedByMonth = transactions
         .filter(tx => {
             if (filter === 'ALL') return true;
@@ -30,10 +29,8 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
             return acc;
         }, {} as Record<string, Transaction[]>);
 
-    // Sort month keys descending
     const monthKeys = Object.keys(groupedByMonth).sort((a, b) => b.localeCompare(a));
 
-    // Group month keys by year
     const yearGroups = monthKeys.reduce((acc, key) => {
         const year = key.split('-')[0];
         if (!acc[year]) acc[year] = [];
@@ -44,7 +41,6 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
     const years = Object.keys(yearGroups).sort((a, b) => Number(b) - Number(a));
 
     useEffect(() => {
-        // Collapse all years except the first
         const initialCollapsed = new Set<string>();
         years.slice(1).forEach(y => initialCollapsed.add(y));
         setCollapsedYears(initialCollapsed);
@@ -58,7 +54,7 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
     };
 
     const formatCurrency = (amount: number) =>
-        new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 }).format(amount);
+        new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
 
     const formatCategory = (category: string) => {
         const normalized = category.toUpperCase();
@@ -75,43 +71,31 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
         return name.charAt(0).toUpperCase() + name.slice(1);
     };
 
-    // Summary stats
-    const totalIncome = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-    const totalExpense = transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0);
-
     return (
-        <div className="space-y-5">
-            {/* Section Header  */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Transaksjoner</h3>
-                    <p className="text-sm text-gray-400 mt-0.5">Oversikt over alle dine bevegelser</p>
-                </div>
+        <div className="space-y-6">
 
-                {/* Filter Pills */}
-                <div className="bg-gray-100 p-1 rounded-lg flex text-xs font-medium">
-                    <button
-                        onClick={() => setFilter('ALL')}
-                        className={`px-3 py-1.5 rounded-md transition-all ${filter === 'ALL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Alle
-                    </button>
-                    <button
-                        onClick={() => setFilter('INCOME')}
-                        className={`px-3 py-1.5 rounded-md transition-all ${filter === 'INCOME' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Innbetalinger
-                    </button>
-                    <button
-                        onClick={() => setFilter('EXPENSE')}
-                        className={`px-3 py-1.5 rounded-md transition-all ${filter === 'EXPENSE' ? 'bg-white text-red-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        Utgifter
-                    </button>
-                </div>
+            {/* Filter */}
+            <div className="flex items-center gap-1">
+                {(['ALL', 'INCOME', 'EXPENSE'] as const).map((f, i) => {
+                    const labels = { ALL: 'Alle', INCOME: 'Innbetalinger', EXPENSE: 'Utgifter' };
+                    const active = filter === f;
+                    return (
+                        <React.Fragment key={f}>
+                            {i > 0 && <span className="text-gray-200 text-xs select-none">·</span>}
+                            <button
+                                onClick={() => setFilter(f)}
+                                className={`text-[11px] font-bold uppercase tracking-[0.15em] px-2 py-1 transition-colors cursor-pointer border-b-2 ${
+                                    active ? 'text-gray-900 border-gray-900' : 'text-gray-400 hover:text-gray-600 border-transparent'
+                                }`}
+                            >
+                                {labels[f]}
+                            </button>
+                        </React.Fragment>
+                    );
+                })}
             </div>
 
-            {/* Timeline */}
+            {/* Content */}
             {years.length > 0 ? (
                 <div className="space-y-8">
                     {years.map(year => {
@@ -120,93 +104,93 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
                         const yearTotal = yearTxs.reduce((s, t) => s + t.amount, 0);
 
                         return (
-                            <div key={year} className="relative">
-                                {/* Year Header */}
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="h-px flex-1 bg-gray-200"></div>
+                            <div key={year}>
+                                {/* Year separator */}
+                                <div className="flex items-center gap-3 mb-5">
+                                    <div className="h-px flex-1 bg-gray-100" />
                                     <button
                                         onClick={() => toggleYear(year)}
-                                        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors group cursor-pointer border border-gray-200"
+                                        className="flex items-center gap-1.5 cursor-pointer group"
                                     >
-                                        <h4 className="text-sm font-bold text-gray-800">{year}</h4>
-                                        <span className={`material-symbols-outlined text-gray-400 text-lg transition-transform duration-300 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}>
+                                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-600 transition-colors">
+                                            {year}
+                                        </span>
+                                        <span className={`material-symbols-outlined text-gray-300 group-hover:text-gray-500 transition-all duration-200 text-sm leading-none ${isCollapsed ? '-rotate-90' : ''}`}>
                                             expand_more
                                         </span>
                                     </button>
-                                    <div className="h-px flex-1 bg-gray-200"></div>
+                                    <div className="h-px flex-1 bg-gray-100" />
                                 </div>
 
-                                {/* Collapsed Summary */}
-                                {isCollapsed && (
-                                    <div className="text-center text-xs font-medium text-gray-500 mb-2">
-                                        {yearTxs.length} transaksjoner totalt <span className={yearTotal >= 0 ? 'text-emerald-600 font-bold ml-1' : 'text-red-600 font-bold ml-1'}>{formatCurrency(yearTotal)}</span>
-                                    </div>
-                                )}
-
-                                {/* Months */}
-                                {!isCollapsed && (
-                                    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                {isCollapsed ? (
+                                    <p className="text-center text-xs text-gray-400 pb-1">
+                                        {yearTxs.length} transaksjoner —{' '}
+                                        <span
+                                            className={yearTotal >= 0 ? 'text-emerald-600' : 'text-gray-600'}
+                                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                        >
+                                            {formatCurrency(yearTotal)}
+                                        </span>
+                                    </p>
+                                ) : (
+                                    <div className="space-y-5">
                                         {yearGroups[year].map(monthKey => {
                                             const txs = groupedByMonth[monthKey];
                                             const monthTotal = txs.reduce((s, t) => s + t.amount, 0);
 
                                             return (
-                                                <div key={monthKey} className="relative pl-2 sm:pl-4 border-l-2 border-gray-100 ml-2 sm:ml-4">
-                                                    {/* Month Timeline Dot */}
-                                                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-gray-200"></div>
-
-                                                    {/* Month Label */}
-                                                    <div className="flex items-center justify-between mb-3 pl-2">
-                                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                                <div key={monthKey}>
+                                                    {/* Month header */}
+                                                    <div className="flex items-center justify-between mb-2 px-0.5">
+                                                        <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">
                                                             {getMonthName(monthKey)}
                                                         </span>
-                                                        <span className={`text-xs font-bold ${monthTotal >= 0 ? 'text-emerald-600' : 'text-red-500'} bg-gray-50 px-2 py-0.5 rounded`}>
-                                                            {formatCurrency(monthTotal)}
+                                                        <span
+                                                            className={`text-xs tabular-nums ${monthTotal >= 0 ? 'text-emerald-600' : 'text-gray-500'}`}
+                                                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                                        >
+                                                            {monthTotal >= 0 ? '+' : ''}{formatCurrency(monthTotal)}
                                                         </span>
                                                     </div>
 
-                                                    {/* Transaction Cards */}
-                                                    <div className="flex flex-col">
+                                                    {/* Row group */}
+                                                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                                                         {txs.map((tx, index) => {
                                                             const isPositive = tx.amount > 0;
-                                                            const isFirst = index === 0;
                                                             const isLast = index === txs.length - 1;
 
                                                             return (
                                                                 <Link
                                                                     key={tx.id}
                                                                     href={`/balance/transactions/${tx.id}`}
-                                                                    className={`flex items-center gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-gray-50/50 hover:z-10 relative transition-all group cursor-pointer
-                                                                        ${isFirst ? 'rounded-t-2xl' : ''}
-                                                                        ${isLast ? 'rounded-b-2xl' : ''}
-                                                                        ${!isFirst ? '-mt-px' : ''}
-                                                                    `}
+                                                                    className={`flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors group relative ${
+                                                                        !isLast ? 'border-b border-gray-100' : ''
+                                                                    }`}
                                                                 >
-                                                                    {/* Details */}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="text-sm font-semibold text-gray-900 leading-tight whitespace-normal break-words sm:truncate group-hover:text-indigo-600 transition-colors">
+                                                                        <p className="text-sm text-gray-800 leading-tight truncate group-hover:text-gray-900 transition-colors">
                                                                             {tx.description}
                                                                         </p>
-                                                                        <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                                                                            <span className="text-xs text-gray-500">
-                                                                                {new Date(tx.date).toLocaleDateString("nb-NO", { day: 'numeric', month: 'long' })}
+                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                            <span className="text-[10px] text-gray-400">
+                                                                                {new Date(tx.date).toLocaleDateString("nb-NO", { day: 'numeric', month: 'short' })}
                                                                             </span>
-                                                                            <span className="inline-flex max-w-[9.5rem] sm:max-w-none items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500 truncate">
+                                                                            <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-gray-300">
                                                                                 {formatCategory(tx.category)}
                                                                             </span>
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* Amount */}
-                                                                    <div className="flex-shrink-0 text-right">
-                                                                        <div className="inline-flex items-center justify-end">
-                                                                            <span className={`text-sm sm:text-base font-semibold tabular-nums ${isPositive ? 'text-emerald-700' : 'text-gray-900'}`}>
-                                                                                {isPositive ? "+" : ""}{formatCurrency(tx.amount)}
-                                                                            </span>
-                                                                            <span className="material-symbols-outlined pl-1 text-base leading-none text-gray-400">
-                                                                                chevron_right
-                                                                            </span>
-                                                                        </div>
+                                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                                        <span
+                                                                            className={`text-base tabular-nums font-normal ${isPositive ? 'text-emerald-600' : 'text-gray-900'}`}
+                                                                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                                                        >
+                                                                            {isPositive ? '+' : ''}{formatCurrency(tx.amount)}
+                                                                        </span>
+                                                                        <span className="material-symbols-outlined text-gray-300 text-base leading-none group-hover:text-gray-400 transition-colors">
+                                                                            chevron_right
+                                                                        </span>
                                                                     </div>
                                                                 </Link>
                                                             );
@@ -222,9 +206,9 @@ export function UserTransactions({ transactions }: { transactions: Transaction[]
                     })}
                 </div>
             ) : (
-                <div className="text-center py-12">
-                    <span className="material-symbols-outlined text-3xl text-gray-200 mb-2">receipt_long</span>
-                    <p className="text-sm text-gray-400">Ingen transaksjoner funnet.</p>
+                <div className="text-center py-12 flex flex-col items-center gap-2">
+                    <span className="material-symbols-outlined text-3xl text-gray-200">receipt_long</span>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-300">Ingen transaksjoner</p>
                 </div>
             )}
         </div>

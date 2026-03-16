@@ -165,227 +165,198 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
         });
     };
 
+    const memberCost = ((event.totalCost || 0) - (event.clubSubsidy || 0));
+
     return (
-        <div className="w-full flex-1 bg-white min-h-screen pb-20">
+        <div className="w-full flex-1 min-h-screen pb-20 flex flex-col gap-8">
 
-
-            {/* HERO SECTION */}
-            <div className="relative h-[400px] w-full bg-black rounded-3xl overflow-hidden">
+            {/* ── HERO ───────────────────────────────────────────────── */}
+            <div className="relative w-full h-[300px] sm:h-[360px] rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                 {event.coverImage ? (
                     <img
                         src={event.coverImage}
                         alt={event.title}
-                        className="w-full h-full object-cover opacity-80"
+                        className="w-full h-full object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-white/20">
-                        <span className="material-symbols-outlined text-5xl">image</span>
-                    </div>
+                    <div className="w-full h-full bg-gray-900" />
                 )}
 
-                {/* Overlay Content */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 md:p-10">
-                    <div className="max-w-7xl mx-auto w-full flex flex-col gap-4">
-                        {/* Badges */}
-                        <div className="flex items-center gap-2">
+                {/* Layered gradients — same pattern as dashboard hero */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/25 to-transparent" />
+
+                <div className="absolute inset-0 p-5 sm:p-7 flex flex-col justify-between text-white">
+                    {/* Top row */}
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
                             {event.hasPassed ? (
-                                <span className="bg-emerald-500/90 text-white px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
-                                    ✓ Gjennomført
+                                <span className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
+                                    Gjennomført
                                 </span>
                             ) : (
-                                <span className="bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                                <span className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
                                     Påmelding åpen
                                 </span>
                             )}
-
-                            {/* Category Badge */}
                             {event.category && (
-                                <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm border ${getCategoryColorClasses(categoryColor).bg} ${getCategoryColorClasses(categoryColor).text} ${getCategoryColorClasses(categoryColor).border}`}>
+                                <span className={`backdrop-blur-md border text-[9px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-widest ${getCategoryColorClasses(categoryColor).bg} ${getCategoryColorClasses(categoryColor).text} ${getCategoryColorClasses(categoryColor).border}`}>
                                     {event.category}
                                 </span>
                             )}
                         </div>
 
-                        {/* Title & Loc */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                            <div className="flex flex-col gap-1.5">
-                                <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
-                                    {event.title}
-                                </h1>
-                                <div className="flex items-center gap-1.5 text-white/70 text-sm font-medium">
-                                    <span className="material-symbols-outlined text-base">location_on</span>
-                                    <span>{event.isTba ? "TBA" : event.location}</span>
-                                </div>
-                            </div>
+                        {/* Attending status badge */}
+                        {currentUserIsAttending && (
+                            <span className="flex items-center gap-1.5 text-emerald-100 bg-emerald-500/20 border border-emerald-400/30 text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
+                                <span className="material-symbols-outlined text-[11px]">task_alt</span>
+                                Påmeldt
+                            </span>
+                        )}
+                    </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-3">
-                                <Link
-                                    href={`/gallery/${event.id}`}
-                                    className="h-9 px-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-lg flex items-center gap-1.5 text-white text-xs font-bold transition-all"
-                                >
-                                    <span className="material-symbols-outlined text-sm">
-                                        {totalPhotoCount > 0 ? "photo_library" : "add_a_photo"}
+                    {/* Bottom content */}
+                    <div className="space-y-3">
+                        <h1
+                            className="text-2xl sm:text-3xl font-normal leading-tight text-white"
+                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                        >
+                            {event.title}
+                        </h1>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {(event.location || event.isTba) && (
+                                <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 min-w-0 shrink overflow-hidden">
+                                    <span className="material-symbols-outlined text-[14px] shrink-0 text-white/70">location_on</span>
+                                    <span className="font-medium text-[11px] truncate max-w-[150px] sm:max-w-[210px]">
+                                        {event.isTba ? "TBA" : event.location}
                                     </span>
-                                    <span>{totalPhotoCount > 0 ? "Se alle bilder" : "Ingen bilder enda"}</span>
-                                </Link>
+                                </div>
+                            )}
+                            <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 shrink-0">
+                                <span className="material-symbols-outlined text-[14px] text-white/70">calendar_today</span>
+                                <span className="font-medium text-[11px] whitespace-nowrap">
+                                    {startDate.toLocaleDateString("nb-NO", { day: "numeric", month: "long" })}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Photo count — bottom right */}
+                <Link
+                    href={`/gallery/${event.id}`}
+                    className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 hover:bg-white/20 transition-colors text-white"
+                >
+                    <span className="material-symbols-outlined text-[14px] text-white/70">
+                        {totalPhotoCount > 0 ? "photo_library" : "add_a_photo"}
+                    </span>
+                    <span className="font-medium text-[11px] whitespace-nowrap">
+                        {totalPhotoCount > 0 ? `${totalPhotoCount} bilder` : "Ingen bilder enda"}
+                    </span>
+                </Link>
             </div>
 
-            {/* CONTENT GRID */}
-            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* ── TWO-COLUMN GRID ────────────────────────────────────── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
 
-                {/* LEFT COLUMN (Main Content) */}
-                <div className="lg:col-span-2 flex flex-col gap-8">
+                {/* ── LEFT COLUMN — main content ─────────────────────── */}
+                <div className="lg:col-span-2 space-y-8 min-w-0">
 
-                    {/* About Section */}
-                    <div className="flex flex-col gap-3">
-                        <h2 className="text-xl font-bold text-gray-900">Om Arrangementet</h2>
-                        <div className="prose prose-sm text-gray-500 leading-relaxed max-w-none">
-                            {event.description ? (
+                    {/* Description */}
+                    {event.description && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Om arrangementet</span>
+                                <div className="flex-1 h-px bg-gray-100" />
+                            </div>
+                            <div className="prose prose-sm text-gray-600 leading-relaxed max-w-none">
                                 <ReactMarkdown>{event.description}</ReactMarkdown>
-                            ) : (
-                                "Ingen beskrivelse tilgjengelig."
-                            )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Program Section */}
-                    <div className="flex flex-col gap-4 pt-8 border-t border-gray-200/60">
-                        <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#4F46E5] text-lg">schedule</span>
-                            <h2 className="text-lg font-bold text-gray-900">Program</h2>
+                    {/* Program */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Program</span>
+                            <div className="flex-1 h-px bg-gray-100" />
                         </div>
 
-                        <div className="relative pl-2 border-l border-gray-200 flex flex-col gap-6 ml-1.5">
-                            {event.program && event.program.length > 0 ? (
-                                event.program.map((item) => (
+                        {event.program && event.program.length > 0 ? (
+                            <div className="relative pl-2 border-l-2 border-gray-100 flex flex-col gap-5 ml-1">
+                                {event.program.map((item) => (
                                     <div key={item.id} className="relative pl-5">
-                                        <div className="absolute -left-[11px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-[#4F46E5] bg-[#F9F9F7]"></div>
+                                        <div className="absolute -left-[9px] top-1 w-3 h-3 rounded-full border-2 border-gray-300 bg-white" />
                                         <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-baseline gap-2.5 flex-wrap">
+                                            <div className="flex items-baseline gap-2 flex-wrap">
                                                 {item.date && (
-                                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                        {new Date(item.date).toLocaleDateString("no-NO", { weekday: 'short', day: 'numeric', month: 'short' })}
+                                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em]">
+                                                        {new Date(item.date).toLocaleDateString("no-NO", { weekday: "short", day: "numeric", month: "short" })}
                                                     </span>
                                                 )}
-                                                <span className="text-sm font-bold text-gray-900">{item.time}</span>
-                                                <span className="text-sm font-bold text-gray-900">-</span>
-                                                <span className="text-sm font-bold text-gray-900">{item.title}</span>
+                                                <span className="text-xs font-bold uppercase tracking-[0.15em] text-gray-500">{item.time}</span>
+                                                <span
+                                                    className="text-base font-normal text-gray-900"
+                                                    style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                                >
+                                                    {item.title}
+                                                </span>
                                             </div>
                                             {item.description && (
-                                                <p className="text-sm text-gray-500 leading-relaxed max-w-md">
+                                                <p className="text-sm text-gray-500 leading-relaxed max-w-md mt-0.5">
                                                     {item.description}
                                                 </p>
                                             )}
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <p className="text-sm text-gray-400 pl-6">Program kommer snart.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Gallery Section */}
-                    <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                Bildearkiv
-                                <span className="material-symbols-outlined text-gray-400 text-sm">lock</span>
-                            </h2>
-                            <Link href={`/gallery/${event.id}`} className="text-[#4F46E5] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all">
-                                <span>Se alle bilder</span>
-                                <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
-                            </Link>
-                        </div>
-
-                        {photos && photos.length > 0 ? (
-                            <div className="grid grid-cols-3 gap-4">
-                                {photos.slice(0, 6).map((photo, i) => (
-                                    <Link
-                                        href={`/gallery/${event.id}`}
-                                        key={photo.id}
-                                        className="aspect-square bg-gray-200 rounded-lg overflow-hidden relative group cursor-pointer"
-                                    >
-                                        <img
-                                            src={photo.url}
-                                            alt={photo.caption || ""}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-
-                                        {/* Overlay for last item if there are more photos */}
-                                        {i === 5 && totalPhotoCount > 6 && (
-                                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-[2px] hover:backdrop-blur-[1px] transition-all">
-                                                <span className="text-xl font-bold text-white">+{totalPhotoCount - 5}</span>
-                                                <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest">Bilder</span>
-                                            </div>
-                                        )}
-
-                                        {/* Hover overlay for other items */}
-                                        {!(i === 5 && totalPhotoCount > 6) && (
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                        )}
-                                    </Link>
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
-                                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                                    <span className="material-symbols-outlined text-gray-400">photo_library</span>
-                                </div>
-                                <p className="text-sm font-semibold text-gray-900">Ingen bilder enda</p>
-                                <p className="text-xs text-gray-500 mt-1 max-w-xs">
-                                    Det er ikke lastet opp noen bilder fra dette arrangementet enda.
-                                </p>
-                            </div>
+                            <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>Program kommer snart.</p>
                         )}
                     </div>
 
-                    {/* Recap Section */}
+                    {/* Recap */}
                     {event.hasPassed && (
-                        <div className="flex flex-col gap-6 pt-8 border-t border-gray-200/60">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                    Etterrapport
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Etterrapport</span>
+                                <div className="flex-1 h-px bg-gray-100" />
+                                <div className="flex items-center gap-2">
                                     {visibleRecap?.status === "DRAFT" && (
-                                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded bg-amber-100 text-amber-700">
+                                        <span className="text-[9px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border bg-amber-50 text-amber-600 border-amber-200">
                                             Utkast
                                         </span>
                                     )}
-                                </h2>
-                                {canEditRecap && (
-                                    <Link
-                                        href={`/admin/events/${event.id}/recap`}
-                                        className="text-[#4F46E5] text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all"
-                                    >
-                                        <span>{visibleRecap ? "Rediger" : "Skriv etterrapport"}</span>
-                                        <span className="material-symbols-outlined text-[1rem]">arrow_forward</span>
-                                    </Link>
-                                )}
+                                    {canEditRecap && (
+                                        <Link
+                                            href={`/admin/events/${event.id}/recap`}
+                                            className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors"
+                                        >
+                                            {visibleRecap ? "Rediger" : "Skriv etterrapport"}
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
 
                             {!visibleRecap ? (
-                                <div className="flex flex-col items-center justify-center py-10 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
-                                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                                        <span className="material-symbols-outlined text-gray-400">article</span>
-                                    </div>
-                                    <p className="text-sm font-semibold text-gray-900">Ingen etterrapport publisert enda</p>
-                                    <p className="text-xs text-gray-500 mt-1 max-w-sm">
-                                        {canEditRecap ? "Skriv en oppsummering for å dokumentere hva som skjedde." : "Kom tilbake senere for oppsummering og resultater."}
+                                <div className="py-10 text-center rounded-2xl border border-dashed border-gray-200">
+                                    <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>
+                                        {canEditRecap
+                                            ? "Skriv en oppsummering for å dokumentere hva som skjedde."
+                                            : "Ingen etterrapport publisert enda."}
                                     </p>
                                 </div>
                             ) : (
-                                <div className="space-y-6">
+                                <div className="space-y-4">
+                                    {/* Summary points */}
                                     {visibleRecap.summaryPoints.length > 0 && (
-                                        <div className="bg-white rounded-xl border border-gray-100 p-5">
-                                            <h3 className="text-sm font-bold text-gray-900 mb-3">Kort oppsummert</h3>
-                                            <ul className="space-y-2 list-disc pl-5 marker:text-[#4F46E5]">
+                                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-3">Kort oppsummert</p>
+                                            <ul className="space-y-2">
                                                 {visibleRecap.summaryPoints.map((point, index) => (
-                                                    <li key={`${point}-${index}`} className="text-sm text-gray-700">
+                                                    <li key={`${point}-${index}`} className="flex items-start gap-2.5 text-sm text-gray-700">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 shrink-0" />
                                                         {point}
                                                     </li>
                                                 ))}
@@ -393,44 +364,56 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                         </div>
                                     )}
 
+                                    {/* Story */}
                                     {visibleRecap.story && (
-                                        <div>
-                                            <h3 className="text-base font-bold text-gray-900 mb-2">Hva skjedde</h3>
+                                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-3">Hva skjedde</p>
                                             <div className="prose prose-sm text-gray-600 max-w-none">
                                                 <ReactMarkdown>{visibleRecap.story}</ReactMarkdown>
                                             </div>
                                         </div>
                                     )}
 
+                                    {/* Games */}
                                     {visibleRecap.games.length > 0 && (
-                                        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                                            <div className="px-4 py-3 border-b border-gray-100">
-                                                <h3 className="text-sm font-bold text-gray-900">Kamper</h3>
+                                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                            <div className="px-5 py-3 border-b border-gray-100">
+                                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Kamper</p>
                                             </div>
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm">
-                                                    <thead className="bg-gray-50 text-gray-500">
-                                                        <tr>
-                                                            <th className="text-left px-4 py-2.5 font-semibold">Type</th>
-                                                            <th className="text-left px-4 py-2.5 font-semibold">Lag 1</th>
-                                                            <th className="text-left px-4 py-2.5 font-semibold">Lag 2</th>
-                                                            <th className="text-left px-4 py-2.5 font-semibold">Score</th>
-                                                            <th className="text-left px-4 py-2.5 font-semibold">Vinner</th>
+                                                    <thead>
+                                                        <tr className="border-b border-gray-100 bg-gray-50/60">
+                                                            <th className="text-left px-5 py-2.5 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400">Type</th>
+                                                            <th className="text-left px-5 py-2.5 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400">Lag 1</th>
+                                                            <th className="text-left px-5 py-2.5 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400">Lag 2</th>
+                                                            <th className="text-left px-5 py-2.5 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400">Score</th>
+                                                            <th className="text-left px-5 py-2.5 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400">Vinner</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {visibleRecap.games.map((game) => (
-                                                            <tr key={game.id} className="border-t border-gray-100">
-                                                                <td className="px-4 py-3 text-gray-700">{game.notes || "—"}</td>
-                                                                <td className="px-4 py-3 font-semibold text-gray-900">{game.title}</td>
-                                                                <td className="px-4 py-3 text-gray-700">{game.opponent || "—"}</td>
-                                                                <td className="px-4 py-3 text-gray-700">
+                                                            <tr key={game.id} className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                                                <td className="px-5 py-3 text-xs text-gray-500">{game.notes || "—"}</td>
+                                                                <td className="px-5 py-3 text-xs font-bold text-gray-900">{game.title}</td>
+                                                                <td className="px-5 py-3 text-xs text-gray-600">{game.opponent || "—"}</td>
+                                                                <td className="px-5 py-3 text-xs font-mono text-gray-700">
                                                                     {game.ourScore !== null && game.theirScore !== null
-                                                                        ? `${game.ourScore} - ${game.theirScore}`
+                                                                        ? `${game.ourScore} – ${game.theirScore}`
                                                                         : "—"}
                                                                 </td>
-                                                                <td className="px-4 py-3 text-gray-700">
-                                                                    {formatWinner(game) || "—"}
+                                                                <td className="px-5 py-3">
+                                                                    {game.result ? (
+                                                                        <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                                                                            game.result === "WIN"
+                                                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                                                : game.result === "LOSS"
+                                                                                    ? "bg-red-50 text-red-600 border-red-200"
+                                                                                    : "bg-gray-100 text-gray-500 border-gray-200"
+                                                                        }`}>
+                                                                            {formatWinner(game) || "—"}
+                                                                        </span>
+                                                                    ) : "—"}
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -440,49 +423,55 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                         </div>
                                     )}
 
-                                    {/* Podium Display */}
+                                    {/* Podium */}
                                     {visibleRecap.podium && visibleRecap.podium.entries.length > 0 && (
-                                        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                                            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-[#F5C518] text-lg">emoji_events</span>
-                                                <h3 className="text-sm font-bold text-gray-900">Podium</h3>
+                                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                            <div className="px-5 py-3 border-b border-gray-100">
+                                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Podium</p>
                                             </div>
-                                            <div className="p-4 flex flex-col gap-3">
+                                            <div className="p-4 flex flex-col gap-2">
                                                 {visibleRecap.podium.entries.map((entry) => {
-                                                    const badgeClass = entry.place === 1
-                                                        ? "bg-[#F5C518] text-[#7a5c00]"
-                                                        : entry.place === 2
-                                                            ? "bg-[#C0C0C0] text-[#4a4a4a]"
-                                                            : "bg-[#CD7F32] text-white";
+                                                    const medal = entry.place === 1 ? "🥇" : entry.place === 2 ? "🥈" : entry.place === 3 ? "🥉" : null;
                                                     const placeLabel = entry.place === 1 ? "Vinner" : `${entry.place}. plass`;
+                                                    const rowBg = entry.place === 1
+                                                        ? "bg-amber-50/60 border border-amber-100"
+                                                        : entry.place === 2
+                                                            ? "bg-gray-50/80 border border-gray-100"
+                                                            : "bg-orange-50/40 border border-orange-100/60";
 
                                                     return (
-                                                        <div key={entry.place} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50/60">
-                                                            <span className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-bold shadow-sm shrink-0 ${badgeClass}`}>
-                                                                {entry.place}
-                                                            </span>
+                                                        <div key={entry.place} className={`flex items-center gap-3 px-4 py-3 rounded-xl ${rowBg}`}>
+                                                            <span className="text-xl shrink-0">{medal || `${entry.place}.`}</span>
 
                                                             {visibleRecap.podium!.type === "INDIVIDUAL" && entry.member ? (
-                                                                <div className="flex items-center gap-2.5">
+                                                                <div className="flex items-center gap-2.5 min-w-0">
                                                                     <Avatar
                                                                         src={entry.member.avatarUrl}
                                                                         initials={`${entry.member.firstName?.[0] || ""}${entry.member.lastName?.[0] || ""}`}
                                                                         size="sm"
                                                                     />
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-sm font-bold text-gray-900">
+                                                                    <div className="flex flex-col min-w-0">
+                                                                        <span
+                                                                            className="text-sm font-normal text-gray-900 leading-snug"
+                                                                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                                                        >
                                                                             {entry.member.firstName} {entry.member.lastName}
                                                                         </span>
-                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em]">
                                                                             {placeLabel}
                                                                         </span>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex flex-col gap-1.5">
+                                                                <div className="flex flex-col gap-1 min-w-0">
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className="text-sm font-bold text-gray-900">{entry.teamName}</span>
-                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                                        <span
+                                                                            className="text-sm font-normal text-gray-900"
+                                                                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                                                        >
+                                                                            {entry.teamName}
+                                                                        </span>
+                                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em]">
                                                                             {placeLabel}
                                                                         </span>
                                                                     </div>
@@ -511,217 +500,215 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                         </div>
                                     )}
 
+                                    {/* Lessons */}
                                     {recapLessons && (
-                                        <div className="bg-white rounded-xl border border-gray-100 p-4">
-                                            <h3 className="text-sm font-bold text-gray-900 mb-2">Lærdom og neste gang</h3>
-                                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{recapLessons}</p>
+                                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-3">Lærdom og neste gang</p>
+                                            <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{recapLessons}</p>
                                         </div>
                                     )}
 
-                                    <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
-                                        Skrevet av {recapAuthorName}
-                                        {recapUpdatedAt ? ` · Oppdatert ${recapUpdatedAt}` : ""}
-                                    </div>
+                                    <p className="text-[10px] text-gray-400 pt-1">
+                                        Skrevet av {recapAuthorName}{recapUpdatedAt ? ` · Oppdatert ${recapUpdatedAt}` : ""}
+                                    </p>
                                 </div>
                             )}
                         </div>
                     )}
+
+                    {/* Photos grid */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Bilder</span>
+                            <div className="flex-1 h-px bg-gray-100" />
+                            <Link href={`/gallery/${event.id}`} className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors">Se alle</Link>
+                        </div>
+                        {photos && photos.length > 0 ? (
+                            <div className="grid grid-cols-3 gap-2">
+                                {photos.slice(0, 6).map((photo, i) => (
+                                    <Link href={`/gallery/${event.id}`} key={photo.id} className="aspect-square rounded-xl overflow-hidden relative group cursor-pointer bg-gray-100">
+                                        <img src={photo.url} alt={photo.caption || ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        {i === 5 && totalPhotoCount > 6 ? (
+                                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-[2px]">
+                                                <span className="text-lg font-normal text-white" style={{ fontFamily: "'Georgia', serif" }}>+{totalPhotoCount - 5}</span>
+                                                <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest">bilder</span>
+                                            </div>
+                                        ) : (
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-8 text-center rounded-xl border border-dashed border-gray-200">
+                                <span className="material-symbols-outlined text-gray-300 text-2xl block mb-1">photo_library</span>
+                                <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>Ingen bilder enda.</p>
+                            </div>
+                        )}
+                    </div>
+
                 </div>
 
-                {/* RIGHT COLUMN (Sidebar) */}
-                <div className="flex flex-col gap-6">
+                {/* ── RIGHT COLUMN — sidebar ──────────────────────────── */}
+                <div className="space-y-5 min-w-0">
 
-                    {/* Details Card */}
-                    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
-                        <h3 className="text-base font-bold text-gray-900">Detaljer</h3>
+                    {/* Dark details card — mirrors dashboard membership card */}
+                    <div
+                        className="rounded-2xl p-5 flex flex-col gap-5"
+                        style={{ background: "linear-gradient(180deg, #2a2a2a 0%, #222222 100%)", boxShadow: "0 2px 12px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Detaljer</span>
+                        </div>
 
-                        <div className="flex flex-col gap-4">
-                            {/* Start Time */}
-                            {dateStr && (
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                        <span className="material-symbols-outlined">schedule</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Start</span>
-                                        <span className="text-sm font-bold text-gray-900">
-                                            {dateStr} {timeStr}
-                                        </span>
-                                    </div>
+                        <div className="h-px bg-white/8" />
+
+                        <div className="space-y-4">
+                            {/* Start */}
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Start</p>
+                                    <p
+                                        className="font-normal text-gray-100 text-sm leading-snug"
+                                        style={{ fontFamily: "'Georgia', serif" }}
+                                    >
+                                        {dateStr}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">{timeStr}</p>
                                 </div>
-                            )}
+                                <span className="material-symbols-outlined text-lg text-gray-500">calendar_today</span>
+                            </div>
 
-                            {/* End Time */}
+                            {/* End */}
                             {endTimeStr && (
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                        <span className="material-symbols-outlined">schedule</span>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Slutt</p>
+                                        <p
+                                            className="font-normal text-gray-100 text-sm leading-snug"
+                                            style={{ fontFamily: "'Georgia', serif" }}
+                                        >
+                                            {endDateStr !== dateStr ? endDateStr : endTimeStr}
+                                        </p>
+                                        {endDateStr !== dateStr && (
+                                            <p className="text-[10px] text-gray-400 mt-0.5">{endTimeStr}</p>
+                                        )}
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Slutt</span>
-                                        <span className="text-sm font-bold text-gray-900">
-                                            {endDateStr !== dateStr ? `${endDateStr} ` : ''}{endTimeStr}
-                                        </span>
-                                    </div>
+                                    <span className="material-symbols-outlined text-lg text-gray-500">schedule</span>
                                 </div>
                             )}
 
-                            {/* Registration Deadline */}
+                            {/* Deadline */}
                             {regDeadlineStr && (
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] flex items-center justify-center text-[#F97316]">
-                                        <span className="material-symbols-outlined">event_busy</span>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Påmeldingsfrist</p>
+                                        <p
+                                            className="font-normal text-gray-100 text-sm leading-snug"
+                                            style={{ fontFamily: "'Georgia', serif" }}
+                                        >
+                                            {regDeadlineStr}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400 mt-0.5">kl {regDeadlineTimeStr}</p>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Påmeldingsfrist</span>
-                                        <span className="text-sm font-bold text-gray-900">{regDeadlineStr} kl {regDeadlineTimeStr}</span>
-                                    </div>
+                                    <span className="material-symbols-outlined text-lg text-gray-500">event_busy</span>
                                 </div>
                             )}
 
                             {/* Location */}
                             {(event.location || event.address || event.isTba) && (
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                        <span className="material-symbols-outlined">domain</span>
+                                <div className="flex items-center justify-between">
+                                    <div className="min-w-0 pr-3">
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Sted</p>
+                                        <p
+                                            className="font-normal text-gray-100 text-sm leading-snug truncate"
+                                            style={{ fontFamily: "'Georgia', serif" }}
+                                        >
+                                            {event.isTba ? "TBA" : (event.location || event.address)}
+                                        </p>
+                                        {event.address && !event.isTba && (
+                                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{event.address}</p>
+                                        )}
+                                        {event.isTba && (
+                                            <p className="text-[10px] text-gray-500 mt-0.5">Sted kommer senere</p>
+                                        )}
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sted</span>
-                                        <span className="text-sm font-bold text-gray-900">{event.isTba ? "TBA" : (event.location || event.address)}</span>
-                                        {event.address && !event.isTba && <span className="text-xs text-gray-500">{event.address}</span>}
-                                        {event.isTba && <span className="text-xs text-gray-500">Sted kommer senere</span>}
+                                    <span className="material-symbols-outlined text-lg text-gray-500 shrink-0">domain</span>
+                                </div>
+                            )}
+
+                            {/* Cost */}
+                            {event.totalCost && (
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Din andel</p>
+                                        <p
+                                            className="font-normal text-gray-100 leading-none"
+                                            style={{ fontFamily: "'Georgia', serif", fontSize: "1.25rem" }}
+                                        >
+                                            {memberCost.toLocaleString("nb-NO")},–
+                                        </p>
+                                        {event.clubSubsidy ? (
+                                            <p className="text-[10px] text-gray-500 mt-0.5">
+                                                Totalt {event.totalCost.toLocaleString("nb-NO")},– · Klubben dekker {event.clubSubsidy.toLocaleString("nb-NO")},–
+                                            </p>
+                                        ) : null}
                                     </div>
+                                    <span className="material-symbols-outlined text-lg text-gray-500">receipt_long</span>
                                 </div>
                             )}
                         </div>
 
-
-                        {/* Map Placeholder */}
-                        {(event.address && !event.isTba) && (
-                            <div className="h-32 w-full bg-gray-100 rounded-lg overflow-hidden relative">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    frameBorder="0"
-                                    scrolling="no"
-                                    marginHeight={0}
-                                    marginWidth={0}
-                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(event.address || "")}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                                    className="filter grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
-                                ></iframe>
-                            </div>
-                        )}
-                        <div className="pt-2 border-t border-gray-100">
-                            <AddToCalendarButton event={event} />
-                        </div>
-                    </div>
-
-                    {/* Economy Card */}
-                    {event.totalCost && (
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
-                            <h3 className="text-base font-bold text-gray-900">Kostnad (per pers.)</h3>
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
-                                            <span className="material-symbols-outlined">receipt_long</span>
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-600">Total kostnad</span>
-                                    </div>
-                                    <span className="font-bold text-gray-900">{event.totalCost.toLocaleString("nb-NO")},-</span>
-                                </div>
-
-                                {event.clubSubsidy && (
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-[#2A9D8F]">
-                                                <span className="material-symbols-outlined">loyalty</span>
-                                            </div>
-                                            <span className="text-sm font-medium text-gray-600">Klubben dekker</span>
-                                        </div>
-                                        <span className="font-bold text-[#2A9D8F]">- {event.clubSubsidy.toLocaleString("nb-NO")},-</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="border-t border-gray-100 pt-4">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-base font-bold text-gray-900">Din andel</span>
-                                    <span className="text-xl font-bold text-[#4F46E5]">
-                                        {((event.totalCost || 0) - (event.clubSubsidy || 0)).toLocaleString("nb-NO")},-
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Attendees Card */}
-                    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-5">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-base font-bold text-gray-900">Deltakere</h3>
-                            <div className="flex items-center gap-2">
-                                <span className="px-1.5 py-0.5 bg-[#EEF2FF] text-[#4F46E5] rounded text-[10px] font-bold">
-                                    {attendeeCount} {event.maxAttendees ? `/ ${event.maxAttendees}` : ''}
-                                </span>
-                            </div>
-                        </div>
-
-                        {attendees.length > 0 ? (
-                            <div className="flex items-center -space-x-3 overflow-hidden py-1">
-                                {attendees.slice(0, 5).map((a) => (
-                                    <Avatar
-                                        key={a.id}
-                                        src={a.avatarUrl ?? null}
-                                        initials={a.firstName && a.lastName ? `${a.firstName[0]}${a.lastName[0]}`.toUpperCase() : (a.firstName || a.email).substring(0, 2).toUpperCase()}
-                                        alt={`${a.firstName || ''} ${a.lastName || ''}`}
-                                        className="w-10 h-10 border-2 border-white ring-1 ring-gray-100"
+                        {/* Map */}
+                        {event.address && !event.isTba && (
+                            <>
+                                <div className="h-px bg-white/8" />
+                                <div className="h-28 w-full rounded-xl overflow-hidden">
+                                    <iframe
+                                        width="100%"
+                                        height="100%"
+                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(event.address || "")}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                        className="filter grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
                                     />
-                                ))}
-                                {attendeeCount > 5 && (
-                                    <div className="w-10 h-10 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-gray-500 text-[10px] font-bold ring-1 ring-gray-100">
-                                        +{attendeeCount - 5}
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <p className="text-xs text-gray-400">Ingen deltakere enda.</p>
+                                </div>
+                            </>
                         )}
 
-                        <button
-                            onClick={() => setShowAttendees(true)}
-                            className="w-full py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                        >
-                            Se deltakerliste
-                        </button>
+                        <div className="h-px bg-white/8" />
+                        <AddToCalendarButton event={event} />
                     </div>
 
-                    {/* Action Card (Join/Leave) */}
+                    {/* Join / Leave card */}
                     {!event.hasPassed && (
-                        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-4">
-                            <h3 className="text-base font-bold text-gray-900">Påmelding</h3>
-                            <p className="text-xs text-gray-500">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
+                            <div className="flex items-center gap-4">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Påmelding</span>
+                                <div className="flex-1 h-px bg-gray-100" />
+                            </div>
+                            <p className="text-xs text-gray-500 leading-relaxed">
                                 {currentUserIsAttending
                                     ? "Du er påmeldt dette arrangementet."
                                     : (isRegistrationClosed
                                         ? "Påmeldingsfristen er over."
                                         : "Meld deg på arrangementet her.")}
                             </p>
-
                             <button
                                 onClick={handleAttendance}
                                 disabled={isPending || (!currentUserIsAttending && isRegistrationClosed)}
-                                className={`w-full py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${currentUserIsAttending
-                                    ? "bg-red-50 text-red-600 hover:bg-red-100"
-                                    : (!currentUserIsAttending && isRegistrationClosed)
-                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                        : "bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-xl"
-                                    }`}
+                                className={`w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                    currentUserIsAttending
+                                        ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
+                                        : (!currentUserIsAttending && isRegistrationClosed)
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                                            : "bg-gray-900 text-white hover:bg-gray-800 shadow-sm hover:shadow-md"
+                                }`}
                             >
                                 {isPending ? (
-                                    <span className="w-5 h-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                                    <span className="w-5 h-5 border-2 border-gray-400/25 border-t-gray-400 rounded-full animate-spin" />
                                 ) : (
                                     <>
-                                        <span className="material-symbols-outlined text-[1.2rem]">
+                                        <span className="material-symbols-outlined text-[1.1rem]">
                                             {currentUserIsAttending ? "remove_circle" : (isRegistrationClosed ? "block" : "check_circle")}
                                         </span>
                                         {currentUserIsAttending ? "Meld meg av" : (isRegistrationClosed ? "Påmelding stengt" : "Meld meg på")}
@@ -731,54 +718,93 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         </div>
                     )}
 
-                </div>
+                    {/* Attendees card */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Deltakere</span>
+                            <div className="flex-1 h-px bg-gray-100" />
+                            <span className="text-[9px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border bg-gray-50 text-gray-500 border-gray-200">
+                                {attendeeCount}{event.maxAttendees ? ` / ${event.maxAttendees}` : ""}
+                            </span>
+                        </div>
+                        <div className="px-4 py-4 flex flex-col gap-3">
+                            {attendees.length > 0 ? (
+                                <div className="flex items-center -space-x-2.5 overflow-hidden py-0.5">
+                                    {attendees.slice(0, 7).map((a) => (
+                                        <Avatar
+                                            key={a.id}
+                                            src={a.avatarUrl ?? null}
+                                            initials={a.firstName && a.lastName ? `${a.firstName[0]}${a.lastName[0]}`.toUpperCase() : (a.firstName || a.email).substring(0, 2).toUpperCase()}
+                                            alt={`${a.firstName || ""} ${a.lastName || ""}`}
+                                            className="w-9 h-9 border-2 border-white ring-1 ring-gray-100"
+                                        />
+                                    ))}
+                                    {attendeeCount > 7 && (
+                                        <div className="w-9 h-9 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-gray-500 text-[9px] font-bold ring-1 ring-gray-100">
+                                            +{attendeeCount - 7}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>Ingen deltakere enda.</p>
+                            )}
+                            <button
+                                onClick={() => setShowAttendees(true)}
+                                className="w-full py-2 border border-gray-200 rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] text-gray-500 hover:bg-gray-50 transition-colors"
+                            >
+                                Se deltakerliste
+                            </button>
+                        </div>
+                    </div>
 
-            </div >
-            {/* ATTENDEE MODAL */}
+
+                </div>
+            </div>
+
+            {/* ── ATTENDEE MODAL ─────────────────────────────────────── */}
             {showAttendees && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
                         onClick={() => setShowAttendees(false)}
                     />
-
-                    {/* Modal Content */}
                     <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        {/* Modal Header */}
-                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10">
-                            <h3 className="text-sm font-bold text-gray-900">Deltakere ({attendees.length})</h3>
+                        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Deltakere</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border bg-gray-50 text-gray-500 border-gray-200">
+                                    {attendees.length}
+                                </span>
+                            </div>
                             <button
                                 onClick={() => setShowAttendees(false)}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
                             >
                                 <span className="material-symbols-outlined text-xl">close</span>
                             </button>
                         </div>
-
-                        {/* Modal Body (List) */}
-                        <div className="overflow-y-auto p-2 scrollbar-hide">
+                        <div className="overflow-y-auto p-3 scrollbar-hide">
                             {attendees.length > 0 ? (
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-0.5">
                                     {attendees.map((attendee) => (
-                                        <div key={attendee.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                        <div key={attendee.id} className="flex items-center gap-3 p-2.5 hover:bg-gray-50 rounded-xl transition-colors">
                                             <Avatar
                                                 src={attendee.avatarUrl ?? null}
                                                 initials={attendee.firstName && attendee.lastName ? `${attendee.firstName[0]}${attendee.lastName[0]}`.toUpperCase() : (attendee.firstName || attendee.email).substring(0, 2).toUpperCase()}
-                                                alt={`${attendee.firstName || ''} ${attendee.lastName || ''}`}
+                                                alt={`${attendee.firstName || ""} ${attendee.lastName || ""}`}
                                                 className="w-8 h-8 flex-shrink-0 text-[10px]"
                                             />
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-sm font-bold text-gray-900 truncate">
-                                                    {attendee.firstName ? `${attendee.firstName} ${attendee.lastName || ''}` : 'Anonym'}
+                                                    {attendee.firstName ? `${attendee.firstName} ${attendee.lastName || ""}` : "Anonym"}
                                                 </span>
-                                                <span className="text-[10px] text-gray-500 truncate">{attendee.email}</span>
+                                                <span className="text-[10px] text-gray-400 truncate">{attendee.email}</span>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="py-8 text-center text-gray-400 text-xs">
+                                <div className="py-10 text-center text-gray-400 text-xs italic" style={{ fontFamily: "'Georgia', serif" }}>
                                     Ingen deltakere enda.
                                 </div>
                             )}
@@ -786,6 +812,6 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     </div>
                 </div>
             )}
-        </div >
+        </div>
     );
 }

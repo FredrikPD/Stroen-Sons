@@ -11,12 +11,14 @@ interface PostListProps {
 }
 
 export default function PostList({ isAdmin, categories = [] }: PostListProps) {
-    // Build a map of category name -> color style string
     const categoryColorMap = useMemo(() => {
         const map: Record<string, string> = {};
-        categories.forEach(cat => { map[cat.name] = getCategoryStyleString(cat.color); });
+        categories.forEach((cat) => {
+            map[cat.name] = getCategoryStyleString(cat.color);
+        });
         return map;
     }, [categories]);
+
     const [posts, setPosts] = useState<PostWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -31,9 +33,7 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
             if (loading) return;
             if (observer.current) observer.current.disconnect();
             observer.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMore) {
-                    fetchPosts(cursor);
-                }
+                if (entries[0].isIntersecting && hasMore) fetchPosts(cursor);
             });
             if (node) observer.current.observe(node);
         },
@@ -43,8 +43,6 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
     const fetchPosts = async (nextCursor?: string) => {
         try {
             setLoading(true);
-
-            // Call Server Action
             const data = await getPosts({
                 cursor: nextCursor,
                 limit: 10,
@@ -52,7 +50,6 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
                 sort: sort as "newest" | "oldest",
                 category,
             });
-
             setPosts((prev) => (nextCursor ? [...prev, ...data.items] : data.items));
             setCursor(data.nextCursor);
             setHasMore(!!data.nextCursor);
@@ -63,7 +60,6 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
         }
     };
 
-    // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
             setCursor(undefined);
@@ -76,115 +72,114 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
         setPosts((prev) => prev.filter((p) => p.id !== postId));
     };
 
+    const allCategories = categories.length > 0
+        ? categories
+        : [
+            { id: "NYHET", name: "NYHET", color: "gray" },
+            { id: "EVENT", name: "EVENT", color: "gray" },
+            { id: "REFERAT", name: "REFERAT", color: "gray" },
+            { id: "SOSIALT", name: "SOSIALT", color: "gray" },
+        ];
+
     return (
         <div className="flex flex-col gap-6 w-full">
-            {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">Innlegg</h1>
-                <p className="text-gray-500 text-sm">
-                    Siste viktige oppdateringer og diskusjoner fra medlemmene.
-                </p>
+
+            {/* ── Page Header ── */}
+            <div className="flex items-end justify-between gap-4 pt-1">
+                <div>
+                    <h1
+                        className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        Innlegg
+                    </h1>
+                    <div className="flex items-center gap-3 mt-3">
+                        <div className="h-px w-8 bg-gray-300" />
+                        <p
+                            className="text-[11px] text-gray-400 italic"
+                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                        >
+                            Nyheter og oppdateringer fra klubben
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex items-center gap-6 border-b border-gray-100 pb-px overflow-x-auto no-scrollbar">
+            {/* ── Category tabs ── */}
+            <div className="flex items-center gap-0 border-b border-gray-100 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <button
                     onClick={() => setCategory("ALL")}
-                    className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "ALL" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                        }`}
+                    className={`text-[10px] font-bold pb-3 px-4 border-b-2 transition-colors whitespace-nowrap uppercase tracking-[0.15em] ${
+                        category === "ALL"
+                            ? "text-gray-900 border-gray-900"
+                            : "text-gray-400 border-transparent hover:text-gray-700"
+                    }`}
                 >
-                    Siste innlegg
+                    Alle
                 </button>
-                {categories.length > 0 ? (
-                    categories.map((cat) => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setCategory(cat.name)}
-                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === cat.name ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                                }`}
-                        >
-                            {cat.name}
-                        </button>
-                    ))
-                ) : (
-                    // Fallback if no categories
-                    <>
-                        <button
-                            onClick={() => setCategory("NYHET")}
-                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "NYHET" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                                }`}
-                        >
-                            Nyheter
-                        </button>
-                        <button
-                            onClick={() => setCategory("EVENT")}
-                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "EVENT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                                }`}
-                        >
-                            Arrangementer
-                        </button>
-                        <button
-                            onClick={() => setCategory("REFERAT")}
-                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "REFERAT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                                }`}
-                        >
-                            Referater
-                        </button>
-                        <button
-                            onClick={() => setCategory("SOSIALT")}
-                            className={`text-xs font-bold pb-3 border-b-2 transition-colors whitespace-nowrap ${category === "SOSIALT" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent hover:text-gray-900"
-                                }`}
-                        >
-                            Sosialt
-                        </button>
-                    </>
-                )}
+                {allCategories.map((cat) => (
+                    <button
+                        key={cat.id}
+                        onClick={() => setCategory(cat.name)}
+                        className={`text-[10px] font-bold pb-3 px-4 border-b-2 transition-colors whitespace-nowrap uppercase tracking-[0.15em] ${
+                            category === cat.name
+                                ? "text-gray-900 border-gray-900"
+                                : "text-gray-400 border-transparent hover:text-gray-700"
+                        }`}
+                    >
+                        {cat.name}
+                    </button>
+                ))}
             </div>
 
-            {/* List */}
-            <div className="flex flex-col gap-6">
-                {posts.map((post, index) => {
-                    return (
-                        <div key={post.id} ref={posts.length === index + 1 ? lastPostElementRef : undefined}>
-                            <PostItem post={post} isAdmin={isAdmin} onDelete={handleDeletePost} categoryColorMap={categoryColorMap} />
-                        </div>
-                    );
-                })}
+            {/* ── Post list ── */}
+            <div className="flex flex-col gap-3">
+                {posts.map((post, index) => (
+                    <div
+                        key={post.id}
+                        ref={posts.length === index + 1 ? lastPostElementRef : undefined}
+                    >
+                        <PostItem
+                            post={post}
+                            isAdmin={isAdmin}
+                            onDelete={handleDeletePost}
+                            categoryColorMap={categoryColorMap}
+                        />
+                    </div>
+                ))}
             </div>
 
-            {
-                loading && (
-                    <div className="flex justify-center p-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
-                    </div>
-                )
-            }
+            {/* Loading */}
+            {loading && (
+                <div className="flex justify-center p-6">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-500" />
+                </div>
+            )}
 
-            {
-                !loading && posts.length > 0 && hasMore && (
-                    <div className="flex justify-center pt-8 pb-12">
-                        <button
-                            onClick={() => fetchPosts(cursor)}
-                            className="bg-white border border-gray-200 text-gray-900 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-1.5"
-                        >
-                            Last inn eldre innlegg
-                            <span className="material-symbols-outlined text-base">expand_more</span>
-                        </button>
-                    </div>
-                )
-            }
+            {/* Load more */}
+            {!loading && posts.length > 0 && hasMore && (
+                <div className="flex justify-center pt-4 pb-8">
+                    <button
+                        onClick={() => fetchPosts(cursor)}
+                        className="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-gray-50 transition-colors shadow-sm"
+                    >
+                        Last inn eldre innlegg
+                        <span className="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                </div>
+            )}
 
-            {
-                !loading && posts.length === 0 && (
-                    <div className="text-center py-12">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                            <span className="material-symbols-outlined text-gray-400 text-2xl">post_add</span>
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900">Ingen innlegg funnet</h3>
-                        <p className="text-gray-500 text-sm mt-1">Prøv å endre søkeord eller kom tilbake senere.</p>
-                    </div>
-                )
-            }
+            {/* Empty state */}
+            {!loading && posts.length === 0 && (
+                <div className="text-center py-16">
+                    <p
+                        className="text-gray-400 italic text-sm"
+                        style={{ fontFamily: "'Georgia', serif" }}
+                    >
+                        Ingen innlegg funnet.
+                    </p>
+                </div>
+            )}
         </div>
     );
 }

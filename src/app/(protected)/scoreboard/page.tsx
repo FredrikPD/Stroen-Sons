@@ -190,15 +190,15 @@ function EventCard({ event }: { event: EventWithPodium }) {
     });
 
     return (
-        <div className="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-md">
+        <div className="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-all hover:border-gray-400 hover:shadow-sm">
             <div className="flex flex-col lg:flex-row">
                 {/* Left: event info */}
                 <div className="p-5 lg:w-56 flex flex-col gap-2 justify-center border-b lg:border-b-0 lg:border-r border-gray-100">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#BFA181]">{dateStr}</p>
-                    <h3 className="text-base font-bold text-gray-900 leading-tight">{event.title}</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{dateStr}</p>
+                    <h3 className="text-base font-normal text-gray-900 leading-tight" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>{event.title}</h3>
                     <Link
                         href={`/events/${event.id}`}
-                        className="text-xs font-semibold text-gray-400 hover:text-[#BFA181] transition-colors mt-0.5 inline-flex items-center gap-1"
+                        className="text-xs font-semibold text-gray-400 hover:text-gray-700 transition-colors mt-0.5 inline-flex items-center gap-1"
                     >
                         Se arrangement
                         <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
@@ -241,12 +241,12 @@ function SeasonSection({ year, events, isCurrent }: { year: number; events: Even
     return (
         <section className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
-                <span className="text-[11px] font-bold uppercase tracking-widest text-[#BFA181]">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
                     {isCurrent ? "Nåværende sesong" : "Sesong"}
                 </span>
-                <h2 className="text-2xl font-black text-[#0d1419]">{year}</h2>
+                <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>{year}</h2>
                 <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-xs text-gray-300">{events.length} {events.length === 1 ? "arrangement" : "arrangementer"}</span>
+                <span className="text-[9px] font-bold text-gray-300 uppercase tracking-wider">{events.length} {events.length === 1 ? "arrangement" : "arrangementer"}</span>
             </div>
             <div className="flex flex-col gap-3">
                 {events.map((event) => (
@@ -264,7 +264,7 @@ function YearFilter({ years, selected }: { years: number[]; selected: number | n
                 href="/scoreboard"
                 className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider shrink-0 border-b-2 transition-colors ${
                     !selected
-                        ? "border-[#0d1419] text-[#0d1419]"
+                        ? "border-gray-900 text-gray-900"
                         : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
             >
@@ -276,7 +276,7 @@ function YearFilter({ years, selected }: { years: number[]; selected: number | n
                     href={`/scoreboard?year=${year}`}
                     className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider shrink-0 border-b-2 transition-colors ${
                         selected === year
-                            ? "border-[#BFA181] text-[#0d1419]"
+                            ? "border-gray-900 text-gray-900"
                             : "border-transparent text-gray-400 hover:text-gray-600"
                     }`}
                 >
@@ -502,7 +502,7 @@ function HallOfFame({ places }: { places: HallOfFamePlace[] }) {
             {/* Header bar */}
             <div className="flex items-center gap-3 px-5 pt-5 pb-0">
                 <span className="material-symbols-outlined text-[#F5C518] text-xl">emoji_events</span>
-                <h2 className="text-base font-black tracking-widest uppercase text-white">
+                <h2 className="text-base font-normal italic text-white" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                     Wall of Fame
                 </h2>
                 <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, #BFA18133 0%, transparent 100%)" }} />
@@ -512,7 +512,7 @@ function HallOfFame({ places }: { places: HallOfFamePlace[] }) {
             </div>
 
             {/* Podium stage */}
-            <div className="px-4 sm:px-8 pt-6 pb-0">
+            <div className="px-4 sm:px-8 pt-10 pb-0">
                 <div className="flex items-end gap-3 sm:gap-4 w-full max-w-2xl mx-auto">
                     {[2, 1, 3].map((place) => {
                         const placeData = places.find((p) => p.place === place);
@@ -621,7 +621,22 @@ export default async function ScoreboardPage({ searchParams }: ScoreboardPagePro
     const hallOfFamePlaces = computeHallOfFame(eventsWithPodium);
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
+
+            {/* ── Page Header ─────────────────────────────────────────── */}
+            <div className="flex items-end justify-between gap-4 pt-1">
+                <div>
+                    <h1
+                        className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        <em>Scoreboard</em>
+                    </h1>
+                </div>
+                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
+                    {eventsWithPodium.length} resultater
+                </p>
+            </div>
 
             {/* All-Time Hall of Fame — only when viewing all years */}
             {!selectedYear && hallOfFamePlaces.length > 0 && (
@@ -637,7 +652,7 @@ export default async function ScoreboardPage({ searchParams }: ScoreboardPagePro
             )}
 
             {/* Seasons */}
-            <div className="space-y-8">
+            <div className="flex flex-col gap-8">
                 {visibleYears.map((year) => (
                     <SeasonSection
                         key={year}

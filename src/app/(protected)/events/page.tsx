@@ -93,8 +93,6 @@ export default async function EventsPage() {
     }));
 
     return (
-        <div className="w-full bg-white min-h-full">
-            <EventsView initialEvents={serializedEvents} categoryColorMap={categoryColorMap} />
-        </div>
+        <EventsView initialEvents={serializedEvents} categoryColorMap={categoryColorMap} />
     );
 }

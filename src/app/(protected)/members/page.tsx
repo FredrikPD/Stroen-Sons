@@ -1,107 +1,77 @@
 import { getMembers } from "@/server/actions/members";
 import { Metadata } from "next";
 import { Avatar } from "@/components/Avatar";
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
     title: "Medlemmer",
     description: "Oversikt over alle medlemmer i Strøen Søns",
 };
 
-function RoleBadge({ role }: { role: string }) {
-    const isadmin = role === "ADMIN";
-    return (
-        <span
-            className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border shadow-sm ${isadmin
-                ? "bg-amber-50 text-amber-700 border-amber-200"
-                : "bg-indigo-50 text-indigo-700 border-indigo-200"
-                }`}
-        >
-            {role}
-        </span>
-    );
-}
-
 function MemberCard({ member }: { member: any }) {
     const isAdmin = member.role === "ADMIN";
+    const fullName = [member.firstName, member.lastName].filter(Boolean).join(" ") || member.email;
+    const joinedDate = new Date(member.createdAt).toLocaleDateString("nb-NO", { month: "short", year: "numeric" });
 
     return (
-        <div className="group relative break-inside-avoid">
-            <div className="relative flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 h-full overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-br pointer-events-none opacity-40 ${isAdmin
-                    ? "from-amber-500/5 via-transparent to-transparent"
-                    : "from-indigo-500/5 via-transparent to-transparent"
-                    }`} />
-
-                <div className="relative z-10 flex items-start justify-between">
-                    <Avatar
-                        src={member.avatarUrl ?? null}
-                        initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
-                        size="md"
-                        className="size-12 text-lg shadow-sm ring-2 ring-white bg-gradient-to-br from-zinc-600 to-zinc-900"
-                        alt={member.firstName || member.email}
-                    />
-                    <RoleBadge role={member.role} />
-                </div>
-
-                <div className="relative z-10">
-                    <h3 className={`text-lg font-bold transition-colors ${isAdmin ? "text-gray-900 group-hover:text-amber-700" : "text-gray-900 group-hover:text-indigo-700"}`}>
-                        {member.firstName} {member.lastName}
+        <div className="group bg-white rounded-2xl border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all overflow-hidden flex flex-col">
+            {/* Avatar + name */}
+            <div className="flex flex-col items-center gap-3 pt-6 pb-5 px-4 border-b border-gray-100">
+                <Avatar
+                    src={member.avatarUrl ?? null}
+                    initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
+                    size="lg"
+                    alt={fullName}
+                />
+                <div className="text-center min-w-0 w-full">
+                    <h3
+                        className="font-normal text-base text-gray-900 leading-snug truncate"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        {fullName}
                     </h3>
-                    <p className="text-sm text-gray-500">{member.email}</p>
-
-                    <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-gray-100">
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <span className="material-symbols-outlined text-[14px] text-gray-400">call</span>
-                            {member.phoneNumber ? (
-                                <span>{member.phoneNumber}</span>
-                            ) : (
-                                <span className="text-gray-400 italic">Ikke registrert</span>
-                            )}
-                        </div>
-
-                        {(member.address || member.city) ? (
-                            <div className="flex items-start gap-2 text-xs text-gray-600">
-                                <span className="material-symbols-outlined text-[14px] text-gray-400 mt-0.5">location_on</span>
-                                <span className="" title={`${member.address || ''}, ${member.zipCode || ''} ${member.city || ''}`}>
-                                    {[member.address, member.zipCode, member.city].filter(Boolean).join(", ")}
-                                </span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <span className="material-symbols-outlined text-[14px] text-gray-400">location_on</span>
-                                <span className="text-gray-400 italic">Ikke registrert</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className={`absolute top-28 right-6 opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none z-0`}>
-                    <span className="material-symbols-outlined text-6xl text-gray-900">
-                        {isAdmin ? "shield_person" : "person"}
+                    <span className={`text-[9px] font-bold uppercase tracking-widest mt-1 inline-block ${
+                        isAdmin ? "text-gray-900" : "text-gray-400"
+                    }`}>
+                        {isAdmin ? "Admin" : "Medlem"}
                     </span>
                 </div>
+            </div>
 
-                <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400 relative z-10">
-                    <span>Medlem siden</span>
-                    <span className="font-mono text-gray-600 font-medium">
-                        {new Date(member.createdAt).toLocaleDateString("no-NO", {
-                            year: "numeric",
-                            month: "short",
-                        })}
+            {/* Details */}
+            <div className="px-4 py-3.5 flex flex-col gap-1.5 flex-1">
+                <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[13px] text-gray-300 shrink-0">mail</span>
+                    <span className="text-xs text-gray-400 truncate">{member.email}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[13px] text-gray-300 shrink-0">call</span>
+                    <span className="text-xs text-gray-400">
+                        {member.phoneNumber ?? <span className="italic text-gray-300">—</span>}
                     </span>
                 </div>
+                <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[13px] text-gray-300 shrink-0">location_on</span>
+                    <span className="text-xs text-gray-400 truncate">
+                        {member.city ?? <span className="italic text-gray-300">—</span>}
+                    </span>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-gray-300">Siden</span>
+                <span className="text-[10px] font-bold text-gray-400 tabular-nums">{joinedDate}</span>
             </div>
         </div>
     );
 }
 
-import { ensureMember } from "@/server/auth/ensureMember";
-import { redirect } from "next/navigation";
-
 export default async function MembersPage() {
     try {
         await ensureMember();
-    } catch (e) {
+    } catch {
         redirect("/sign-in");
     }
 
@@ -109,50 +79,79 @@ export default async function MembersPage() {
 
     if (!success || !members) {
         return (
-            <div className="p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm border border-gray-200">
-                Kunne ikke laste inn medlemmer.
+            <div className="text-center py-8 rounded-xl border border-dashed border-gray-200">
+                <p className="text-xs text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>
+                    Kunne ikke laste inn medlemmer.
+                </p>
             </div>
         );
     }
 
-    // Calculate stats
-    const totalMembers = members.length;
+    const admins = members.filter(m => m.role === "ADMIN");
+    const regularMembers = members.filter(m => m.role !== "ADMIN");
 
     return (
-        <div className="space-y-12">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-8 lg:p-12 text-center lg:text-left group">
-                {/* Decorative background element, similar to cards but larger */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-transparent pointer-events-none" />
+        <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
 
-                <div className="relative z-10 max-w-2xl">
-                    <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                        Medlemmer
+            {/* ── Page Header ─────────────────────────────────────────── */}
+            <div className="flex items-end justify-between gap-4 pt-1">
+                <div>
+                    <h1
+                        className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        <em>Medlemmer</em>
                     </h1>
-                    <p className="text-lg text-gray-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                        Aktive medlemmer i Strøen Søns
-                    </p>
-                </div>
-
-                {/* Stats */}
-                <div className="mt-8 lg:mt-0 lg:absolute lg:bottom-12 lg:right-12 flex gap-8 justify-center lg:justify-end relative z-10">
-                    <div className="text-center lg:text-right">
-                        <p className="text-3xl font-bold text-gray-900">{totalMembers}</p>
-                        <p className="text-xs uppercase tracking-wider text-gray-500 font-bold">Medlemmer</p>
+                    <div className="flex items-center gap-3 mt-3">
+                        <div className="h-px w-8 bg-gray-300" />
+                        <p className="text-[11px] text-gray-400 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                            Brødrene i Strøen Søns
+                        </p>
                     </div>
                 </div>
+                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
+                    {members.length} medlemmer
+                </p>
+            </div>
 
-                <div className="absolute top-1/2 right-0 -translate-y-1/2 opacity-[0.03] pointer-events-none hidden lg:block">
-                    <span className="material-symbols-outlined text-[300px]">groups</span>
+            {/* ── Stats bar ───────────────────────────────────────────── */}
+            <div
+                className="rounded-2xl p-5 grid grid-cols-3 divide-x divide-white/10"
+                style={{ background: "linear-gradient(145deg, #1a1a1a 0%, #111111 100%)", boxShadow: "0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+            >
+                <div className="pr-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500 mb-1">Totalt</p>
+                    <p className="font-bold text-gray-100 text-2xl leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+                        {members.length}
+                    </p>
+                </div>
+                <div className="px-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500 mb-1 truncate">Administratorer</p>
+                    <p className="font-bold text-gray-100 text-2xl leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+                        {admins.length}
+                    </p>
+                </div>
+                <div className="pl-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500 mb-1">Medlemmer</p>
+                    <p className="font-bold text-gray-100 text-2xl leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+                        {regularMembers.length}
+                    </p>
                 </div>
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {members.map((member) => (
-                    <MemberCard key={member.id} member={member} />
-                ))}
-            </div>
+            {/* ── Members ─────────────────────────────────────────────── */}
+            {members.length > 0 && (
+                <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Medlemmer</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-wider">{regularMembers.length}</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {members.map(member => <MemberCard key={member.id} member={member} />)}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

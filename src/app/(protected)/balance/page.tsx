@@ -1,9 +1,12 @@
 import { getMyFinancialData } from "@/server/actions/finance";
+import { BalancePanelLayout } from "@/components/dashboard/BalancePanelLayout";
 import { MyInvoices } from "@/components/dashboard/MyInvoices";
 import { BankInfoCard } from "@/components/dashboard/BankInfoCard";
 import { UserTransactions } from "@/components/dashboard/UserTransactions";
 import { MonthlyFeePauseCard } from "@/components/dashboard/MonthlyFeePauseCard";
 import { Metadata } from "next";
+import { ensureMember } from "@/server/auth/ensureMember";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +14,6 @@ export const metadata: Metadata = {
     title: "Saldo & Økonomi",
     description: "Oversikt over din konto, fakturaer og betalingshistorikk.",
 };
-
-import { ensureMember } from "@/server/auth/ensureMember";
-import { redirect } from "next/navigation";
 
 export default async function BalancePage() {
     try {
@@ -24,37 +24,74 @@ export default async function BalancePage() {
 
     const data = await getMyFinancialData();
 
-    const visibleInvoices = data.paymentRequests.filter((invoice) => invoice.status !== "PAID");
+    const visibleInvoices = data.paymentRequests;
+
+    const paidThisYear = Math.abs(
+        data.transactions
+            .filter(t => t.amount > 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
+            .reduce((acc, curr) => acc + curr.amount, 0)
+    );
+    const expensesThisYear = Math.abs(
+        data.transactions
+            .filter(t => t.amount < 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
+            .reduce((acc, curr) => acc + curr.amount, 0)
+    );
+    const unpaidTotal = data.paymentRequests
+        .filter(req => req.status === 'PENDING')
+        .reduce((acc, curr) => acc + curr.amount, 0);
+
+    const fmt = (n: number) => n.toLocaleString('no-NO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 max-w-6xl mx-auto">
-            {/* Header Section */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Saldo & Økonomi</h1>
-                <p className="text-sm text-gray-500">Oversikt over din konto, fakturaer og betalingshistorikk.</p>
+        <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
+
+            {/* ── Page Header ─────────────────────────────────────────── */}
+            <div className="flex items-end justify-between gap-4 pt-1">
+                <div>
+                    <h1
+                        className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        <em>Saldo & Økonomi</em>
+                    </h1>
+                    <div className="flex items-center gap-3 mt-3">
+                        <div className="h-px w-8 bg-gray-300" />
+                        <p className="text-[11px] text-gray-400 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                            Konto, fakturaer og betalingshistorikk
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {/* Main Grid: Balance/Bank Card (Left) vs Invoices (Right) */}
-            <div className="flex flex-col lg:flex-row gap-4 items-start">
-                <div className="lg:w-1/3 w-full">
+            {/* ── Balance + Invoices ───────────────────────────────────── */}
+            <BalancePanelLayout
+                left={
                     <div
-                        className="bg-[#0F172A] text-white p-6 rounded-xl shadow-md relative overflow-hidden lg:h-[410px]"
+                        className="rounded-2xl p-5 flex flex-col gap-5 relative overflow-hidden text-white"
+                        style={{ background: "linear-gradient(180deg, #131313 0%, #0f0f0f 100%)", boxShadow: "0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
                     >
-                        <div className="absolute top-4 right-4 text-white/5 pointer-events-none">
-                            <span className="material-symbols-outlined text-[5rem]">account_balance_wallet</span>
+                        <div className="absolute top-4 right-4 text-white/[0.03] pointer-events-none">
+                            <span className="material-symbols-outlined text-[6rem]">account_balance_wallet</span>
                         </div>
 
                         <div className="relative z-10">
-                            <h2 className="text-white/60 font-medium uppercase tracking-wider text-xs mb-1">Din Balanse</h2>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500 mb-2">Din balanse</p>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-bold tracking-tight">
-                                    {data.balance.toLocaleString('no-NO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                <span
+                                    className="text-4xl font-normal text-gray-100"
+                                    style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                >
+                                    {fmt(data.balance)}
                                 </span>
-                                <span className="text-lg text-white/60">NOK</span>
+                                <span className="text-base text-gray-500">NOK</span>
                             </div>
                         </div>
 
+                        <div className="h-px bg-white/8" />
+
                         <BankInfoCard mode="embedded" />
+
+                        <div className="h-px bg-white/8" />
 
                         <MonthlyFeePauseCard
                             initialEnabled={data.monthlyFeePause.enabled}
@@ -63,82 +100,51 @@ export default async function BalancePage() {
                             mode="embedded"
                         />
                     </div>
-                </div>
+                }
+                right={<MyInvoices invoices={visibleInvoices} limit={4} />}
+            />
 
-                {/* Unpaid Invoices (Right - 2/3 width) */}
-                <div className="lg:w-2/3 w-full min-w-0 lg:h-[410px]">
-                    <MyInvoices invoices={visibleInvoices} className="h-full" />
-                </div>
-            </div>
-
-            {/* Status / Quick Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Paid This Year */}
-                <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="material-symbols-outlined text-emerald-500 text-lg">arrow_upward</span>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Innbetalt i år</span>
+            {/* ── Stats ───────────────────────────────────────────────── */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Innbetalt i år</span>
                     </div>
-                    <div>
-                        <span className="text-3xl font-bold tracking-tight text-gray-900">
-                            {Math.abs(data.transactions
-                                .filter(t => t.amount > 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
-                                .reduce((acc, curr) => acc + curr.amount, 0)
-                            ).toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <div className="px-4 py-3">
+                        <span className="text-2xl font-normal text-gray-900" style={{ fontFamily: "'Georgia', serif" }}>
+                            {fmt(paidThisYear)}
                         </span>
-                        <span className="text-lg text-gray-500"> NOK</span>
-                    </div>
-                    <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
-                        <span className="material-symbols-outlined text-7xl text-emerald-500">payments</span>
+                        <span className="text-sm text-gray-400 ml-1">NOK</span>
                     </div>
                 </div>
 
-                {/* Expenses This Year */}
-                <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="material-symbols-outlined text-red-500 text-lg">arrow_downward</span>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Utgifter i år</span>
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Utgifter i år</span>
                     </div>
-                    <div>
-                        <span className="text-3xl font-bold tracking-tight text-gray-900">
-                            {Math.abs(data.transactions
-                                .filter(t => t.amount < 0 && new Date(t.date).getFullYear() === new Date().getFullYear())
-                                .reduce((acc, curr) => acc + curr.amount, 0)
-                            ).toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <div className="px-4 py-3">
+                        <span className="text-2xl font-normal text-gray-900" style={{ fontFamily: "'Georgia', serif" }}>
+                            {fmt(expensesThisYear)}
                         </span>
-                        <span className="text-lg text-gray-500"> NOK</span>
-                    </div>
-                    <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
-                        <span className="material-symbols-outlined text-7xl text-red-500">trending_down</span>
+                        <span className="text-sm text-gray-400 ml-1">NOK</span>
                     </div>
                 </div>
 
-                {/* Total Invoice Amount */}
-                <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between h-[140px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="material-symbols-outlined text-indigo-500 text-lg">receipt_long</span>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ubetalt fakturaer</span>
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Ubetalt fakturaer</span>
                     </div>
-                    <div>
-                        <span className="text-3xl font-bold tracking-tight text-gray-900">
-                            {data.paymentRequests
-                                .filter(req => req.status === 'PENDING')
-                                .reduce((acc, curr) => acc + curr.amount, 0)
-                                .toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <div className="px-4 py-3">
+                        <span className={`text-2xl font-normal ${unpaidTotal > 0 ? "text-amber-600" : "text-gray-900"}`} style={{ fontFamily: "'Georgia', serif" }}>
+                            {fmt(unpaidTotal)}
                         </span>
-                        <span className="text-lg text-gray-500"> NOK</span>
-                    </div>
-                    <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
-                        <span className="material-symbols-outlined text-7xl text-indigo-500">account_balance_wallet</span>
+                        <span className="text-sm text-gray-400 ml-1">NOK</span>
                     </div>
                 </div>
             </div>
 
-            {/* Transaction History */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
+            {/* ── Transaction History ──────────────────────────────────── */}
+            <div className="flex flex-col gap-0">
                 <UserTransactions transactions={data.transactions.map(tx => ({
                     ...tx,
                     amount: Number(tx.amount)

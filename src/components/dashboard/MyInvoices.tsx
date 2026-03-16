@@ -14,134 +14,129 @@ type Invoice = {
 };
 
 export function MyInvoices({ invoices, className = "", limit }: { invoices: Invoice[], className?: string, limit?: number }) {
-    // Sort: Unpaid (Overdue first), then Paid (Newest first)
-    const sortedInvoices = [...invoices].sort((a, b) => {
-        if (a.status !== b.status) {
-            return a.status === 'PENDING' ? -1 : 1;
-        }
-        // If both pending, overdue/due date asc
-        if (a.status === 'PENDING') {
+    const unpaid = [...invoices]
+        .filter(i => i.status === "PENDING")
+        .sort((a, b) => {
             const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
             const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
             return dateA - dateB;
-        }
-        // If both paid, likely want newest first? Or maybe logic depends on updated date which we don't strictly have here (only dueDate)
-        // Let's use ID/created implicitly or dueDate desc
-        const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
-        const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
-        return dateB - dateA;
-    });
+        });
+    const paid = [...invoices]
+        .filter(i => i.status === "PAID")
+        .sort((a, b) => {
+            const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+            const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+            return dateB - dateA;
+        });
 
-    const pendingCount = invoices.filter(i => i.status === 'PENDING').length;
-    const unpaidInvoices = sortedInvoices.filter((invoice) => invoice.status !== "PAID");
-    const displayedUnpaidCount = Math.min(limit || unpaidInvoices.length, unpaidInvoices.length);
-
-    if (invoices.length === 0) {
-        return (
-            <div className={`bg-white border border-gray-200 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden ${className}`}>
-                {/* ... (empty state same as before) ... */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-transparent pointer-events-none" />
-                <Link href="/invoices" className="absolute top-4 right-4 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
-                    Se alle
-                </Link>
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-400">
-                    <span className="material-symbols-outlined text-3xl">task_alt</span>
-                </div>
-                <h3 className="font-bold text-gray-900 text-lg mb-2">Ingen fakturaer</h3>
-                <p className="text-gray-500 text-sm max-w-[250px]">
-                    Du har ingen ubetalte fakturaer.
-                </p>
-            </div>
-        );
-    }
+    const pendingCount = unpaid.length;
+    const sorted = [...unpaid, ...paid];
+    const displayed = limit ? sorted.slice(0, limit) : sorted;
 
     return (
-        <div className={`bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow min-w-0 ${className}`}>
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-
-            {/* Decorative Background Icon */}
-            <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none">
-                <span className="material-symbols-outlined text-[10rem] text-blue-500">receipt_long</span>
+        <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden ${className}`}>
+            {/* Header */}
+            <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 shrink-0">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 shrink-0">
+                    Mine Fakturaer
+                </span>
+                {pendingCount > 0 && (
+                    <span className="text-[9px] font-bold uppercase tracking-wide text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full shrink-0">
+                        {pendingCount} ubetalt{pendingCount !== 1 ? "e" : ""}
+                    </span>
+                )}
+                <div className="flex-1 h-px bg-gray-100" />
+                <Link
+                    href="/invoices"
+                    className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors shrink-0"
+                >
+                    Se alle
+                </Link>
             </div>
 
-            <div className="flex flex-col h-full relative z-10">
-                <div className="flex items-center justify-between gap-3 mb-4 flex-none min-w-0">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 bg-blue-50 rounded-md flex items-center justify-center text-blue-600">
-                            <span className="material-symbols-outlined text-[1.1rem]">receipt_long</span>
-                        </div>
-                        <h3 className="font-bold text-gray-900 text-base truncate">Mine Fakturaer</h3>
-                    </div>
+            {/* Invoice slips */}
+            <div className="px-4 py-3 space-y-2 overflow-y-auto flex-1">
+                {displayed.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic py-3" style={{ fontFamily: "'Georgia', serif" }}>
+                        Ingen ubetalte fakturaer.
+                    </p>
+                ) : (
+                    displayed.map((inv, index) => {
+                        const isPaid = inv.status === "PAID";
+                        const prevIsPaid = index > 0 && displayed[index - 1].status === "PAID";
+                        const showSeparator = isPaid && !prevIsPaid && index > 0;
+                        const isOverdue = !isPaid && inv.dueDate && new Date(inv.dueDate) < new Date();
+                        const dueDateDisplay = inv.dueDate
+                            ? new Date(inv.dueDate).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" })
+                            : null;
 
-                    <div className="flex items-center gap-2 shrink-0">
-                        {pendingCount > 0 && (
-                            <div className="bg-[#FFF8E1] text-[#785900] text-[10px] uppercase tracking-wide font-bold px-2.5 py-1 rounded-full border border-[#FFE082]/30">
-                                {pendingCount} til forfall
-                            </div>
-                        )}
-                        <Link href="/invoices" className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
-                            Se alle
-                        </Link>
-                    </div>
-                </div>
+                        const accentColor = isPaid
+                            ? "#10b981"   // emerald
+                            : isOverdue
+                            ? "#ef4444"   // red
+                            : "#d1d5db";  // gray
 
-                <div className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 space-y-3 custom-scrollbar">
-                    <div className="space-y-3">
-                        {sortedInvoices.slice(0, limit).map((inv) => {
-                            const isPaid = inv.status === 'PAID';
-                            const isOverdue = !isPaid && inv.dueDate && new Date(inv.dueDate) < new Date();
-                            const dueDateDisplay = inv.dueDate
-                                ? new Date(inv.dueDate).toLocaleDateString('no-NO')
-                                : 'Ingen frist';
+                        const statusLabel = isPaid ? "Betalt" : isOverdue ? "Forfalt" : "Ubetalt";
+                        const statusClasses = isPaid
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            : isOverdue
+                            ? "bg-red-50 text-red-600 border-red-100"
+                            : "bg-gray-50 text-gray-500 border-gray-200";
 
-                            return (
-                                <Link
-                                    href={`/invoices/${inv.id}`}
-                                    key={inv.id}
-                                    className={`
-                                        block border p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all backdrop-blur-sm group/item
-                                        ${isPaid
-                                            ? "bg-gray-50/50 border-gray-100 hover:bg-gray-50 hover:border-gray-300 opacity-75 hover:opacity-100"
-                                            : "bg-white/60 border-gray-200 hover:bg-white hover:border-blue-300 hover:shadow-md"
-                                        }
-                                    `}
-                                >
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <p className={`font-bold text-xs transition-colors ${isPaid ? "text-gray-600" : "text-gray-900 group-hover/item:text-blue-600"}`}>
+                        return (
+                            <React.Fragment key={inv.id}>
+                            {showSeparator && (
+                                <div className="flex items-center gap-3 my-1">
+                                    <div className="flex-1 h-px bg-gray-100" />
+                                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-gray-300">Betalt</span>
+                                    <div className="flex-1 h-px bg-gray-100" />
+                                </div>
+                            )}
+                            <Link
+                                href={`/invoices/${inv.id}`}
+                                className="group block rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all"
+                            >
+                                <div className="flex">
+                                    {/* Status accent stripe */}
+                                    <div className="w-1 shrink-0" style={{ backgroundColor: accentColor }} />
+
+                                    <div className="flex-1 min-w-0 px-3.5 py-3">
+                                        {/* Title + status badge */}
+                                        <div className="flex items-center justify-between gap-2 mb-2">
+                                            <p className="text-[13px] font-semibold text-gray-900 group-hover:text-gray-600 transition-colors leading-snug line-clamp-1">
                                                 {inv.title}
                                             </p>
-                                            {isPaid && (
-                                                <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-200">
-                                                    BETALT
-                                                </span>
-                                            )}
+                                            <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border shrink-0 ${statusClasses}`}>
+                                                {statusLabel}
+                                            </span>
                                         </div>
 
-                                        <p className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-2">
-                                            <span>#{inv.id.slice(-4).toUpperCase()}</span>
-                                            <span className="hidden md:inline text-gray-300">•</span>
-                                            <span className={isOverdue ? "text-red-600 font-medium" : "text-gray-500"}>
-                                                {isPaid ? "Betalt" : `Forfall: ${dueDateDisplay}`}
-                                            </span>
-                                        </p>
+                                        {/* Bottom row: due date + amount */}
+                                        <div className="flex items-end justify-between gap-2">
+                                            <div>
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+                                                    {isPaid ? "Betalt" : "Forfall"}
+                                                </p>
+                                                <p className={`text-[11px] font-medium ${isOverdue ? "text-red-500" : "text-gray-500"}`}>
+                                                    {dueDateDisplay ?? "Ingen frist"}
+                                                </p>
+                                            </div>
+                                            <p
+                                                className={`text-base font-normal leading-none ${
+                                                    isPaid ? "text-gray-400" : isOverdue ? "text-red-500" : "text-gray-900"
+                                                }`}
+                                                style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                            >
+                                                {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(inv.amount)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto mt-1 md:mt-0">
-                                        <p className={`font-bold text-sm whitespace-nowrap ${isPaid ? "text-gray-400" : "text-gray-900"}`}>
-                                            kr {inv.amount.toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </p>
-                                        <span className="material-symbols-outlined text-gray-300 group-hover/item:text-blue-500 transition-colors">chevron_right</span>
-                                    </div>
-                                </Link>
-                            )
-                        })}
-                    </div>
-
-                    <div className="mt-6 mb-1 text-center pb-2">
-                        <p className="font-medium text-gray-400 text-xs">Viser {displayedUnpaidCount} av {unpaidInvoices.length} ubetalte fakturaer</p>
-                    </div>
-                </div>
+                                </div>
+                            </Link>
+                            </React.Fragment>
+                        );
+                    })
+                )}
             </div>
         </div>
     );

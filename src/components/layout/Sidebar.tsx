@@ -7,58 +7,96 @@ import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV, type NavItem } from "./nav";
 
 function SidebarLink({ item }: { item: NavItem }) {
   const pathname = usePathname();
-  // Simple matching logic
   const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
 
   return (
     <Link
       href={item.href}
-      className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 outline-none ${isActive
-        ? "bg-white text-slate-900 shadow-sm font-medium"
-        : "text-slate-300 hover:text-white hover:bg-white/5"
-        }`}
+      className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 outline-none ${
+        isActive
+          ? "text-white"
+          : "text-gray-300 hover:text-white hover:bg-white/5"
+      }`}
+      style={isActive ? { background: "rgba(255,255,255,0.07)" } : undefined}
     >
-      <span className={`material-symbols-outlined text-[1.2rem] transition-colors ${isActive ? "text-slate-900" : "group-hover:text-white text-slate-300"
-        }`}>
+      {/* Active left accent */}
+      {isActive && (
+        <span
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-6 rounded-full"
+          style={{ background: "rgba(255,255,255,0.5)" }}
+        />
+      )}
+
+      <span
+        className={`material-symbols-outlined text-[1.1rem] transition-colors shrink-0 ${
+          isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+        }`}
+      >
         {item.icon}
       </span>
-      <span className="text-sm tracking-wide">
+
+      <span className="text-[13px] tracking-wide font-medium">
         {item.label}
       </span>
     </Link>
   );
 }
 
-export default function Sidebar({ role, userRole }: { role?: string, userRole?: any }) {
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 px-3 mb-2">
+      <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-400 shrink-0">
+        {label}
+      </span>
+      <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
+    </div>
+  );
+}
+
+export default function Sidebar({ role, userRole }: { role?: string; userRole?: any }) {
   const isAdmin = role === "ADMIN";
   const { signOut } = useClerk();
   const { user } = useUser();
   const router = useRouter();
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col border-r border-[#1e293b]/50 h-full font-sans text-slate-400 shadow-xl z-50 transition-colors duration-200" style={{ backgroundColor: '#0d1419' }}>
-
-      {/* Header / Logo */}
-      <div className="h-14 flex items-center px-6 shrink-0 border-b border-white/[0.05] gap-3 group w-full">
-        <div className="relative shrink-0">
-          <img
-            alt="Logo"
-            className="rounded-full size-9 object-cover ring-2 ring-white/10 ring-white/50 transition-all"
-            src="/images/SS-Logo-2.png"
-          />
-        </div>
-        <div className="flex flex-col justify-center">
-          <h1 className="text-white text-base font-semibold tracking-tight leading-none group-hover:text-gray-200 transition-colors">Strøen Søns</h1>
-          <span className="text-[10px] uppercase tracking-[0.1em] text-gray-400 font-bold mt-0.5">Etablert 2025</span>
+    <aside
+      className="hidden lg:flex w-68 flex-col h-full z-50"
+      style={{
+        background: "linear-gradient(180deg, #131313 0%, #0f0f0f 100%)",
+        borderRight: "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
+      {/* ── Logo ── */}
+      <div
+        className="h-14 flex items-center px-5 shrink-0 gap-3.5"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        <img
+          alt="Logo"
+          className="size-8 rounded-full object-cover shrink-0"
+          style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 0 0 3px rgba(255,255,255,0.04)" }}
+          src="/images/SS-Logo-2.png"
+        />
+        <div>
+          <h1
+            className="text-white text-[15px] font-normal leading-none"
+            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+          >
+            Strøen Søns
+          </h1>
+          <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mt-1 block">
+            Etablert 2025
+          </span>
         </div>
       </div>
 
-      {/* Nav Area */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* ── Nav Area ── */}
+      <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
         {/* Main Nav */}
         <div>
-          <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Meny</h3>
+          <SectionHeader label="Meny" />
           <div className="flex flex-col gap-0.5">
             {MAIN_NAV.map((item) => (
               <SidebarLink key={item.href} item={item} />
@@ -68,7 +106,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
 
         {/* Account Nav */}
         <div>
-          <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Min Konto</h3>
+          <SectionHeader label="Min Konto" />
           <div className="flex flex-col gap-0.5">
             {ACCOUNT_NAV.map((item) => (
               <SidebarLink key={item.href} item={item} />
@@ -79,11 +117,9 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
         {/* Admin Nav */}
         {(isAdmin || role === "MODERATOR" || (userRole?.allowedPaths && userRole.allowedPaths.length > 0)) && (
           <div>
-            <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Admin</h3>
+            <SectionHeader label="Admin" />
             <div className="flex flex-col gap-0.5">
-              {/* Admin Dashboard Link explicitly */}
               <SidebarLink item={{ href: "/admin/dashboard", label: "Dashboard", icon: "admin_panel_settings" }} />
-
               {ADMIN_NAV
                 .filter(item => {
                   if (item.href === "/admin/dashboard") return false;
@@ -92,7 +128,7 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
                     return userRole.allowedPaths.some((pattern: string) => {
                       try {
                         return new RegExp(`^${pattern}$`).test(item.href);
-                      } catch (e) { return false; }
+                      } catch { return false; }
                     });
                   }
                   if (role === "MODERATOR") {
@@ -108,25 +144,42 @@ export default function Sidebar({ role, userRole }: { role?: string, userRole?: 
         )}
       </div>
 
-      {/* Bottom Section: Footer Links + Profile */}
-      <div className="p-2 mt-auto border-t border-slate-800/50">
+      {/* ── User / Logout ── */}
+      <div
+        className="p-3 shrink-0"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+      >
         <button
-          onClick={() => signOut(() => router.push('/sign-in'))}
-          className="flex w-full items-center gap-3 p-2.5 rounded-xl transition-colors hover:bg-white/5 group relative overflow-hidden text-left outline-none cursor-pointer"
+          onClick={() => signOut(() => router.push("/sign-in"))}
+          className="flex w-full items-center gap-3 p-2.5 rounded-xl transition-all group outline-none cursor-pointer hover:bg-white/5"
         >
-          {/* Info */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <span className="text-sm font-semibold text-white truncate group-hover:text-gray-200 transition-colors leading-tight">
+          {/* Avatar */}
+          <div
+            className="size-8 rounded-full shrink-0 overflow-hidden flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.08)", boxShadow: "0 0 0 1px rgba(255,255,255,0.08)" }}
+          >
+            {user?.imageUrl ? (
+              <img src={user.imageUrl} alt="" className="size-8 object-cover" />
+            ) : (
+              <span className="text-[11px] font-bold text-gray-400 uppercase">
+                {user?.firstName?.[0] ?? "?"}{user?.lastName?.[0] ?? ""}
+              </span>
+            )}
+          </div>
+
+          {/* Name / email */}
+          <div className="flex-1 min-w-0 text-left">
+            <span className="block text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors leading-tight truncate">
               {user?.fullName || "Bruker"}
             </span>
-            <span className="text-[10px] text-slate-400 truncate group-hover:text-slate-300 transition-colors">
+            <span className="block text-[10px] text-gray-500 group-hover:text-gray-400 transition-colors truncate">
               {user?.primaryEmailAddress?.emailAddress || ""}
             </span>
           </div>
 
-          {/* Logout Icon */}
-          <div className="size-8 flex items-center justify-center rounded-lg text-slate-400 group-hover:text-red-500 group-hover:bg-red-500/10 transition-all">
-            <span className="material-symbols-outlined text-[1.2rem] scale-x-[-1]">logout</span>
+          {/* Logout icon */}
+          <div className="size-7 flex items-center justify-center rounded-lg text-gray-500 group-hover:text-red-400 group-hover:bg-red-500/10 transition-all shrink-0">
+            <span className="material-symbols-outlined text-[1.1rem] scale-x-[-1]">logout</span>
           </div>
         </button>
       </div>
