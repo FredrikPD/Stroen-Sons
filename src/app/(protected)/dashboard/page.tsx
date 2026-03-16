@@ -471,39 +471,42 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">Transaksjoner</span>
               <div className="flex-1 h-px bg-gray-100" />
+              <Link href="/balance" className="text-[9px] font-bold uppercase tracking-wider text-gray-400 hover:text-gray-700 transition-colors">Se alle</Link>
             </div>
-            <div className="px-4 py-3 space-y-0.5">
+            <div className="divide-y divide-gray-50">
               {transactions.length > 0 ? (
                 transactions.map((tx) => {
                   const isPositive = Number(tx.amount) > 0;
+                  const absFormatted = new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(Math.abs(Number(tx.amount)));
                   return (
                     <Link
                       key={tx.id}
                       href={`/balance/transactions/${tx.id}`}
-                      className="flex items-center justify-between py-2.5 px-1 -mx-1 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer"
+                      className="flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 transition-colors group"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isPositive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"}`}>
-                          <span className="material-symbols-outlined text-[13px]">
-                            {isPositive ? "arrow_upward" : "arrow_downward"}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-px ${isPositive ? "bg-emerald-400" : "bg-red-400"}`} />
                         <div className="min-w-0">
-                          <span className="font-semibold text-[12px] text-gray-800 group-hover:text-gray-600 transition-colors line-clamp-1 block">{tx.description}</span>
-                          <span className="text-[9px] text-gray-400 font-medium">
+                          <span className="text-[12px] text-gray-800 group-hover:text-gray-600 transition-colors line-clamp-1 block leading-snug">{tx.description}</span>
+                          <span className="text-[9px] text-gray-400">
                             {new Date(tx.date).toLocaleDateString("nb-NO", { day: "numeric", month: "short" })}
                           </span>
                         </div>
                       </div>
-                      <span className={`font-mono font-bold text-xs shrink-0 ml-2 ${isPositive ? "text-emerald-600" : "text-red-500"}`}>
-                        {isPositive ? "+" : ""}
-                        {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(Number(tx.amount))}
-                      </span>
+                      <div className="flex items-baseline gap-0.5 shrink-0 ml-3">
+                        <span
+                          className={`text-sm tabular-nums ${isPositive ? "text-emerald-600" : "text-gray-800"}`}
+                          style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                        >
+                          {isPositive ? "+" : "−"}{absFormatted}
+                        </span>
+                        <span className="text-[9px] text-gray-400 ml-0.5">kr</span>
+                      </div>
                     </Link>
                   );
                 })
               ) : (
-                <p className="text-xs text-gray-400 italic py-3" style={{ fontFamily: "'Georgia', serif" }}>Ingen transaksjoner funnet.</p>
+                <p className="text-xs text-gray-400 italic py-4 px-4" style={{ fontFamily: "'Georgia', serif" }}>Ingen transaksjoner funnet.</p>
               )}
             </div>
           </div>
