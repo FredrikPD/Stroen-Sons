@@ -76,18 +76,16 @@ export async function generateMonthlyFees(year: number, month: number) {
 
         await resetIneligibleMonthlyFeePauses();
 
-        // 1. Get all members that have NOT paused monthly fees
+        // 1. Get ALL members (both paused and active)
         const members = await prisma.member.findMany({
-            where: {
-                pauseMonthlyFees: false
-            },
             select: {
                 id: true,
-                membershipType: true
+                membershipType: true,
+                pauseMonthlyFees: true
             }
         });
 
-        // 2. Create requests if they don't exist
+        // 2. Check which members already have a request for this period
         const existingRequests = await prisma.paymentRequest.findMany({
             where: {
                 title,
@@ -103,10 +101,12 @@ export async function generateMonthlyFees(year: number, month: number) {
         const feeMap = new Map<string, number>();
         membershipTypes.forEach(t => feeMap.set(t.name, t.fee));
 
-        const newRequests = members
-            .filter(m => !existingMemberIds.has(m.id))
+        const newMembers = members.filter(m => !existingMemberIds.has(m.id));
+
+        // Active members get PENDING requests
+        const pendingRequests = newMembers
+            .filter(m => !m.pauseMonthlyFees)
             .map(m => {
-                // Default to 750 if type not found (fallback)
                 const amount = feeMap.get(m.membershipType) ?? 750;
                 return {
                     title,
@@ -119,12 +119,33 @@ export async function generateMonthlyFees(year: number, month: number) {
                 };
             });
 
-        if (newRequests.length > 0) {
-            await prisma.paymentRequest.createMany({
-                data: newRequests
+        // Paused members get PAUSED requests (permanent record)
+        const pausedRequests = newMembers
+            .filter(m => m.pauseMonthlyFees)
+            .map(m => {
+                const amount = feeMap.get(m.membershipType) ?? 750;
+                return {
+                    title,
+                    description: `Kontingent pauset av medlem for ${month}/${year}`,
+                    amount,
+                    dueDate: null,
+                    memberId: m.id,
+                    category: PaymentCategory.MEMBERSHIP_FEE,
+                    status: RequestStatus.PAUSED
+                };
             });
 
-            await createManyNotifications(newRequests.map((req) => ({
+        const allNewRequests = [...pendingRequests, ...pausedRequests];
+
+        if (allNewRequests.length > 0) {
+            await prisma.paymentRequest.createMany({
+                data: allNewRequests
+            });
+        }
+
+        // Only send notifications for PENDING (actual invoices), not PAUSED
+        if (pendingRequests.length > 0) {
+            await createManyNotifications(pendingRequests.map((req) => ({
                 memberId: req.memberId,
                 type: "INVOICE_CREATED" as const,
                 title: `${req.title}`,
@@ -134,7 +155,7 @@ export async function generateMonthlyFees(year: number, month: number) {
         }
 
         revalidatePath("/admin/finance/income");
-        return { success: true, count: newRequests.length };
+        return { success: true, count: pendingRequests.length };
 
     } catch (error) {
         console.error("Failed to generate fees:", error);
@@ -576,7 +597,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
 
             const currentRequest = requestMap.get(currentTitle);
 
-            if (currentRequest) {
+            if (currentRequest && currentRequest.status !== 'PAUSED') {
                 const currentAmount = Number(currentRequest.amount);
                 totalRequestsThisMonth++;
                 potentialIncome += currentAmount;
@@ -642,6 +663,7 @@ export async function togglePaymentStatus(requestId: string) {
         });
 
         if (!request) throw new Error("Request not found");
+        if (request.status === 'PAUSED') throw new Error("Kan ikke endre status på et pauset krav");
 
         if (request.status === 'PAID') {
             // Mark UNPAID and Delete Transaction

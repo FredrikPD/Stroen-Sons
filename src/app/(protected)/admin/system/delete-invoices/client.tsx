@@ -246,9 +246,10 @@ export default function InvoiceDeleteClient({ members }: Props) {
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' :
                                                 inv.status === 'WAIVED' ? 'bg-gray-100 text-gray-800' :
-                                                    'bg-amber-100 text-amber-800'
+                                                    inv.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
+                                                        'bg-amber-100 text-amber-800'
                                                 }`}>
-                                                {inv.status === 'PAID' ? 'Betalt' : inv.status === 'WAIVED' ? 'Ettergitt' : 'Ubetalt'}
+                                                {inv.status === 'PAID' ? 'Betalt' : inv.status === 'WAIVED' ? 'Ettergitt' : inv.status === 'PAUSED' ? 'Pauset' : 'Ubetalt'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right text-sm text-gray-500">

@@ -64,7 +64,7 @@ export default function TopHeader({
                 className="flex items-center gap-1 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors font-medium"
               >
                 <span className="material-symbols-outlined text-[1.2rem]">arrow_back</span>
-                <span>{backLabel || "Tilbake"}</span>
+                <span style={{ fontFamily: "Georgia, serif" }} className="text-base">{backLabel || "Tilbake"}</span>
               </Link>
             ) : (
               // Standard logic

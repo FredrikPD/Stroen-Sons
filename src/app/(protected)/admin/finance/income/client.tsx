@@ -305,17 +305,11 @@ export default function IncomePage() {
         return getMonthName(parseInt(m) - 1);
     };
 
-    const renderNoRequestBadge = (member: MemberPaymentData, compact: boolean) => {
-        if (!member.pauseMonthlyFees) {
-            return compact
-                ? <span className="text-gray-300">-</span>
-                : <span className="text-xs text-gray-400 italic">Ingen krav</span>;
-        }
-
+    const renderPausedBadge = (compact: boolean) => {
         return compact ? (
             <span
                 className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-50 border border-amber-200 text-amber-700"
-                title="Månedlige avgifter er pauset av medlemmet"
+                title="Kontingent pauset av medlemmet denne perioden"
             >
                 <span className="material-symbols-outlined text-sm leading-none">pause</span>
             </span>
@@ -325,6 +319,14 @@ export default function IncomePage() {
                 Pauset av medlem
             </span>
         );
+    };
+
+    const renderNoRequestBadge = (_member: MemberPaymentData, compact: boolean) => {
+        // No request exists for this period — show neutral indicator
+        // PAUSED is only shown when a PAUSED PaymentRequest record exists
+        return compact
+            ? <span className="text-gray-300">-</span>
+            : <span className="text-xs text-gray-400 italic">Ingen krav</span>;
     };
 
     // Generate period options (+/- 9 months)
@@ -556,10 +558,12 @@ export default function IncomePage() {
                                     {/* History Period -2 */}
                                     <div className="hidden md:flex col-span-2 justify-center">
                                         {member.history[periods[2]] ? (
-                                            member.history[periods[2]]!.status === 'PAID' ?
-                                                <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>
-                                                :
-                                                <span className="w-2 h-2 rounded-full bg-red-400"></span>
+                                            member.history[periods[2]]!.status === 'PAUSED' ?
+                                                renderPausedBadge(true)
+                                                : member.history[periods[2]]!.status === 'PAID' ?
+                                                    <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>
+                                                    :
+                                                    <span className="w-2 h-2 rounded-full bg-red-400"></span>
                                         ) : (
                                             renderNoRequestBadge(member, true)
                                         )}
@@ -568,10 +572,12 @@ export default function IncomePage() {
                                     {/* History Period -1 */}
                                     <div className="hidden md:flex col-span-2 justify-center">
                                         {member.history[periods[1]] ? (
-                                            member.history[periods[1]]!.status === 'PAID' ?
-                                                <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>
-                                                :
-                                                <span className="w-2 h-2 rounded-full bg-red-400"></span>
+                                            member.history[periods[1]]!.status === 'PAUSED' ?
+                                                renderPausedBadge(true)
+                                                : member.history[periods[1]]!.status === 'PAID' ?
+                                                    <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>
+                                                    :
+                                                    <span className="w-2 h-2 rounded-full bg-red-400"></span>
                                         ) : (
                                             renderNoRequestBadge(member, true)
                                         )}
@@ -580,31 +586,34 @@ export default function IncomePage() {
                                     {/* Current Period */}
                                     <div className="col-span-6 md:col-span-2 flex items-center justify-between md:justify-center gap-4">
                                         {member.history[periods[0]] ? (
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleTogglePayment(member.history[periods[0]]!.id)}
-                                                        disabled={updating === member.history[periods[0]]!.id}
-                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${member.history[periods[0]]!.status === 'PAID' ? 'bg-emerald-500' : 'bg-gray-200'
-                                                            } ${updating === member.history[periods[0]]!.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    >
-                                                        <span className={`${member.history[periods[0]]!.status === 'PAID' ? 'translate-x-6' : 'translate-x-1'
-                                                            } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
-                                                    </button>
-                                                    <span className={`text-xs font-medium w-12 ${member.history[periods[0]]!.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'
-                                                        }`}>
-                                                        {member.history[periods[0]]!.status === 'PAID' ? "Betalt" : "Ubetalt"}
-                                                    </span>
-                                                </div>
+                                            member.history[periods[0]]!.status === 'PAUSED' ?
+                                                renderPausedBadge(false)
+                                                :
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleTogglePayment(member.history[periods[0]]!.id)}
+                                                            disabled={updating === member.history[periods[0]]!.id}
+                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${member.history[periods[0]]!.status === 'PAID' ? 'bg-emerald-500' : 'bg-gray-200'
+                                                                } ${updating === member.history[periods[0]]!.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        >
+                                                            <span className={`${member.history[periods[0]]!.status === 'PAID' ? 'translate-x-6' : 'translate-x-1'
+                                                                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
+                                                        </button>
+                                                        <span className={`text-xs font-medium w-12 ${member.history[periods[0]]!.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'
+                                                            }`}>
+                                                            {member.history[periods[0]]!.status === 'PAID' ? "Betalt" : "Ubetalt"}
+                                                        </span>
+                                                    </div>
 
-                                                <button
-                                                    onClick={() => handleDeleteSingle(member.history[periods[0]]!.id, member.name)}
-                                                    className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
-                                                    title="Slett enkeltkrav"
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">delete</span>
-                                                </button>
-                                            </div>
+                                                    <button
+                                                        onClick={() => handleDeleteSingle(member.history[periods[0]]!.id, member.name)}
+                                                        className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
+                                                        title="Slett enkeltkrav"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                                    </button>
+                                                </div>
                                         ) : (
                                             renderNoRequestBadge(member, false)
                                         )}

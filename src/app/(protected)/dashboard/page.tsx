@@ -187,7 +187,7 @@ export default async function DashboardPage() {
 
   let paymentStatus: "PAID" | "NO_INVOICE" | "UNPAID_ACTIVE" | "UNPAID_OVERDUE";
 
-  if (!currentMembershipRequest) {
+  if (!currentMembershipRequest || currentMembershipRequest.status === "PAUSED") {
     paymentStatus = "NO_INVOICE";
   } else if (currentMembershipRequest.status === "PAID") {
     paymentStatus = "PAID";

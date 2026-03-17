@@ -19,17 +19,13 @@ export default async function AllInvoicesPage() {
 
     const data = await getMyFinancialData();
     const invoices = data.paymentRequests;
-    const formatNok = (amount: number) =>
-        new Intl.NumberFormat("no-NO", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(amount);
 
-    // Filter and Sort
+    const formatNok = (amount: number) =>
+        new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(amount);
+
     const unpaid = invoices
         .filter(inv => inv.status === RequestStatus.PENDING)
         .sort((a, b) => {
-            // Overdue first (oldest due date first)
             const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
             const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
             return dateA - dateB;
@@ -37,120 +33,228 @@ export default async function AllInvoicesPage() {
 
     const paid = invoices
         .filter(inv => inv.status === RequestStatus.PAID)
-        .sort((a, b) => {
-            // Newest paid first (using updatedAt as proxy for payment time if paidAt not available on this type)
-            const dateA = new Date(a.updatedAt).getTime();
-            const dateB = new Date(b.updatedAt).getTime();
-            return dateB - dateA;
-        });
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    const paused = invoices
+        .filter(inv => inv.status === RequestStatus.PAUSED);
+
+    const unpaidTotal = unpaid.reduce((acc, inv) => acc + inv.amount, 0);
 
     const InvoiceItem = ({ invoice }: { invoice: typeof invoices[0] }) => {
         const isPaid = invoice.status === RequestStatus.PAID;
-        const isOverdue = !isPaid && invoice.dueDate && new Date(invoice.dueDate) < new Date();
+        const isPaused = invoice.status === RequestStatus.PAUSED;
+        const isOverdue = !isPaid && !isPaused && invoice.dueDate && new Date(invoice.dueDate) < new Date();
+
+        const accentColor = isPaid
+            ? "#10b981"
+            : isPaused
+            ? "#9ca3af"
+            : isOverdue
+            ? "#ef4444"
+            : "#d1d5db";
+
+        const statusLabel = isPaid ? "Betalt" : isPaused ? "Satt på pause" : isOverdue ? "Forfalt" : "Ubetalt";
+        const statusClasses = isPaid
+            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            : isPaused
+            ? "bg-gray-50 text-gray-500 border-gray-200"
+            : isOverdue
+            ? "bg-red-50 text-red-600 border-red-100"
+            : "bg-gray-50 text-gray-500 border-gray-200";
+
         const dueDateDisplay = invoice.dueDate
-            ? new Date(invoice.dueDate).toLocaleDateString("no-NO")
-            : "Ingen frist";
+            ? new Date(invoice.dueDate).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" })
+            : null;
 
         return (
             <Link
                 href={`/invoices/${invoice.id}`}
-                className={`block border p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all group ${isPaid
-                    ? "bg-gray-50/50 border-gray-100 hover:bg-gray-50 hover:border-gray-300"
-                    : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-md"
-                    }`}
+                className={`group block rounded-xl border overflow-hidden transition-all ${
+                    isPaid || isPaused
+                        ? "border-gray-100 hover:border-gray-200 opacity-60 hover:opacity-80"
+                        : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                }`}
             >
-                <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isPaid ? "bg-emerald-100 text-emerald-600" : "bg-blue-50 text-blue-600"
-                        }`}>
-                        <span className="material-symbols-outlined">
-                            {isPaid ? "check_circle" : "receipt_long"}
-                        </span>
-                    </div>
-                    <div>
-                        <h4 className={`font-bold ${isPaid ? "text-gray-700" : "text-gray-900 group-hover:text-blue-600"} transition-colors`}>
-                            {invoice.title}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-1">
-                            <span className="font-mono">#{invoice.id.slice(-6).toUpperCase()}</span>
-                            {!isPaid && (
-                                <span className={isOverdue ? "text-red-600 font-bold bg-red-50 px-1.5 py-0.5 rounded" : ""}>
-                                    Forfall: {dueDateDisplay}
-                                </span>
-                            )}
-                            {isPaid && (
-                                <span className="text-emerald-600 font-medium">
-                                    Betalt {new Date(invoice.updatedAt).toLocaleDateString("no-NO")}
-                                </span>
-                            )}
+                <div className="flex">
+                    {/* Status accent stripe */}
+                    <div className="w-1.5 shrink-0" style={{ backgroundColor: accentColor }} />
+
+                    <div className="flex-1 min-w-0 px-4 py-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 group-hover:text-gray-600 transition-colors leading-snug">
+                                    {invoice.title}
+                                </p>
+                                <p className="text-[10px] font-mono text-gray-400 mt-0.5">
+                                    #{invoice.id.slice(-6).toUpperCase()}
+                                </p>
+                            </div>
+                            <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border shrink-0 ${statusClasses}`}>
+                                {statusLabel}
+                            </span>
+                        </div>
+
+                        <div className="flex items-end justify-between gap-2">
+                            <div>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+                                    {isPaid ? "Betalt" : "Forfall"}
+                                </p>
+                                <p className={`text-[11px] font-medium ${isOverdue ? "text-red-500" : "text-gray-500"}`}>
+                                    {dueDateDisplay ?? "Ingen frist"}
+                                </p>
+                            </div>
+                            <p
+                                className={`text-lg font-normal leading-none ${
+                                    isPaid ? "text-gray-400" : isOverdue ? "text-red-500" : "text-gray-900"
+                                }`}
+                                style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                            >
+                                {formatNok(invoice.amount)}
+                            </p>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-6 pl-14 md:pl-0">
-                    <span className={`text-lg font-bold whitespace-nowrap ${isPaid ? "text-gray-400" : "text-gray-900"}`}>
-                        {formatNok(invoice.amount)} kr
-                    </span>
-                    <span className="material-symbols-outlined text-gray-300 group-hover:text-blue-500 transition-colors">
-                        chevron_right
-                    </span>
+                    <div className="flex items-center pr-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0">
+                        <span className="material-symbols-outlined text-base">chevron_right</span>
+                    </div>
                 </div>
             </Link>
         );
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden pb-20">
             <PageTitleUpdater title="Mine Fakturaer" backHref="/balance" backLabel="Saldo & Økonomi" />
 
-            <div className="flex items-center justify-between">
+            {/* ── Page Header ─────────────────────────────────────────── */}
+            <div className="flex items-end justify-between gap-4 pt-1">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Mine Fakturaer</h1>
-                    <p className="text-gray-500">Oversikt over dine betalinger og krav.</p>
+                    <h1
+                        className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
+                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                    >
+                        <em>Mine Fakturaer</em>
+                    </h1>
+                    <div className="flex items-center gap-3 mt-3">
+                        <div className="h-px w-8 bg-gray-300" />
+                        <p className="text-[11px] text-gray-400 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                            Oversikt over dine betalinger og krav
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            {/* Ubetalte */}
-            <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-gray-400">pending_actions</span>
-                    <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide text-xs">Ubetalte Fakturaer</h2>
-                    <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {unpaid.length}
-                    </span>
+            {/* ── Stats ───────────────────────────────────────────────── */}
+            <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Ubetalte</span>
+                    </div>
+                    <div className="px-4 py-3">
+                        <span
+                            className={`text-2xl font-normal ${unpaid.length > 0 ? "text-amber-600" : "text-gray-400"}`}
+                            style={{ fontFamily: "'Georgia', serif" }}
+                        >
+                            {unpaid.length}
+                        </span>
+                        <span className="text-sm text-gray-400 ml-1">stk</span>
+                    </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Utestående</span>
+                    </div>
+                    <div className="px-4 py-3">
+                        <span
+                            className={`text-2xl font-normal ${unpaidTotal > 0 ? "text-amber-600" : "text-gray-400"}`}
+                            style={{ fontFamily: "'Georgia', serif" }}
+                        >
+                            {unpaidTotal.toLocaleString("nb-NO", { maximumFractionDigits: 0 })}
+                        </span>
+                        <span className="text-sm text-gray-400 ml-1">NOK</span>
+                    </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Betalte</span>
+                    </div>
+                    <div className="px-4 py-3">
+                        <span
+                            className="text-2xl font-normal text-emerald-600"
+                            style={{ fontFamily: "'Georgia', serif" }}
+                        >
+                            {paid.length}
+                        </span>
+                        <span className="text-sm text-gray-400 ml-1">stk</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Ubetalte Fakturaer ───────────────────────────────────── */}
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Ubetalte Fakturaer</span>
+                    {unpaid.length > 0 && (
+                        <span className="text-[9px] font-bold uppercase tracking-wide text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+                            {unpaid.length} ubetalt{unpaid.length !== 1 ? "e" : ""}
+                        </span>
+                    )}
+                    <div className="flex-1 h-px bg-gray-100" />
                 </div>
 
                 {unpaid.length > 0 ? (
-                    <div className="grid gap-3">
+                    <div className="flex flex-col gap-2">
                         {unpaid.map(inv => (
                             <InvoiceItem key={inv.id} invoice={inv} />
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
-                        <p className="text-gray-500">Du har ingen ubetalte fakturaer. Godt jobba! 🎉</p>
+                    <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-6 py-8 text-center">
+                        <p className="text-sm text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>
+                            Ingen ubetalte fakturaer. Godt jobba!
+                        </p>
                     </div>
                 )}
-            </section>
+            </div>
 
-            {/* Betalte */}
-            <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-gray-400">history</span>
-                    <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide text-xs">Betalingshistorikk</h2>
+            {/* ── Paused ──────────────────────────────────────────────── */}
+            {paused.length > 0 && (
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Satt på Pause</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        {paused.map(inv => (
+                            <InvoiceItem key={inv.id} invoice={inv} />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Betalingshistorikk ───────────────────────────────────── */}
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Betalingshistorikk</span>
+                    <div className="flex-1 h-px bg-gray-100" />
                 </div>
 
                 {paid.length > 0 ? (
-                    <div className="grid gap-3 opacity-80 hover:opacity-100 transition-opacity">
+                    <div className="flex flex-col gap-2">
                         {paid.map(inv => (
                             <InvoiceItem key={inv.id} invoice={inv} />
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-400 text-sm">
-                        Ingen betalingshistorikk enda.
+                    <div className="py-6 text-center">
+                        <p className="text-sm text-gray-400 italic" style={{ fontFamily: "'Georgia', serif" }}>
+                            Ingen betalingshistorikk enda.
+                        </p>
                     </div>
                 )}
-            </section>
+            </div>
         </div>
     );
 }

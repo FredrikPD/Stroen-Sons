@@ -89,7 +89,7 @@ export async function getAdminFinanceData(): Promise<FinanceStats> {
                 prisma.paymentRequest.findMany({
                     where: {
                         category: { not: PaymentCategory.MEMBERSHIP_FEE },
-                        status: { not: RequestStatus.WAIVED },
+                        status: { notIn: [RequestStatus.WAIVED, RequestStatus.PAUSED] },
                         OR: [
                             {
                                 createdAt: {
