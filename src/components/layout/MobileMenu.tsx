@@ -24,20 +24,20 @@ function MobileLink({ item, onClick }: { item: NavItem; onClick: () => void }) {
             onClick={onClick}
             className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 outline-none ${
                 isActive
-                    ? "text-white"
-                    : "text-gray-300 hover:text-white hover:bg-white/5"
+                    ? "text-gray-900"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-black/5"
             }`}
-            style={isActive ? { background: "rgba(255,255,255,0.07)" } : undefined}
+            style={isActive ? { background: "rgba(0,0,0,0.06)" } : undefined}
         >
             {isActive && (
                 <span
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-6 rounded-full"
-                    style={{ background: "rgba(255,255,255,0.5)" }}
+                    style={{ background: "rgba(0,0,0,0.3)" }}
                 />
             )}
             <span
                 className={`material-symbols-outlined text-[1.1rem] transition-colors shrink-0 ${
-                    isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                    isActive ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"
                 }`}
             >
                 {item.icon}
@@ -53,7 +53,7 @@ function SectionHeader({ label }: { label: string }) {
             <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-400 shrink-0">
                 {label}
             </span>
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
+            <div className="flex-1 h-px" style={{ background: "rgba(0,0,0,0.08)" }} />
         </div>
     );
 }
@@ -89,14 +89,14 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
                         open ? "translate-x-0" : "-translate-x-full"
                     }`}
                     style={{
-                        background: "linear-gradient(180deg, #131313 0%, #0f0f0f 100%)",
-                        borderRight: "1px solid rgba(255,255,255,0.05)",
+                        background: "linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%)",
+                        borderRight: "1px solid rgba(0,0,0,0.07)",
                     }}
                 >
                     {/* Logo */}
                     <div
                         className="h-14 flex items-center justify-between px-5 shrink-0"
-                        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+                        style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}
                     >
                         <div className="flex items-center gap-3.5">
                             <img
@@ -104,13 +104,13 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
                                 className="size-8 rounded-full object-cover shrink-0"
                                 style={{
                                     boxShadow:
-                                        "0 0 0 1px rgba(255,255,255,0.1), 0 0 0 3px rgba(255,255,255,0.04)",
+                                        "0 0 0 1px rgba(0,0,0,0.08), 0 0 0 3px rgba(0,0,0,0.04)",
                                 }}
                                 src="/images/SS-Logo-2.png"
                             />
                             <div>
                                 <h1
-                                    className="text-white text-[15px] font-normal leading-none"
+                                    className="text-gray-900 text-[15px] font-normal leading-none"
                                     style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
                                 >
                                     Strøen Søns
@@ -123,7 +123,7 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
 
                         <button
                             onClick={onClose}
-                            className="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                            className="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-900 hover:bg-black/5 transition-colors"
                         >
                             <span className="material-symbols-outlined text-[1.1rem]">close</span>
                         </button>
@@ -182,23 +182,23 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
                     {/* User / Logout */}
                     <div
                         className="p-3 shrink-0"
-                        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+                        style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
                     >
                         <button
                             onClick={() => signOut(() => router.push("/sign-in"))}
-                            className="flex w-full items-center gap-3 p-2.5 rounded-xl transition-all group outline-none cursor-pointer hover:bg-white/5"
+                            className="flex w-full items-center gap-3 p-2.5 rounded-xl transition-all group outline-none cursor-pointer hover:bg-black/5"
                         >
                             <div
                                 className="size-8 rounded-full shrink-0 overflow-hidden flex items-center justify-center"
                                 style={{
-                                    background: "rgba(255,255,255,0.08)",
-                                    boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                                    background: "rgba(0,0,0,0.06)",
+                                    boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
                                 }}
                             >
                                 {resolvedAvatarUrl ? (
                                     <img src={resolvedAvatarUrl} alt="" className="size-8 object-cover" />
                                 ) : (
-                                    <span className="text-[11px] font-bold text-gray-400 uppercase">
+                                    <span className="text-[11px] font-bold text-gray-500 uppercase">
                                         {resolvedName
                                             .split(" ")
                                             .filter(Boolean)
@@ -210,10 +210,10 @@ export default function MobileMenu({ open, onClose, role, userRole, userName, av
                             </div>
 
                             <div className="flex-1 min-w-0 text-left">
-                                <span className="block text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors leading-tight truncate">
+                                <span className="block text-[13px] font-medium text-gray-700 group-hover:text-gray-900 transition-colors leading-tight truncate">
                                     {resolvedName}
                                 </span>
-                                <span className="block text-[10px] text-gray-500 group-hover:text-gray-400 transition-colors truncate">
+                                <span className="block text-[10px] text-gray-400 group-hover:text-gray-600 transition-colors truncate">
                                     {user?.primaryEmailAddress?.emailAddress || ""}
                                 </span>
                             </div>
