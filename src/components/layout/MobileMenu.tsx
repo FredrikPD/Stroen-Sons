@@ -22,7 +22,7 @@ function MobileLink({ item, onClick }: { item: NavItem; onClick: () => void }) {
         <Link
             href={item.href}
             onClick={onClick}
-            className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 outline-none ${
+            className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 outline-none ${
                 isActive
                     ? "text-white"
                     : "text-gray-300 hover:text-white hover:bg-white/5"
@@ -42,7 +42,7 @@ function MobileLink({ item, onClick }: { item: NavItem; onClick: () => void }) {
             >
                 {item.icon}
             </span>
-            <span className="text-[13px] tracking-wide font-medium">{item.label}</span>
+            <span className="text-sm tracking-wide font-medium">{item.label}</span>
         </Link>
     );
 }

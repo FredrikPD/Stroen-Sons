@@ -85,18 +85,19 @@ export default function EventsView({ initialEvents, categoryColorMap = {} }: Eve
             {/* ── Kommende ── */}
             <div>
                 <div className="flex items-center gap-4 mb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Kommende</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Kommende</span>
                     <div className="flex-1 h-px bg-gray-100" />
                 </div>
 
                 {upcomingEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="flex flex-wrap gap-4">
                         {upcomingEvents.map(event => (
-                            <EventCardUpcoming
-                                key={event.id}
-                                event={event}
-                                color={event.category ? categoryColorMap[event.category] : undefined}
-                            />
+                            <div key={event.id} className="w-full sm:w-72">
+                                <EventCardUpcoming
+                                    event={event}
+                                    color={event.category ? categoryColorMap[event.category] : undefined}
+                                />
+                            </div>
                         ))}
                     </div>
                 ) : (
@@ -109,7 +110,7 @@ export default function EventsView({ initialEvents, categoryColorMap = {} }: Eve
             {/* ── Tidligere ── */}
             <div>
                 <div className="flex items-center gap-4 mb-5">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Tidligere</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Tidligere</span>
                     <div className="flex-1 h-px bg-gray-100" />
 
                     {/* Year filter */}

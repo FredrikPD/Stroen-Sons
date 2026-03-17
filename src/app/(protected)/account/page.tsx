@@ -124,7 +124,7 @@ const paymentRequestsRes = await getMemberPaymentRequests(profile.id);
                     style={{ background: "linear-gradient(145deg, #1a1a1a 0%, #111111 100%)", boxShadow: "0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500">Medlemsstatus</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-500">Medlemsstatus</span>
                         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${isAccountActive ? "bg-emerald-500/15 border border-emerald-500/25" : "bg-red-500/15 border border-red-500/25"}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isAccountActive ? "bg-emerald-400" : "bg-red-400"}`} />
                             <span className={`text-[9px] font-bold uppercase tracking-wide ${isAccountActive ? "text-emerald-300" : "text-red-300"}`}>

@@ -37,11 +37,14 @@ export function EventCountdown({ targetDate }: EventCountdownProps) {
     if (!mounted || daysLeft === null) return null;
 
     return (
-        <div className="flex gap-2">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-3 py-2.5 text-center min-w-[72px] shadow-sm">
-                <span className="block text-2xl font-bold leading-none">{daysLeft}</span>
-                <span className="text-[10px] uppercase text-white/80 font-bold tracking-[0.14em]">Dager</span>
-            </div>
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 flex flex-col items-center shadow-sm">
+            <span
+                className="text-2xl font-normal leading-none text-gray-900"
+                style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+            >
+                {daysLeft}
+            </span>
+            <span className="text-[9px] font-bold tracking-widest text-gray-400 mt-0.5">DAGER</span>
         </div>
     );
 }

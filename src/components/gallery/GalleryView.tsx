@@ -119,9 +119,9 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                         <div key={year}>
                             {/* Year section header */}
                             <div className="flex items-center gap-4 mb-4">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">{year}</span>
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">{year}</span>
                                 <div className="flex-1 h-px bg-gray-100" />
-                                <span className="text-[9px] font-bold text-gray-300 uppercase tracking-wider">
+                                <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">
                                     {albumsByYear[year].length} album{albumsByYear[year].length !== 1 ? "er" : ""}
                                 </span>
                             </div>

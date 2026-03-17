@@ -109,7 +109,7 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
             <div className="flex items-center gap-0 border-b border-gray-100 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <button
                     onClick={() => setCategory("ALL")}
-                    className={`text-[10px] font-bold pb-3 px-4 border-b-2 transition-colors whitespace-nowrap uppercase tracking-[0.15em] ${
+                    className={`text-xs font-bold pb-3 px-4 border-b-2 transition-colors whitespace-nowrap uppercase tracking-[0.15em] ${
                         category === "ALL"
                             ? "text-gray-900 border-gray-900"
                             : "text-gray-400 border-transparent hover:text-gray-700"
@@ -121,7 +121,7 @@ export default function PostList({ isAdmin, categories = [] }: PostListProps) {
                     <button
                         key={cat.id}
                         onClick={() => setCategory(cat.name)}
-                        className={`text-[10px] font-bold pb-3 px-4 border-b-2 transition-colors whitespace-nowrap uppercase tracking-[0.15em] ${
+                        className={`text-xs font-bold pb-3 px-4 border-b-2 transition-colors whitespace-nowrap uppercase tracking-[0.15em] ${
                             category === cat.name
                                 ? "text-gray-900 border-gray-900"
                                 : "text-gray-400 border-transparent hover:text-gray-700"

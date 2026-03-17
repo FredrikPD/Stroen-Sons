@@ -42,7 +42,7 @@ export default async function PostsPage() {
                     {/* Festet innlegg */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-700 shrink-0">
+                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-700 shrink-0">
                                 Festet innlegg
                             </span>
                             <div className="flex-1 h-px bg-gray-100" />
@@ -88,7 +88,7 @@ export default async function PostsPage() {
                     {/* Nylige filer */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-700 shrink-0">
+                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-700 shrink-0">
                                 Nylige filer
                             </span>
                             <div className="flex-1 h-px bg-gray-100" />

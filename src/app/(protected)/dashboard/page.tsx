@@ -320,7 +320,7 @@ export default async function DashboardPage() {
           {/* ── Siste Nytt ──────────────────────────────────────── */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Siste Nytt</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Siste Nytt</span>
               <div className="flex-1 h-px bg-gray-100" />
               <Link href="/posts" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors">Se alle</Link>
             </div>
@@ -368,7 +368,7 @@ export default async function DashboardPage() {
           {/* ── Nylige Minner ───────────────────────────────────── */}
           <div>
             <div className="flex items-center gap-4 mb-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Nylige Minner</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Nylige Minner</span>
               <div className="flex-1 h-px bg-gray-100" />
               <Link href="/gallery" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors">Arkiv</Link>
             </div>
@@ -417,7 +417,7 @@ export default async function DashboardPage() {
           >
             {/* Header */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-400">Medlemsstatus</span>
+              <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Medlemsstatus</span>
               <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${
                 paymentStatus === "UNPAID_OVERDUE"
                   ? "bg-red-500/15 border border-red-500/25"
@@ -469,11 +469,11 @@ export default async function DashboardPage() {
           {/* Recent Transactions */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">Transaksjoner</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Transaksjoner</span>
               <div className="flex-1 h-px bg-gray-100" />
               <Link href="/balance" className="text-[9px] font-bold uppercase tracking-wider text-gray-400 hover:text-gray-700 transition-colors">Se alle</Link>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-gray-100">
               {transactions.length > 0 ? (
                 transactions.map((tx) => {
                   const isPositive = Number(tx.amount) > 0;

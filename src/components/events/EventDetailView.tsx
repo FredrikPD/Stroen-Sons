@@ -241,19 +241,6 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         </div>
                     </div>
                 </div>
-
-                {/* Photo count — bottom right */}
-                <Link
-                    href={`/gallery/${event.id}`}
-                    className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 hover:bg-white/20 transition-colors text-white"
-                >
-                    <span className="material-symbols-outlined text-[14px] text-white/70">
-                        {totalPhotoCount > 0 ? "photo_library" : "add_a_photo"}
-                    </span>
-                    <span className="font-medium text-[11px] whitespace-nowrap">
-                        {totalPhotoCount > 0 ? `${totalPhotoCount} bilder` : "Ingen bilder enda"}
-                    </span>
-                </Link>
             </div>
 
             {/* ── TWO-COLUMN GRID ────────────────────────────────────── */}

@@ -37,7 +37,7 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
         <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden ${className}`}>
             {/* Header */}
             <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 shrink-0">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 shrink-0">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 shrink-0">
                     Mine Fakturaer
                 </span>
                 {pendingCount > 0 && (
@@ -94,7 +94,7 @@ export function MyInvoices({ invoices, className = "", limit }: { invoices: Invo
                             )}
                             <Link
                                 href={`/invoices/${inv.id}`}
-                                className="group block rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all"
+                                className={`group block rounded-xl border overflow-hidden transition-all ${isPaid ? "border-gray-100 hover:border-gray-200 opacity-50 hover:opacity-70" : "border-gray-200 hover:border-gray-300 hover:shadow-sm"}`}
                             >
                                 <div className="flex">
                                     {/* Status accent stripe */}

@@ -108,10 +108,10 @@ export default async function BalancePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Innbetalt i år</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Innbetalt i år</span>
                     </div>
                     <div className="px-4 py-3">
-                        <span className="text-2xl font-normal text-gray-900" style={{ fontFamily: "'Georgia', serif" }}>
+                        <span className="text-2xl font-normal text-emerald-600" style={{ fontFamily: "'Georgia', serif" }}>
                             {fmt(paidThisYear)}
                         </span>
                         <span className="text-sm text-gray-400 ml-1">NOK</span>
@@ -120,10 +120,10 @@ export default async function BalancePage() {
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Utgifter i år</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Utgifter i år</span>
                     </div>
                     <div className="px-4 py-3">
-                        <span className="text-2xl font-normal text-gray-900" style={{ fontFamily: "'Georgia', serif" }}>
+                        <span className="text-2xl font-normal text-gray-600" style={{ fontFamily: "'Georgia', serif" }}>
                             {fmt(expensesThisYear)}
                         </span>
                         <span className="text-sm text-gray-400 ml-1">NOK</span>
@@ -132,7 +132,7 @@ export default async function BalancePage() {
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Ubetalt fakturaer</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Ubetalt fakturaer</span>
                     </div>
                     <div className="px-4 py-3">
                         <span className={`text-2xl font-normal ${unpaidTotal > 0 ? "text-amber-600" : "text-gray-900"}`} style={{ fontFamily: "'Georgia', serif" }}>

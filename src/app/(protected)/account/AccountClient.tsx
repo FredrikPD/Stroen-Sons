@@ -127,7 +127,7 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
             {/* ── Kontoinformasjon ────────────────────────────────────── */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-4 px-5 pt-5 pb-4 border-b border-gray-100">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Kontoinformasjon</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Kontoinformasjon</span>
                     <div className="flex-1 h-px bg-gray-100" />
                     {!isEditing ? (
                         <button
@@ -257,7 +257,7 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                 {/* Password */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div className="flex items-center gap-4 px-5 pt-5 pb-4 border-b border-gray-100">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Bytt passord</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Bytt passord</span>
                         <div className="flex-1 h-px bg-gray-100" />
                     </div>
 
