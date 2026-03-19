@@ -321,9 +321,8 @@ export default function IncomePage() {
         );
     };
 
-    const renderNoRequestBadge = (_member: MemberPaymentData, compact: boolean) => {
-        // No request exists for this period — show neutral indicator
-        // PAUSED is only shown when a PAUSED PaymentRequest record exists
+    const renderNoRequestBadge = (member: MemberPaymentData, compact: boolean) => {
+        if (member.pauseMonthlyFees) return renderPausedBadge(compact);
         return compact
             ? <span className="text-gray-300">-</span>
             : <span className="text-xs text-gray-400 italic">Ingen krav</span>;

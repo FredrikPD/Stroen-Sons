@@ -1528,6 +1528,43 @@ export async function setMonthlyFeePausePreference(enabled: boolean) {
                 where: { id: member.id },
                 data: { pauseMonthlyFees: nextEnabled }
             });
+
+            // Sync any existing PaymentRequest for the current period
+            const now = new Date();
+            const currentTitle = getFeeTitle(now.getFullYear(), now.getMonth() + 1);
+
+            if (nextEnabled) {
+                // Convert existing PENDING request to PAUSED
+                await prisma.paymentRequest.updateMany({
+                    where: {
+                        memberId: member.id,
+                        title: currentTitle,
+                        category: PaymentCategory.MEMBERSHIP_FEE,
+                        status: RequestStatus.PENDING
+                    },
+                    data: {
+                        status: RequestStatus.PAUSED,
+                        dueDate: null,
+                        description: `Kontingent pauset av medlem for ${now.getMonth() + 1}/${now.getFullYear()}`
+                    }
+                });
+            } else {
+                // Convert existing PAUSED request back to PENDING
+                const dueDate = getMonthEndDate(now.getFullYear(), now.getMonth() + 1);
+                await prisma.paymentRequest.updateMany({
+                    where: {
+                        memberId: member.id,
+                        title: currentTitle,
+                        category: PaymentCategory.MEMBERSHIP_FEE,
+                        status: RequestStatus.PAUSED
+                    },
+                    data: {
+                        status: RequestStatus.PENDING,
+                        dueDate,
+                        description: `Månedlig kontingent for ${now.getMonth() + 1}/${now.getFullYear()}`
+                    }
+                });
+            }
         }
 
         revalidatePath("/balance");
