@@ -1357,21 +1357,17 @@ export async function updateExpense(data: {
         if (error) return { success: false, error };
 
         await prisma.$transaction(async (tx) => {
-            // Revert previous balance impact
-            await Promise.all(
-                relatedTransactions
-                    .filter((entry) => entry.memberId)
-                    .map((entry) =>
-                        tx.member.update({
-                            where: { id: entry.memberId! },
-                            data: {
-                                balance: {
-                                    decrement: entry.amount
-                                }
-                            }
-                        })
-                    )
-            );
+            // Revert previous balance impact (sequential to avoid connection pool contention with Accelerate)
+            for (const entry of relatedTransactions.filter((e) => e.memberId)) {
+                await tx.member.update({
+                    where: { id: entry.memberId! },
+                    data: {
+                        balance: {
+                            decrement: entry.amount
+                        }
+                    }
+                });
+            }
 
             // Remove old group
             await tx.transaction.deleteMany({
@@ -1398,32 +1394,30 @@ export async function updateExpense(data: {
             }
 
             const shares = splitAmountIntoShares(normalizedAmount, splitMemberIds.length);
-            await Promise.all(splitMemberIds.map(async (memberId, index) => {
+            for (const [index, memberId] of splitMemberIds.entries()) {
                 const share = shares[index] ?? 0;
-                await Promise.all([
-                    tx.transaction.create({
-                        data: {
-                            amount: -share,
-                            description: `${description}${EXPENSE_SPLIT_SUFFIX}`,
-                            category: data.category,
-                            date: data.date,
-                            eventId,
-                            receiptUrl,
-                            receiptKey,
-                            memberId
+                await tx.transaction.create({
+                    data: {
+                        amount: -share,
+                        description: `${description}${EXPENSE_SPLIT_SUFFIX}`,
+                        category: data.category,
+                        date: data.date,
+                        eventId,
+                        receiptUrl,
+                        receiptKey,
+                        memberId
+                    }
+                });
+                await tx.member.update({
+                    where: { id: memberId },
+                    data: {
+                        balance: {
+                            decrement: share
                         }
-                    }),
-                    tx.member.update({
-                        where: { id: memberId },
-                        data: {
-                            balance: {
-                                decrement: share
-                            }
-                        }
-                    })
-                ]);
-            }));
-        });
+                    }
+                });
+            }
+        }, { timeout: 15000 });
 
         revalidatePath("/admin/finance");
         revalidatePath("/admin/finance/expenses");
@@ -1451,25 +1445,21 @@ export async function deleteExpense(data: {
         if (error) return { success: false, error };
 
         await prisma.$transaction(async (tx) => {
-            await Promise.all(
-                relatedTransactions
-                    .filter((entry) => entry.memberId)
-                    .map((entry) =>
-                        tx.member.update({
-                            where: { id: entry.memberId! },
-                            data: {
-                                balance: {
-                                    decrement: entry.amount
-                                }
-                            }
-                        })
-                    )
-            );
+            for (const entry of relatedTransactions.filter((e) => e.memberId)) {
+                await tx.member.update({
+                    where: { id: entry.memberId! },
+                    data: {
+                        balance: {
+                            decrement: entry.amount
+                        }
+                    }
+                });
+            }
 
             await tx.transaction.deleteMany({
                 where: { id: { in: relatedTransactions.map((entry) => entry.id) } }
             });
-        });
+        }, { timeout: 15000 });
 
         revalidatePath("/admin/finance");
         revalidatePath("/admin/finance/expenses");
