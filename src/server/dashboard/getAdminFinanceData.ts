@@ -73,6 +73,7 @@ export async function getAdminFinanceData(): Promise<FinanceStats> {
         withPrismaRetry(
             () =>
                 prisma.member.findMany({
+                    where: { deletedAt: null },
                     select: { membershipType: true }
                 }),
             { operationName: "adminFinance:getMembers" }
@@ -133,7 +134,7 @@ export async function getAdminFinanceData(): Promise<FinanceStats> {
                 };
 
                 const nonZeroMembers = await prisma.member.findMany({
-                    where: { balance: { not: 0 } },
+                    where: { deletedAt: null, balance: { not: 0 } },
                     take: 5,
                     orderBy: { updatedAt: "desc" },
                     select
@@ -141,7 +142,7 @@ export async function getAdminFinanceData(): Promise<FinanceStats> {
 
                 if (nonZeroMembers.length < 5) {
                     const zeroMembers = await prisma.member.findMany({
-                        where: { balance: 0 },
+                        where: { deletedAt: null, balance: 0 },
                         take: 5 - nonZeroMembers.length,
                         orderBy: { updatedAt: "desc" },
                         select
