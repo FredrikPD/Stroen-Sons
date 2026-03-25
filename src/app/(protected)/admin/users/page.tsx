@@ -1,4 +1,4 @@
-import { db } from "@/server/db";
+import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
 import Link from "next/link";
 import UserManagementClient from "./user-management-client";
 import { SetHeader } from "@/components/layout/SetHeader";
@@ -20,10 +20,11 @@ export default async function UserManagementPage() {
         allMembers,
         availableRoles
     ] = await Promise.all([
-        db.member.count(),
-        db.member.count({ where: { role: "ADMIN" } }),
-        db.member.count({ where: { membershipType: "STUDENT" } }), db.member.count({ where: { status: "PENDING" } }),
+        db.member.count({ where: { ...ACTIVE_MEMBER_FILTER } }),
+        db.member.count({ where: { ...ACTIVE_MEMBER_FILTER, role: "ADMIN" } }),
+        db.member.count({ where: { ...ACTIVE_MEMBER_FILTER, membershipType: "STUDENT" } }), db.member.count({ where: { ...ACTIVE_MEMBER_FILTER, status: "PENDING" } }),
         db.member.findMany({
+            where: { ...ACTIVE_MEMBER_FILTER },
             orderBy: { createdAt: 'desc' },
             select: {
                 id: true,

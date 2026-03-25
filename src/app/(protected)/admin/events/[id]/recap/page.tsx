@@ -73,6 +73,7 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
 
     // Fetch all members for the podium selector
     const allMembers = await db.member.findMany({
+        where: { deletedAt: null },
         select: {
             id: true,
             firstName: true,

@@ -24,6 +24,7 @@ export async function ensureMember() {
   );
 
   if (existingMember) {
+    if (existingMember.deletedAt) throw new Error("Account has been deleted");
     const now = new Date();
     const shouldUpdateLastActive =
       !existingMember.lastActiveAt ||
@@ -60,6 +61,7 @@ export async function ensureMember() {
   );
 
   if (existingByEmail) {
+    if (existingByEmail.deletedAt) throw new Error("Account has been deleted");
     // Link the accounts and activate
     return await withPrismaRetry(
       () =>

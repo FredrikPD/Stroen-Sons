@@ -17,6 +17,7 @@ export async function GET() {
         }>;
 
         const members = await db.member.findMany({
+            where: { deletedAt: null },
             include: {
                 paymentRequests: {
                     orderBy: {

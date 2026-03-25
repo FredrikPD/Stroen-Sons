@@ -29,6 +29,7 @@ export async function getMembershipTypes() {
         // Group by membershipType to get counts efficiently
         const memberCounts = await db.member.groupBy({
             by: ['membershipType'],
+            where: { deletedAt: null },
             _count: {
                 _all: true
             }
@@ -133,7 +134,7 @@ export async function deleteMembershipType(id: string) {
 
         // Check for usage
         const usageCount = await db.member.count({
-            where: { membershipType: type.name }
+            where: { membershipType: type.name, deletedAt: null }
         });
 
         if (usageCount > 0) {

@@ -1,4 +1,4 @@
-import { db } from "@/server/db";
+import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
 import DeleteUserClient from "./delete-user-client";
 import { SetHeader } from "@/components/layout/SetHeader";
 import { ensureRole } from "@/server/auth/ensureRole";
@@ -12,6 +12,7 @@ export default async function DeleteUserPage() {
     await ensureRole([Role.ADMIN]);
 
     const members = await db.member.findMany({
+        where: { ...ACTIVE_MEMBER_FILTER },
         select: {
             id: true,
             firstName: true,
@@ -43,7 +44,7 @@ export default async function DeleteUserPage() {
             <SetHeader backHref="/admin/users" backLabel="Brukere" />
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Slett Medlem</h1>
-                <p className="text-gray-500 mt-2">Søk opp og slett medlemmer permanent. Vær forsiktig.</p>
+                <p className="text-gray-500 mt-2">Deaktiver medlemmer og anonymiser personlig data. Navnet beholdes i historikk.</p>
             </div>
             <DeleteUserClient initialMembers={formattedMembers} />
         </div>

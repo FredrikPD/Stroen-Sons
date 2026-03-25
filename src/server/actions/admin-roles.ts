@@ -2,7 +2,7 @@
 
 import { ensureRole } from "@/server/auth/ensureRole";
 import { syncClerkRoleMetadata } from "@/server/clerk/syncRoleMetadata";
-import { db } from "@/server/db";
+import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
 import { Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -22,6 +22,7 @@ export async function getMembers() {
         await ensureRole([Role.ADMIN]);
 
         const members = await db.member.findMany({
+            where: { ...ACTIVE_MEMBER_FILTER },
             select: {
                 id: true,
                 firstName: true,

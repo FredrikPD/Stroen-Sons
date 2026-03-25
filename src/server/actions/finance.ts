@@ -76,8 +76,9 @@ export async function generateMonthlyFees(year: number, month: number) {
 
         await resetIneligibleMonthlyFeePauses();
 
-        // 1. Get ALL members (both paused and active)
+        // 1. Get ALL active members (both paused and active, but not soft-deleted)
         const members = await prisma.member.findMany({
+            where: { deletedAt: null },
             select: {
                 id: true,
                 membershipType: true,
@@ -544,6 +545,7 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
 
         // Fetch members with their requests for these 3 periods
         const members = ((await prisma.member.findMany({
+            where: { deletedAt: null },
             orderBy: { firstName: 'asc' },
             select: {
                 id: true,
@@ -914,6 +916,7 @@ export async function getMembersAndEvents() {
 
         const [members, events] = await Promise.all([
             prisma.member.findMany({
+                where: { deletedAt: null },
                 orderBy: { firstName: 'asc' },
                 select: {
                     id: true,

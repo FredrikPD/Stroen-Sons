@@ -63,7 +63,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
 
         const confirmed = await openConfirm({
             title: "Slett Bruker",
-            message: `Er du sikker på at du vil slette ${selectedMember.firstName} ${selectedMember.lastName}? Dette sletter all historikk og kan ikke angres.`,
+            message: `Er du sikker på at du vil deaktivere ${selectedMember.firstName} ${selectedMember.lastName}? Innlogging fjernes og personlig data anonymiseres.`,
             type: "error",
             confirmText: "Slett Bruker",
             cancelText: "Avbryt"
@@ -249,10 +249,10 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                             <h5 className="font-bold text-gray-900 text-sm mb-3">Hva skjer med dataene?</h5>
                             <ul className="space-y-3 mb-8">
                                 {[
-                                    "Profilen slettes permanent.",
                                     "Innloggings-tilgang fjernes umiddelbart.",
+                                    "Personlig data (e-post, telefon, adresse) anonymiseres.",
                                     "Saldo blir trukket fra klubbkontoen.",
-                                    "Event-påmeldinger kanselleres."
+                                    "Navnet beholdes i historikk (regnskap, resultater, arrangementer)."
                                 ].map((item, i) => (
                                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                                         <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
@@ -270,7 +270,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                         onChange={(e) => setConfirmationChecked(e.target.checked)}
                                     />
                                     <span className="text-xs text-gray-600 font-medium">
-                                        Jeg forstår at denne handlingen er permanent og ikke kan angres.
+                                        Jeg forstår at innlogging fjernes og personlig data anonymiseres.
                                     </span>
                                 </label>
 

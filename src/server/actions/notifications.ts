@@ -180,7 +180,7 @@ export async function createNotificationsForMembers(data: CreateNotificationsFor
 
 export async function broadcastNotification(data: Omit<CreateNotificationInput, "memberId">) {
     try {
-        const allMembers = await db.member.findMany({ select: { id: true } });
+        const allMembers = await db.member.findMany({ where: { deletedAt: null }, select: { id: true } });
         await createNotificationsForMembers({
             ...data,
             memberIds: allMembers.map((member) => member.id),

@@ -16,3 +16,6 @@ export const db = globalForPrisma.prisma ?? makePrisma();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
 
 export { db as prisma };
+
+/** Reusable Prisma `where` fragment to exclude soft-deleted members. */
+export const ACTIVE_MEMBER_FILTER = { deletedAt: null } as const;

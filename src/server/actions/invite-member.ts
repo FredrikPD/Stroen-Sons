@@ -46,12 +46,12 @@ export async function inviteMember(prevState: InviteMemberState, formData: FormD
     const { firstName, lastName, email: rawEmail, roleId, membershipType } = validatedFields.data;
     const email = rawEmail.toLowerCase();
 
-    // 1. Check if user already exists in DB
+    // 1. Check if user already exists in DB (ignore soft-deleted members so the email can be reused)
     const existingMember = await db.member.findUnique({
         where: { email },
     });
 
-    if (existingMember) {
+    if (existingMember && !existingMember.deletedAt) {
         return { error: "En bruker med denne e-posten finnes allerede i systemet." };
     }
 

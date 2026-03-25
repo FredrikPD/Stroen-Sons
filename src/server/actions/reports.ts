@@ -28,6 +28,7 @@ export async function getFinancialReport(startDate: Date, endDate: Date) {
 
         // 1. Fetch all members for columns
         const members = await db.member.findMany({
+            where: { deletedAt: null },
             select: {
                 id: true,
                 firstName: true,

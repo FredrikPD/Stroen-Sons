@@ -95,6 +95,7 @@ export async function sendPostNotification({
         const members = await db.member.findMany({
             where: {
                 status: "ACTIVE",
+                deletedAt: null,
                 email: { not: undefined } // Ensure email exists
             },
             select: { email: true }
@@ -322,6 +323,7 @@ export async function sendBulkPaymentReminders() {
         const membersWithUnpaid = await db.member.findMany({
             where: {
                 status: "ACTIVE",
+                deletedAt: null,
                 paymentRequests: {
                     some: {
                         status: "PENDING" // Only care about PENDING

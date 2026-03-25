@@ -131,6 +131,7 @@ export async function getInvoiceGroupDetails(groupIdOrTitle: string) {
 export async function getInvoiceFormData() {
     const [members, events] = await Promise.all([
         db.member.findMany({
+            where: { deletedAt: null },
             orderBy: { firstName: 'asc' },
             select: { id: true, firstName: true, lastName: true }
         }),

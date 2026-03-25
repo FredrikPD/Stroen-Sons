@@ -27,6 +27,7 @@ model Member {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   lastActiveAt   DateTime     @default(now())
+  deletedAt      DateTime?
 
   payments        Payment[]
   eventsCreated   Event[]          @relation("EventCreatedBy")

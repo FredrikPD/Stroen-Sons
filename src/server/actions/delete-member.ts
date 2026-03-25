@@ -24,7 +24,7 @@ export async function deleteMember(
     }
 
     try {
-        // 1. Fetch member to get Clerk ID
+        // 1. Fetch member
         const member = await db.member.findUnique({
             where: { id: memberId },
         });
@@ -33,7 +33,11 @@ export async function deleteMember(
             return { error: "Fant ikke medlemmet i databasen." };
         }
 
-        // 2. Delete from Clerk
+        if (member.deletedAt) {
+            return { error: "Medlemmet er allerede slettet." };
+        }
+
+        // 2. Delete from Clerk (revoke login access)
         if (member.clerkId) {
             const client = await clerkClient();
             try {
@@ -44,106 +48,57 @@ export async function deleteMember(
                     clerkError?.errors?.[0]?.code === "resource_not_found";
 
                 if (isNotFound) {
-                    console.log("Member not found in Clerk (already deleted?), continuing to delete from database.");
+                    console.log("Member not found in Clerk (already deleted?), continuing with soft-delete.");
                 } else {
                     console.error("Failed to delete Clerk user:", clerkError);
                 }
             }
         }
 
-        // 3. Clean up related records (Prisma doesn't cascade all of these)
-
-        // Financial records
+        // 3. Clean up financial records that are no longer relevant
         await db.paymentRequest.deleteMany({ where: { memberId } });
         await db.payment.deleteMany({ where: { memberId } });
 
-        // Keep transactions for accounting, but unlink the member
-        await db.transaction.updateMany({
-            where: { memberId },
-            data: { memberId: null },
-        });
-
-        // Handle balance payout if positive
-        // We do this BEFORE unlinking the member from transactions (above is updateMany, but we want to create a new one)
-        // Actually, the above unlinks OLD transactions. We want to add a FINAL transaction.
-        // Prisma Decimal to number conversion
+        // 4. Handle balance payout if positive
         const balance = Number(member.balance);
         if (balance > 0) {
             await db.transaction.create({
                 data: {
-                    amount: -balance, // Negative to reduce treasury
+                    amount: -balance,
                     description: `Utbetaling av saldo ved utmelding: ${member.firstName} ${member.lastName}`,
                     category: "MEMBER_EXIT",
                     date: new Date(),
-                    memberId: null, // User is being deleted, so we don't link it (or link it then it gets unlinked? easier to just set null or store name in description)
-                    // If we link it to memberId, we must ensure it's not deleted by cascade (transactions usually aren't).
-                    // But we are about to delete the member.
-                    // The best approach: Create transaction with memberId = null immediately, but description contains the name.
+                    memberId,
                 },
             });
         }
 
-        // Social content & Events
-        // We attempt to transfer ownership of Posts and Events to another admin to preserve history.
-
-        // Find another admin to inherit content
-        const otherAdmin = await db.member.findFirst({
-            where: {
-                role: "ADMIN",
-                id: { not: memberId },
+        // 5. Soft-delete: anonymize sensitive data, mark as deleted
+        // Keep firstName/lastName for historical attribution (scoreboard, transactions, events)
+        await db.member.update({
+            where: { id: memberId },
+            data: {
+                deletedAt: new Date(),
+                status: "INACTIVE",
+                clerkId: null,
+                email: `deleted-${memberId}@removed.local`,
+                phoneNumber: null,
+                address: null,
+                zipCode: null,
+                city: null,
+                avatarUrl: null,
+                balance: 0,
+                pauseMonthlyFees: true,
             },
         });
 
-        // 1. Handle Posts
-        const postsCount = await db.post.count({
-            where: { authorId: memberId },
-        });
+        revalidatePath("/admin/users");
+        revalidatePath("/admin/system/delete");
+        revalidatePath("/members");
 
-        if (postsCount > 0) {
-            if (otherAdmin) {
-                // Transfer posts to the other admin
-                await db.post.updateMany({
-                    where: { authorId: memberId },
-                    data: { authorId: otherAdmin.id },
-                });
-            } else {
-                // Fallback: Delete posts if no other admin exists
-                await db.post.deleteMany({
-                    where: { authorId: memberId },
-                });
-            }
-        }
-
-        // 3. Handle Events
-        const eventsCount = await db.event.count({
-            where: { createdById: memberId },
-        });
-
-        if (eventsCount > 0) {
-            if (otherAdmin) {
-                await db.event.updateMany({
-                    where: { createdById: memberId },
-                    data: { createdById: otherAdmin.id },
-                });
-            } else {
-                // If no other admin (edge case), delete the events
-                await db.event.deleteMany({
-                    where: { createdById: memberId },
-                });
-            }
-        }
-
-        // 4. Delete from Prisma
-        await db.member.delete({
-            where: { id: memberId },
-        });
-
-        revalidatePath("/admin/users/roles"); // Revalidate roles page just in case
-        revalidatePath("/admin/users/delete");
-
-        return { message: "Medlemmet er slettet permanent." };
+        return { message: "Medlemmet er deaktivert og personlig data er anonymisert." };
     } catch (error) {
-        console.error("Failed to delete member:", error);
+        console.error("Failed to soft-delete member:", error);
         return { error: "En uventet feil oppstod under sletting." };
     }
 }

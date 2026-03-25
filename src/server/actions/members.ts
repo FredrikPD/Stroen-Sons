@@ -1,10 +1,11 @@
 "use server";
 
-import { db } from "@/server/db";
+import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
 
 export async function getMembers() {
     try {
         const members = await db.member.findMany({
+            where: { ...ACTIVE_MEMBER_FILTER },
             select: {
                 id: true,
                 firstName: true,
