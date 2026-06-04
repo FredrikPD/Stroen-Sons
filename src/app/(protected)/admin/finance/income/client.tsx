@@ -4,12 +4,21 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { Avatar } from "@/components/Avatar";
-import { getMonthlyPaymentStatus, generateMonthlyFees, togglePaymentStatus, deleteMonthlyFees, deleteSingleInvoice, markMonthlyFeesAsPaid, markMonthlyFeesAsUnpaid } from "@/server/actions/finance";
+import { getMonthlyPaymentStatus, generateMonthlyFees, deleteMonthlyFees, deleteSingleInvoice, markMonthlyFeesAsPaid, markMonthlyFeesAsUnpaid } from "@/server/actions/finance";
 import Link from "next/link";
 import { RequestStatus } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { CreateInvoiceModal } from "@/components/admin/finance/CreateInvoiceModal";
+import { InvoiceStatusModal, InvoiceStatusTarget } from "@/components/admin/finance/InvoiceStatusModal";
 import { LoadingState } from "@/components/ui/LoadingState";
+
+// Status chip metadata for the interactive monthly-fee cells.
+const STATUS_META: Record<RequestStatus, { label: string; chip: string; icon: string }> = {
+    PAID: { label: "Betalt", chip: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "check_circle" },
+    PENDING: { label: "Ubetalt", chip: "bg-red-50 text-red-700 border-red-200", icon: "schedule" },
+    PAUSED: { label: "Pauset", chip: "bg-amber-50 text-amber-700 border-amber-200", icon: "pause_circle" },
+    WAIVED: { label: "Ettergitt", chip: "bg-gray-100 text-gray-600 border-gray-200", icon: "do_not_disturb_on" }
+};
 
 // Helper to get month name
 const getMonthName = (monthIndex: number) => {
@@ -20,6 +29,7 @@ const getMonthName = (monthIndex: number) => {
 type PaymentRequestInfo = {
     status: RequestStatus;
     id: string;
+    amount: number;
 };
 
 type MemberPaymentData = {
@@ -56,11 +66,11 @@ export default function IncomePage() {
     const [periods, setPeriods] = useState<string[]>([]); // These are TITLES now
     const [stats, setStats] = useState<FinanceStats | null>(null);
     const [loadingData, setLoadingData] = useState(true);
-    const [updating, setUpdating] = useState<string | null>(null);
     const [generating, setGenerating] = useState(false);
     const [markingPaid, setMarkingPaid] = useState(false);
     const [markingUnpaid, setMarkingUnpaid] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [statusModalTarget, setStatusModalTarget] = useState<InvoiceStatusTarget | null>(null);
 
     // Fetch Data
     const fetchData = useCallback(async () => {
@@ -85,21 +95,14 @@ export default function IncomePage() {
     }, [fetchData, dashboardLoading]);
 
 
-    const handleTogglePayment = async (requestId: string) => {
-        setUpdating(requestId);
-        try {
-            await togglePaymentStatus(requestId);
-            await fetchData();
-        } catch (error) {
-            console.error("Failed to toggle payment", error);
-            await openAlert({
-                title: "Feil",
-                message: "Feil ved oppdatering av betaling",
-                type: "error"
-            });
-        } finally {
-            setUpdating(null);
-        }
+    const openStatusModal = (member: MemberPaymentData, info: PaymentRequestInfo) => {
+        setStatusModalTarget({
+            id: info.id,
+            memberName: member.name,
+            title: periods[0],
+            amount: info.amount,
+            status: info.status
+        });
     };
 
     const handleGenerateFees = async () => {
@@ -326,6 +329,37 @@ export default function IncomePage() {
         return compact
             ? <span className="text-gray-300">-</span>
             : <span className="text-xs text-gray-400 italic">Ingen krav</span>;
+    };
+
+    // Compact (read-only) status indicator for the two previous-period columns.
+    const renderCompactStatus = (member: MemberPaymentData, info: PaymentRequestInfo | null) => {
+        if (!info) return renderNoRequestBadge(member, true);
+        switch (info.status) {
+            case 'PAUSED':
+                return renderPausedBadge(true);
+            case 'PAID':
+                return <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>;
+            case 'WAIVED':
+                return <span className="material-symbols-outlined text-gray-400 text-sm bg-gray-100 rounded-full p-1">do_not_disturb_on</span>;
+            default:
+                return <span className="w-2 h-2 rounded-full bg-red-400"></span>;
+        }
+    };
+
+    // Clickable status chip for the current period — opens the status-change modal.
+    const renderStatusChip = (member: MemberPaymentData, info: PaymentRequestInfo) => {
+        const meta = STATUS_META[info.status];
+        return (
+            <button
+                onClick={() => openStatusModal(member, info)}
+                className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-md pl-2 pr-1.5 py-1 transition-colors hover:brightness-95 ${meta.chip}`}
+                title="Endre status"
+            >
+                <span className="material-symbols-outlined text-[1rem] leading-none">{meta.icon}</span>
+                {meta.label}
+                <span className="material-symbols-outlined text-[1rem] leading-none opacity-60">expand_more</span>
+            </button>
+        );
     };
 
     // Generate period options (+/- 9 months)
@@ -556,55 +590,20 @@ export default function IncomePage() {
 
                                     {/* History Period -2 */}
                                     <div className="hidden md:flex col-span-2 justify-center">
-                                        {member.history[periods[2]] ? (
-                                            member.history[periods[2]]!.status === 'PAUSED' ?
-                                                renderPausedBadge(true)
-                                                : member.history[periods[2]]!.status === 'PAID' ?
-                                                    <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>
-                                                    :
-                                                    <span className="w-2 h-2 rounded-full bg-red-400"></span>
-                                        ) : (
-                                            renderNoRequestBadge(member, true)
-                                        )}
+                                        {renderCompactStatus(member, member.history[periods[2]] ?? null)}
                                     </div>
 
                                     {/* History Period -1 */}
                                     <div className="hidden md:flex col-span-2 justify-center">
-                                        {member.history[periods[1]] ? (
-                                            member.history[periods[1]]!.status === 'PAUSED' ?
-                                                renderPausedBadge(true)
-                                                : member.history[periods[1]]!.status === 'PAID' ?
-                                                    <span className="material-symbols-outlined text-emerald-500 text-sm bg-emerald-50 rounded-full p-1">check</span>
-                                                    :
-                                                    <span className="w-2 h-2 rounded-full bg-red-400"></span>
-                                        ) : (
-                                            renderNoRequestBadge(member, true)
-                                        )}
+                                        {renderCompactStatus(member, member.history[periods[1]] ?? null)}
                                     </div>
 
                                     {/* Current Period */}
-                                    <div className="col-span-6 md:col-span-2 flex items-center justify-between md:justify-center gap-4">
+                                    <div className="col-span-6 md:col-span-2 flex items-center justify-between md:justify-center gap-3">
                                         {member.history[periods[0]] ? (
-                                            member.history[periods[0]]!.status === 'PAUSED' ?
-                                                renderPausedBadge(false)
-                                                :
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => handleTogglePayment(member.history[periods[0]]!.id)}
-                                                            disabled={updating === member.history[periods[0]]!.id}
-                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${member.history[periods[0]]!.status === 'PAID' ? 'bg-emerald-500' : 'bg-gray-200'
-                                                                } ${updating === member.history[periods[0]]!.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                        >
-                                                            <span className={`${member.history[periods[0]]!.status === 'PAID' ? 'translate-x-6' : 'translate-x-1'
-                                                                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
-                                                        </button>
-                                                        <span className={`text-xs font-medium w-12 ${member.history[periods[0]]!.status === 'PAID' ? 'text-gray-900' : 'text-gray-500'
-                                                            }`}>
-                                                            {member.history[periods[0]]!.status === 'PAID' ? "Betalt" : "Ubetalt"}
-                                                        </span>
-                                                    </div>
-
+                                            <div className="flex items-center gap-2">
+                                                {renderStatusChip(member, member.history[periods[0]]!)}
+                                                {member.history[periods[0]]!.status !== 'PAID' && (
                                                     <button
                                                         onClick={() => handleDeleteSingle(member.history[periods[0]]!.id, member.name)}
                                                         className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
@@ -612,7 +611,8 @@ export default function IncomePage() {
                                                     >
                                                         <span className="material-symbols-outlined text-sm">delete</span>
                                                     </button>
-                                                </div>
+                                                )}
+                                            </div>
                                         ) : (
                                             renderNoRequestBadge(member, false)
                                         )}
@@ -627,6 +627,11 @@ export default function IncomePage() {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 members={members.map(m => ({ id: m.id, name: m.name }))}
+                onSuccess={fetchData}
+            />
+            <InvoiceStatusModal
+                invoice={statusModalTarget}
+                onClose={() => setStatusModalTarget(null)}
                 onSuccess={fetchData}
             />
         </div>

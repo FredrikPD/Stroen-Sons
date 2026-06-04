@@ -15,6 +15,17 @@ const getFeeTitle = (year: number, month: number) => {
 
 const getMonthEndDate = (year: number, month: number) => new Date(year, month, 0);
 
+// Membership-fee titles encode their period, e.g. "Medlemskontingent 2025-12".
+// PAUSED fees have dueDate = null, so we derive the period from the title instead.
+const parseFeePeriodFromTitle = (title: string): { year: number; month: number } | null => {
+    const match = title.match(/(\d{4})-(\d{2})/);
+    if (!match) return null;
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    if (!Number.isFinite(year) || month < 1 || month > 12) return null;
+    return { year, month };
+};
+
 const EXPENSE_SPLIT_SUFFIX = " (Splittet)";
 
 const normalizeExpenseDescription = (description: string) => {
@@ -619,12 +630,11 @@ export async function getMonthlyPaymentStatus(year: number, month: number) {
                 avatarUrl: member.avatarUrl,
                 pauseMonthlyFees: member.pauseMonthlyFees,
                 history: {
-                    // Return the Request Object, or Status?
-                    // UI expects status string currently.
-                    // Returning { status: 'PAID', requestId: '...' } is better for clicking.
-                    [titles[0]]: currentRequest ? { status: currentRequest.status, id: currentRequest.id } : null,
-                    [titles[1]]: requestMap.get(titles[1]) ? { status: requestMap.get(titles[1])?.status, id: requestMap.get(titles[1])?.id } : null,
-                    [titles[2]]: requestMap.get(titles[2]) ? { status: requestMap.get(titles[2])?.status, id: requestMap.get(titles[2])?.id } : null,
+                    // Return { status, id, amount } per period so the admin UI can both
+                    // display the status and open a status-change modal showing the amount.
+                    [titles[0]]: currentRequest ? { status: currentRequest.status, id: currentRequest.id, amount: Number(currentRequest.amount) } : null,
+                    [titles[1]]: requestMap.get(titles[1]) ? { status: requestMap.get(titles[1])?.status, id: requestMap.get(titles[1])?.id, amount: Number(requestMap.get(titles[1])?.amount) } : null,
+                    [titles[2]]: requestMap.get(titles[2]) ? { status: requestMap.get(titles[2])?.status, id: requestMap.get(titles[2])?.id, amount: Number(requestMap.get(titles[2])?.amount) } : null,
                 }
             };
         });
@@ -723,6 +733,163 @@ export async function togglePaymentStatus(requestId: string) {
     } catch (error) {
         console.error("Error toggling payment:", error);
         return { success: false, error: "Failed to toggle status" };
+    }
+}
+
+/**
+ * Admin: explicitly set a PaymentRequest's status to ANY target state, keeping all
+ * banking consistent (Transaction ledger, Member.balance, and the Payment summary).
+ *
+ * "Paid-ness" is the only status with banking effects:
+ *   - Entering PAID  -> create Transaction(+amount), increment balance, upsert Payment=PAID
+ *   - Leaving PAID   -> delete Transaction, decrement balance, revert Payment=UNPAID
+ *   - Among the non-paid states (PENDING / PAUSED / WAIVED) -> pure status flip, no ledger impact
+ *
+ * Unlike togglePaymentStatus, this accepts PAUSED as both a source and a target, which is
+ * what lets an admin record payment for an invoice the member had set to "Satt på pause".
+ */
+export async function setInvoiceStatus(requestId: string, targetStatus: RequestStatus) {
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== 'ADMIN') return { success: false, error: "Unauthorized" };
+
+        const validStatuses: RequestStatus[] = [
+            RequestStatus.PENDING,
+            RequestStatus.PAID,
+            RequestStatus.PAUSED,
+            RequestStatus.WAIVED
+        ];
+        if (!validStatuses.includes(targetStatus)) {
+            return { success: false, error: "Ugyldig status." };
+        }
+
+        const request = await prisma.paymentRequest.findUnique({
+            where: { id: requestId },
+            include: { member: true }
+        });
+
+        if (!request) return { success: false, error: "Fant ikke kravet." };
+        if (request.member?.deletedAt) return { success: false, error: "Medlemmet er slettet." };
+
+        const currentStatus = request.status;
+        if (currentStatus === targetStatus) {
+            return { success: true }; // No-op
+        }
+
+        const amount = request.amount; // Decimal — used directly to avoid float drift
+        const paymentAmountInt = Math.round(Number(amount));
+        const isMembershipFee = request.category === PaymentCategory.MEMBERSHIP_FEE;
+
+        // Resolve the fee period for the Payment summary + dueDate restore. PAUSED fees have
+        // dueDate = null, so fall back to the period encoded in the title.
+        const periodInfo = isMembershipFee
+            ? (request.dueDate
+                ? { year: request.dueDate.getFullYear(), month: request.dueDate.getMonth() + 1 }
+                : parseFeePeriodFromTitle(request.title))
+            : null;
+        const periodKey = periodInfo
+            ? `${periodInfo.year}-${String(periodInfo.month).padStart(2, '0')}`
+            : null;
+
+        const wasPaid = currentStatus === RequestStatus.PAID;
+        const willBePaid = targetStatus === RequestStatus.PAID;
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Leaving PAID -> void the recorded payment.
+            if (wasPaid && !willBePaid) {
+                if (request.transactionId) {
+                    await tx.transaction.delete({ where: { id: request.transactionId } });
+                }
+                await tx.member.update({
+                    where: { id: request.memberId },
+                    data: { balance: { decrement: amount } }
+                });
+                if (isMembershipFee && periodKey) {
+                    await tx.payment.updateMany({
+                        where: { memberId: request.memberId, period: periodKey },
+                        data: { status: "UNPAID", amount: null, paidAt: null }
+                    });
+                }
+            }
+
+            // 2. Entering PAID -> record the payment.
+            let newTransactionId: string | null = null;
+            if (willBePaid && !wasPaid) {
+                const transaction = await tx.transaction.create({
+                    data: {
+                        amount,
+                        description: request.title,
+                        category: request.category.toString(),
+                        date: new Date(),
+                        memberId: request.memberId,
+                        eventId: request.eventId,
+                        paymentRequest: { connect: { id: request.id } }
+                    }
+                });
+                newTransactionId = transaction.id;
+
+                await tx.member.update({
+                    where: { id: request.memberId },
+                    data: { balance: { increment: amount } }
+                });
+
+                if (isMembershipFee && periodKey) {
+                    await tx.payment.upsert({
+                        where: { memberId_period: { memberId: request.memberId, period: periodKey } },
+                        update: { status: "PAID", paidAt: new Date(), amount: paymentAmountInt },
+                        create: {
+                            memberId: request.memberId,
+                            period: periodKey,
+                            status: "PAID",
+                            paidAt: new Date(),
+                            amount: paymentAmountInt
+                        }
+                    });
+                }
+            }
+
+            // 3. Status / FK / dueDate update on the request itself.
+            const data: Prisma.PaymentRequestUncheckedUpdateInput = { status: targetStatus };
+            if (willBePaid && !wasPaid) {
+                data.transactionId = newTransactionId;
+            } else if (wasPaid && !willBePaid) {
+                data.transactionId = null;
+            }
+
+            // Keep the membership-fee record coherent with the new status.
+            if (isMembershipFee && periodInfo) {
+                if (targetStatus === RequestStatus.PAUSED) {
+                    data.dueDate = null;
+                    data.description = `Kontingent pauset av medlem for ${periodInfo.month}/${periodInfo.year}`;
+                } else if (targetStatus === RequestStatus.PENDING) {
+                    if (!request.dueDate) {
+                        data.dueDate = getMonthEndDate(periodInfo.year, periodInfo.month);
+                    }
+                    data.description = `Månedlig kontingent for ${periodInfo.month}/${periodInfo.year}`;
+                }
+            }
+
+            await tx.paymentRequest.update({ where: { id: requestId }, data });
+        });
+
+        // Notify the member when a payment is newly recorded (mirrors markRequestAsPaid).
+        if (willBePaid && !wasPaid) {
+            await createNotification({
+                memberId: request.memberId,
+                type: "BALANCE_DEPOSIT",
+                title: "Innbetaling registrert",
+                message: `Vi har registrert en innbetaling på ${formatNok(Number(amount))} kr for "${request.title}".`,
+                link: "/balance"
+            }).catch((e) => console.error("Notification failed", e));
+        }
+
+        revalidatePath("/admin/finance/income");
+        revalidatePath("/admin/finance");
+        revalidatePath("/balance");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to set invoice status:", error);
+        return { success: false, error: "Kunne ikke oppdatere status." };
     }
 }
 
