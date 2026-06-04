@@ -92,6 +92,16 @@ export async function adminAddParticipant(eventId: string, memberId: string) {
 
         if (isAttending) return { success: false, error: "Medlemmet er allerede påmeldt" };
 
+        // Enforce capacity when the event has an attendee limit.
+        if (event.maxAttendees != null) {
+            const attendeeCount = await db.member.count({
+                where: { eventsAttending: { some: { id: eventId } } }
+            });
+            if (attendeeCount >= event.maxAttendees) {
+                return { success: false, error: "Arrangementet er fullt" };
+            }
+        }
+
         await db.event.update({
             where: { id: eventId },
             data: {

@@ -20,7 +20,7 @@ export async function getCategories() {
     try {
         const member = await ensureMember();
         if (member.role !== Role.ADMIN && member.role !== Role.MODERATOR) {
-            throw new Error("Unauthorized");
+            return { success: false, error: "Unauthorized" };
         }
 
         // Fetch categories
@@ -58,7 +58,7 @@ export async function getCategories() {
 export async function createCategory(data: { name: string; description?: string; color?: string }) {
     try {
         const member = await ensureMember();
-        if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
+        if (member.role !== Role.ADMIN) return { success: false, error: "Unauthorized" };
 
         if (!data.name) return { success: false, error: "Navn er påkrevd" };
 
@@ -86,7 +86,7 @@ export async function createCategory(data: { name: string; description?: string;
 export async function updateCategory(id: string, data: { name: string; description?: string; color?: string }) {
     try {
         const member = await ensureMember();
-        if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
+        if (member.role !== Role.ADMIN) return { success: false, error: "Unauthorized" };
 
         const category = await db.category.findUnique({ where: { id } });
         if (!category) return { success: false, error: "Fant ikke kategori" };
@@ -126,7 +126,7 @@ export async function updateCategory(id: string, data: { name: string; descripti
 export async function deleteCategory(id: string) {
     try {
         const member = await ensureMember();
-        if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
+        if (member.role !== Role.ADMIN) return { success: false, error: "Unauthorized" };
 
         const category = await db.category.findUnique({ where: { id } });
         if (!category) return { success: false, error: "Fant ikke kategori" };

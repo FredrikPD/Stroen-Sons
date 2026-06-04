@@ -47,7 +47,7 @@ export async function createRole(data: { name: string; description?: string; all
             }
         });
 
-        revalidatePath("/admin/system/roles");
+        revalidatePath("/admin/system/user-roles");
         return { success: true, role };
     } catch (e) {
         console.error(e);
@@ -76,7 +76,7 @@ export async function updateRole(id: string, data: { name: string; description?:
             }
         });
 
-        revalidatePath("/admin/system/roles");
+        revalidatePath("/admin/system/user-roles");
         return { success: true, role };
     } catch (e) {
         console.error(e);
@@ -117,8 +117,9 @@ export async function assignRole(memberId: string, roleId: string) {
         // Moderator -> MODERATOR
         // Others -> MEMBER
         let legacyRole: Role = Role.MEMBER;
-        if (role.name === "Admin") legacyRole = Role.ADMIN;
-        if (role.name === "Moderator") legacyRole = Role.MODERATOR;
+        const normalizedName = role.name.trim().toLowerCase();
+        if (normalizedName === "admin") legacyRole = Role.ADMIN;
+        if (normalizedName === "moderator") legacyRole = Role.MODERATOR;
 
         const updatedMember = await prisma.member.update({
             where: { id: memberId },

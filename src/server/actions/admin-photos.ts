@@ -136,7 +136,7 @@ export async function deletePhotos(photoIds: string[]) {
     if (photos.length === 0) return { success: true };
 
     const fileKeys = photos
-        .map(p => p.url.split("/").pop())
+        .map(p => p.url.split("/").filter(Boolean).pop())
         .filter((key): key is string => !!key);
 
     if (fileKeys.length > 0) {

@@ -24,6 +24,8 @@ export function checkAccess(role: UserRole | null | undefined, path: string): bo
     }
 
     return role.allowedPaths.some(pattern => {
+        // A bare "*" grants full access.
+        if (pattern === "*") return true;
         // Regex conversion for simple wildcards
         // e.g. "/admin/events.*" matches "/admin/events", "/admin/events/new", etc.
         // We assume the pattern is a regex string or simple glob.

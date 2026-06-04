@@ -136,7 +136,6 @@ export async function updatePost(postId: string, data: PostInput) {
         revalidatePath(`/posts/${postId}`);
         revalidatePath("/admin/dashboard");
         revalidatePath("/admin/posts");
-        revalidatePath("/admin/posts");
 
         // Broadcast notification (unconditional to match create behavior)
         await broadcastNotification({

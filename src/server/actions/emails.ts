@@ -135,22 +135,8 @@ export async function sendPostNotification({
         for (const chunk of chunks) {
             const { error } = await resend.emails.send({
                 from: FROM_EMAIL,
-                to: chunk, // We can put multiple recipients in 'to' or 'bcc'. 
-                // IMPORTANT: If we put multiple in 'to', they might see each other? 
-                // Resend documentation says: "Send an email to a single recipient or a list of recipients."
-                // Usually it sends individual emails if passed as array, BUT we should double check behavior.
-                // Safest for privacy is BCC or individual sends if we want "Hey <Name>".
-                // Since our template says "Hei,", we can batch.
-                // However, putting everyone in TO is bad practice if headers leak.
-                // Resend treats array in 'to' as individual emails usually? 
-                // Actually, Resend docs say: "To send a single email to multiple recipients, provide an array of strings."
-                // Wait, if I want them NOT to see each other, I should use BCC or valid batching endpoint if it exists.
-                // Or proper bulk sending. Resend has a 'batch' endpoint for different contents.
-                // For identical content, passing array to 'to' sends ONE email with multiple recipients (visible to all).
-                // WE MUST USE BCC or loop for individual notifications to hide recipients.
-
-                // Let's us BCC for the broadcast to many, and put a generic "medlemmer@..." or the sender in TO.
-
+                // Send to ourselves and bcc the real recipients so they stay hidden from each other.
+                to: [FROM_EMAIL],
                 bcc: chunk,
                 subject: `Nytt innlegg: ${postTitle}`,
                 react: NewPostEmail({
@@ -222,7 +208,8 @@ export async function sendPostUpdateNotification({
         for (const chunk of chunks) {
             const { error } = await resend.emails.send({
                 from: FROM_EMAIL,
-                to: chunk,
+                // Send to ourselves and bcc the real recipients so they stay hidden from each other.
+                to: [FROM_EMAIL],
                 bcc: chunk,
                 subject: `Oppdatert innlegg: ${postTitle}`,
                 react: UpdatedPostEmail({

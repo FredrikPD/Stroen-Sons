@@ -28,6 +28,9 @@ export async function createPaymentRequest(data: {
     eventId?: string;
 }) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         const normalizedAmount = roundToTwo(data.amount);
         if (!Number.isFinite(normalizedAmount) || normalizedAmount < 0) {
             return { success: false, error: "Beløp må være et gyldig tall på minst 0,00" };
@@ -73,6 +76,9 @@ export async function createBulkPaymentRequests(data: {
     eventId?: string;
 }) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         const normalizedAmount = roundToTwo(data.amount);
         if (!Number.isFinite(normalizedAmount) || normalizedAmount < 0) {
             return { success: false, error: "Beløp må være et gyldig tall på minst 0,00" };
@@ -252,15 +258,23 @@ export async function getMemberPaymentRequests(memberId: string) {
  * Fetch all pending requests for admin view
  */
 export async function getAllPendingRequests() {
-    const requests = await db.paymentRequest.findMany({
-        where: { status: "PENDING" },
-        include: { member: true },
-        orderBy: { dueDate: 'asc' } // Oldest due first
-    });
-    return requests.map((request) => ({
-        ...request,
-        amount: Number(request.amount)
-    }));
+    try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return [];
+
+        const requests = await db.paymentRequest.findMany({
+            where: { status: "PENDING" },
+            include: { member: true },
+            orderBy: { dueDate: 'asc' } // Oldest due first
+        });
+        return requests.map((request) => ({
+            ...request,
+            amount: Number(request.amount)
+        }));
+    } catch (error) {
+        console.error("Failed to fetch pending requests:", error);
+        return [];
+    }
 }
 
 /**

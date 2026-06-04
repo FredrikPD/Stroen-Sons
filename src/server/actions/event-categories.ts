@@ -20,7 +20,7 @@ export async function getEventCategories() {
     try {
         const member = await ensureMember();
         if (member.role !== Role.ADMIN && member.role !== Role.MODERATOR) {
-            throw new Error("Unauthorized");
+            return { success: false, error: "Unauthorized" };
         }
 
         const categories = await db.eventCategory.findMany({
@@ -55,7 +55,7 @@ export async function getEventCategories() {
 export async function createEventCategory(data: { name: string; description?: string; color?: string }) {
     try {
         const member = await ensureMember();
-        if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
+        if (member.role !== Role.ADMIN) return { success: false, error: "Unauthorized" };
 
         if (!data.name) return { success: false, error: "Navn er påkrevd" };
 
@@ -83,7 +83,7 @@ export async function createEventCategory(data: { name: string; description?: st
 export async function updateEventCategory(id: string, data: { name: string; description?: string; color?: string }) {
     try {
         const member = await ensureMember();
-        if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
+        if (member.role !== Role.ADMIN) return { success: false, error: "Unauthorized" };
 
         const category = await db.eventCategory.findUnique({ where: { id } });
         if (!category) return { success: false, error: "Fant ikke kategori" };
@@ -118,7 +118,7 @@ export async function updateEventCategory(id: string, data: { name: string; desc
 export async function deleteEventCategory(id: string) {
     try {
         const member = await ensureMember();
-        if (member.role !== Role.ADMIN) throw new Error("Unauthorized");
+        if (member.role !== Role.ADMIN) return { success: false, error: "Unauthorized" };
 
         const category = await db.eventCategory.findUnique({ where: { id } });
         if (!category) return { success: false, error: "Fant ikke kategori" };

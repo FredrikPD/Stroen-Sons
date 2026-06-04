@@ -4,6 +4,7 @@ import { db } from "@/server/db";
 import { PaymentCategory, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotificationsForMembers } from "@/server/actions/notifications";
+import { ensureMember } from "@/server/auth/ensureMember";
 
 const roundToTwo = (amount: number) => Math.round((amount + Number.EPSILON) * 100) / 100;
 
@@ -15,6 +16,9 @@ const formatNok = (amount: number) =>
 
 export async function getInvoiceGroups() {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         const rawRequests = await db.paymentRequest.findMany({
             where: {
                 category: { not: PaymentCategory.MEMBERSHIP_FEE } // Separate section for non-monthly fees
@@ -94,6 +98,9 @@ const resolveInvoiceGroup = async (groupIdOrTitle: string) => {
 
 export async function getInvoiceGroupDetails(groupIdOrTitle: string) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         const group = await resolveInvoiceGroup(groupIdOrTitle);
         if (!group) return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
 
@@ -129,6 +136,9 @@ export async function getInvoiceGroupDetails(groupIdOrTitle: string) {
 }
 
 export async function getInvoiceFormData() {
+    const admin = await ensureMember();
+    if (admin.role !== "ADMIN") return { members: [], events: [] };
+
     const [members, events] = await Promise.all([
         db.member.findMany({
             where: { deletedAt: null },
@@ -157,6 +167,9 @@ export async function updateInvoiceGroup(groupIdOrTitle: string, data: {
     dueDate?: Date;
 }, memberIds?: string[]) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         // Validation
         if (data.amount !== undefined && (!Number.isFinite(data.amount) || data.amount < 0)) {
             return { success: false, error: "Beløp kan ikke være negativt" };
@@ -265,12 +278,15 @@ export async function updateInvoiceGroup(groupIdOrTitle: string, data: {
         return { success: true };
     } catch (error) {
         console.error("Failed to update invoice group:", error);
-        return { success: false, error: "Kunne ikke oppdatere fakturagrupppen" };
+        return { success: false, error: "Kunne ikke oppdatere fakturagruppen" };
     }
 }
 
 export async function deleteInvoiceGroup(groupIdOrTitle: string) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         const group = await resolveInvoiceGroup(groupIdOrTitle);
         if (!group) return { success: false, error: "Fant ingen fakturaer i denne gruppen." };
 
@@ -329,6 +345,9 @@ export async function getInvoices(filters?: {
     search?: string;
 }) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         const where: any = {};
 
         if (filters?.memberId) {
@@ -371,6 +390,9 @@ export async function getInvoices(filters?: {
 
 export async function deleteMultipleInvoices(ids: string[]) {
     try {
+        const admin = await ensureMember();
+        if (admin.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
         // 1. Validate: Check if any are PAID
         const paidCount = await db.paymentRequest.count({
             where: {
