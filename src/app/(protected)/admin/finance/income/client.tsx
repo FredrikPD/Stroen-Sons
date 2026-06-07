@@ -347,16 +347,18 @@ export default function IncomePage() {
     };
 
     // Clickable status chip for the current period — opens the status-change modal.
+    // Fixed width + a left-pinned icon, centered label and right-pinned caret so every
+    // chip is the same size and lines up across rows regardless of label length.
     const renderStatusChip = (member: MemberPaymentData, info: PaymentRequestInfo) => {
         const meta = STATUS_META[info.status];
         return (
             <button
                 onClick={() => openStatusModal(member, info)}
-                className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-md pl-2 pr-1.5 py-1 transition-colors hover:brightness-95 ${meta.chip}`}
+                className={`inline-flex items-center w-32 gap-1 text-xs font-medium border rounded-md px-2 py-1.5 transition-colors hover:brightness-95 ${meta.chip}`}
                 title="Endre status"
             >
                 <span className="material-symbols-outlined text-[1rem] leading-none">{meta.icon}</span>
-                {meta.label}
+                <span className="flex-1 text-center">{meta.label}</span>
                 <span className="material-symbols-outlined text-[1rem] leading-none opacity-60">expand_more</span>
             </button>
         );
@@ -599,20 +601,23 @@ export default function IncomePage() {
                                     </div>
 
                                     {/* Current Period */}
-                                    <div className="col-span-6 md:col-span-2 flex items-center justify-between md:justify-center gap-3">
+                                    <div className="col-span-6 md:col-span-2 flex items-center justify-center gap-2">
                                         {member.history[periods[0]] ? (
-                                            <div className="flex items-center gap-2">
+                                            <>
                                                 {renderStatusChip(member, member.history[periods[0]]!)}
-                                                {member.history[periods[0]]!.status !== 'PAID' && (
-                                                    <button
-                                                        onClick={() => handleDeleteSingle(member.history[periods[0]]!.id, member.name)}
-                                                        className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
-                                                        title="Slett enkeltkrav"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">delete</span>
-                                                    </button>
-                                                )}
-                                            </div>
+                                                {/* Always reserve the delete slot so chips stay aligned across rows. */}
+                                                <span className="w-8 flex-shrink-0 flex items-center justify-center">
+                                                    {member.history[periods[0]]!.status !== 'PAID' && (
+                                                        <button
+                                                            onClick={() => handleDeleteSingle(member.history[periods[0]]!.id, member.name)}
+                                                            className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
+                                                            title="Slett enkeltkrav"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">delete</span>
+                                                        </button>
+                                                    )}
+                                                </span>
+                                            </>
                                         ) : (
                                             renderNoRequestBadge(member, false)
                                         )}
