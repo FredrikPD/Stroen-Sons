@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/Avatar";
 import { getCategoryColorClasses } from "@/lib/category-colors";
+import { PremiumModal } from "@/components/ui/PremiumModal";
 import AddToCalendarButton from "./AddToCalendarButton";
 
 // Types
@@ -118,6 +119,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [showAttendees, setShowAttendees] = useState(false);
+    const [showDeadlineModal, setShowDeadlineModal] = useState(false);
 
     const startDate = new Date(event.startAt);
     const dateStr = startDate.toLocaleDateString("no-NO", { day: "numeric", month: "long", year: "numeric" });
@@ -155,11 +157,22 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
     // Handle Join/Leave
     const handleAttendance = () => {
+        // After the registration deadline the member is committed to the cost-sharing,
+        // so block un-registration and surface guidance instead of leaving the event.
+        if (currentUserIsAttending && isRegistrationClosed) {
+            setShowDeadlineModal(true);
+            return;
+        }
         startTransition(async () => {
-            if (currentUserIsAttending) {
-                await leaveEvent(event.id);
-            } else {
-                await joinEvent(event.id);
+            const result = currentUserIsAttending
+                ? await leaveEvent(event.id)
+                : await joinEvent(event.id);
+            // The server enforces the deadline as well — e.g. if it elapsed between
+            // render and click, or the client clock lags the server. Surface that
+            // rejection with the same guidance instead of silently doing nothing.
+            if (result?.error === "REGISTRATION_DEADLINE_PASSED") {
+                setShowDeadlineModal(true);
+                return;
             }
             router.refresh(); // Refresh to update UI state from server data
         });
@@ -675,7 +688,9 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             </div>
                             <p className="text-xs text-gray-500 leading-relaxed">
                                 {currentUserIsAttending
-                                    ? "Du er påmeldt dette arrangementet."
+                                    ? (isRegistrationClosed
+                                        ? "Du er påmeldt. Påmeldingsfristen er passert, så du er med på kostnadsdelingen."
+                                        : "Du er påmeldt dette arrangementet.")
                                     : (isRegistrationClosed
                                         ? "Påmeldingsfristen er over."
                                         : "Meld deg på arrangementet her.")}
@@ -799,6 +814,18 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     </div>
                 </div>
             )}
+
+            {/* ── REGISTRATION DEADLINE MODAL ────────────────────────── */}
+            <PremiumModal
+                isOpen={showDeadlineModal}
+                type="warning"
+                title="Påmeldingsfristen er passert"
+                message="Påmeldingsfristen er passert, så utgangspunktet er at du blir med på kostnadsdelingen. Ønsker du likevel å melde deg av, ta kontakt med styret / arkom."
+                isConfirm={false}
+                confirmText="Forstått"
+                onConfirm={() => setShowDeadlineModal(false)}
+                onCancel={() => setShowDeadlineModal(false)}
+            />
         </div>
     );
 }

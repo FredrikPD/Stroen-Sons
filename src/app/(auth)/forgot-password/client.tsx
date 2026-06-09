@@ -287,7 +287,7 @@ export default function ForgotPasswordPage() {
                             {/* Footer */}
                             <div className="mt-8 pt-6 border-t border-gray-100 text-center">
                                 <p className="text-xs text-gray-400">
-                                    © 2025 Strøen Søns
+                                    © 2026 Strøen Søns
                                 </p>
                             </div>
                         </div>
