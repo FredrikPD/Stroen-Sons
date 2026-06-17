@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCategoryColorClasses } from "@/lib/category-colors";
 import { SERIF, StripePlaceholder } from "@/components/posts/postPresentation";
 
@@ -54,10 +55,12 @@ export function UpcomingEventRow({
             {/* Cover thumbnail */}
             <div className="relative shrink-0 w-24 sm:w-32 aspect-[16/10] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
                 {event.coverImage ? (
-                    <img
+                    <Image
                         src={event.coverImage}
                         alt={event.title}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        fill
+                        sizes="128px"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                 ) : (
                     <StripePlaceholder label={(event.category ?? event.title).toLowerCase()} className="absolute inset-0 h-full w-full" />
@@ -144,10 +147,12 @@ export function PastEventCard({ event, color = "gray" }: { event: EventListItem;
                 {/* Cover */}
                 <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
                     {event.coverImage ? (
-                        <img
+                        <Image
                             src={event.coverImage}
                             alt={event.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                     ) : (
                         <StripePlaceholder label={event.title.toLowerCase()} className="absolute inset-0 w-full h-full" />

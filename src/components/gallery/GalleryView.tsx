@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Album } from "@/app/(protected)/gallery/actions";
 
 interface GalleryViewProps {
@@ -155,12 +156,14 @@ export default function GalleryView({ albums, isEditor = false }: GalleryViewPro
                                         className="group flex items-stretch bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all"
                                     >
                                         {/* Cover image */}
-                                        <div className="w-40 sm:w-56 aspect-video flex-shrink-0 overflow-hidden bg-gray-100">
+                                        <div className="relative w-40 sm:w-56 aspect-video flex-shrink-0 overflow-hidden bg-gray-100">
                                             {album.coverImage ? (
-                                                <img
+                                                <Image
                                                     src={album.coverImage}
                                                     alt={album.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                    fill
+                                                    sizes="(max-width: 640px) 160px, 224px"
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center">

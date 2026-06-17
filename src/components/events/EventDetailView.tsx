@@ -3,6 +3,7 @@
 import { useTransition, useState } from "react";
 import { joinEvent, leaveEvent } from "@/app/(protected)/events/[id]/actions";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/Avatar";
@@ -527,7 +528,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             <div className="grid grid-cols-3 gap-2">
                                 {photos.slice(0, 6).map((photo, i) => (
                                     <Link href={`/gallery/${event.id}`} key={photo.id} className="aspect-square rounded-xl overflow-hidden relative group cursor-pointer bg-gray-100">
-                                        <img src={photo.url} alt={photo.caption || ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <Image src={photo.url} alt={photo.caption || ""} fill sizes="(max-width: 1024px) 33vw, 280px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                         {i === 5 && totalPhotoCount > 6 ? (
                                             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-[2px]">
                                                 <span className="text-lg font-normal text-white" style={{ fontFamily: "'Georgia', serif" }}>+{totalPhotoCount - 5}</span>

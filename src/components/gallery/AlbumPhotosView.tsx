@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AlbumDetails } from "@/app/(protected)/gallery/actions";
 
 interface AlbumPhotosViewProps {
@@ -67,11 +68,12 @@ export default function AlbumPhotosView({ album }: AlbumPhotosViewProps) {
                             className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100"
                             onClick={() => openLightbox(index)}
                         >
-                            <img
+                            <Image
                                 src={photo.url}
                                 alt={photo.caption || `Bilde fra ${album.title}`}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                loading="lazy"
+                                fill
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                             <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
