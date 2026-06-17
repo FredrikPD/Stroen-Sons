@@ -205,8 +205,9 @@ export async function getPosts({
             },
             event: {
                 select: {
-                    title: true,
                     id: true,
+                    title: true,
+                    coverImage: true,
                 },
             },
             attachments: true,
@@ -263,6 +264,14 @@ export async function getPinnedPosts() {
                         firstName: true,
                         lastName: true,
                         avatarUrl: true,
+                        email: true,
+                    }
+                },
+                event: {
+                    select: {
+                        id: true,
+                        title: true,
+                        coverImage: true,
                     }
                 }
             },

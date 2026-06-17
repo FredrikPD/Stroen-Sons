@@ -1,214 +1,187 @@
-"use client";
-
 import Link from "next/link";
-import { Avatar } from "@/components/Avatar";
 import { getCategoryColorClasses } from "@/lib/category-colors";
+import { SERIF, StripePlaceholder } from "@/components/posts/postPresentation";
 
-type EventAttendee = {
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    avatarUrl?: string | null;
-};
-
-export type EventWithDetails = {
+// ── Shared serialized shape ──────────────────────────────────────────────────
+export type EventListItem = {
     id: string;
     title: string;
     description: string | null;
     coverImage: string | null;
     location: string | null;
     isTba?: boolean;
-    startAt: string;
-    _count: { attendees: number };
     category: string | null;
-    attendees: EventAttendee[];
+    startAt: string;
+    attendeeCount: number;
+    photoCount: number;
+    maxAttendees: number | null;
+    memberCost: number | null;
     hasPublishedRecap?: boolean;
 };
 
-// ── Upcoming event — image card ──────────────────────────────────────────────
-export function EventCardUpcoming({ event, color = "blue" }: { event: EventWithDetails; color?: string }) {
-    const startDate = new Date(event.startAt);
-    const day = startDate.toLocaleDateString("nb-NO", { day: "numeric" });
-    const mon = startDate.toLocaleDateString("nb-NO", { month: "short" }).replace(".", "").toUpperCase();
-    const time = startDate.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" });
+// ── Upcoming event — editorial list row (date · details · progress · CTA) ─────
+export function UpcomingEventRow({
+    event,
+    color = "gray",
+    isAttending = false,
+}: {
+    event: EventListItem;
+    color?: string;
+    isAttending?: boolean;
+}) {
+    const start = new Date(event.startAt);
+    const day = start.toLocaleDateString("nb-NO", { day: "numeric" });
+    const mon = start.toLocaleDateString("nb-NO", { month: "short" }).replace(".", "").toUpperCase();
+    const time = start.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" });
+    const cat = getCategoryColorClasses(color);
+
+    const hasCap = event.maxAttendees != null && event.maxAttendees > 0;
+    const pct = hasCap ? Math.min(100, Math.round((event.attendeeCount / event.maxAttendees!) * 100)) : 0;
 
     return (
-        <Link href={`/events/${event.id}`} className="block group">
-            <article className="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 hover:shadow-md overflow-hidden transition-all duration-300 h-full flex flex-col shadow-sm">
+        <div className="group relative flex items-center gap-4 sm:gap-6 py-5 px-4 -mx-4 rounded-xl cursor-pointer transition-colors bg-white/40 hover:bg-white/70">
+            {/* Date */}
+            <Link
+                href={`/events/${event.id}`}
+                className="shrink-0 w-12 text-center after:absolute after:inset-0 after:content-['']"
+            >
+                <span className="block text-2xl font-normal leading-none text-gray-900" style={{ fontFamily: SERIF }}>
+                    {day}
+                </span>
+                <span className="block text-[9px] font-bold tracking-[0.15em] text-gray-400 mt-1">{mon}</span>
+            </Link>
 
-                {/* Image */}
-                <div className="relative aspect-[16/7] bg-gray-100 overflow-hidden shrink-0">
+            {/* Cover thumbnail */}
+            <div className="relative shrink-0 w-24 sm:w-32 aspect-[16/10] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                {event.coverImage ? (
+                    <img
+                        src={event.coverImage}
+                        alt={event.title}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                ) : (
+                    <StripePlaceholder label={(event.category ?? event.title).toLowerCase()} className="absolute inset-0 h-full w-full" />
+                )}
+            </div>
+
+            {/* Details */}
+            <div className="flex-1 min-w-0">
+                {event.category && (
+                    <span className={`text-[10px] font-bold uppercase tracking-[0.18em] ${cat.text}`}>
+                        {event.category}
+                    </span>
+                )}
+                <h3
+                    className="text-lg sm:text-xl font-normal text-gray-900 leading-snug mt-0.5 group-hover:text-gray-600 transition-colors"
+                    style={{ fontFamily: SERIF }}
+                >
+                    {event.title}
+                </h3>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-400">
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span className="material-symbols-outlined text-[13px]">schedule</span>
+                        {event.isTba ? "TBA" : `kl. ${time}`}
+                    </span>
+                    {(event.location || event.isTba) && (
+                        <span className="inline-flex items-center gap-1 min-w-0">
+                            <span className="material-symbols-outlined text-[13px] shrink-0">location_on</span>
+                            <span className="truncate">{event.isTba ? "TBA" : event.location}</span>
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Capacity */}
+            <div className="hidden sm:flex flex-col items-end gap-1.5 w-32 shrink-0">
+                {hasCap ? (
+                    <>
+                        <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                            <div className="h-full rounded-full bg-[#0f0e0c] transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="text-[11px] tabular-nums text-gray-400">
+                            {event.attendeeCount}/{event.maxAttendees}
+                        </span>
+                    </>
+                ) : (
+                    <span className="text-[11px] tabular-nums text-gray-400">
+                        {event.attendeeCount} påmeldt{event.attendeeCount === 1 ? "" : "e"}
+                    </span>
+                )}
+            </div>
+
+            {/* CTA */}
+            <Link
+                href={`/events/${event.id}`}
+                className={`relative z-10 shrink-0 inline-flex items-center justify-center gap-1 h-9 px-4 rounded-lg text-[12px] font-bold transition-colors ${
+                    isAttending
+                        ? "border border-gray-200 text-gray-500 hover:bg-gray-50"
+                        : "bg-[#0f0e0c] text-white hover:bg-[#0f0e0c]/90"
+                }`}
+            >
+                {isAttending ? (
+                    <>
+                        <span className="material-symbols-outlined text-[15px]">check</span>
+                        Påmeldt
+                    </>
+                ) : (
+                    "Meld på"
+                )}
+            </Link>
+        </div>
+    );
+}
+
+// ── Past event — cover card ───────────────────────────────────────────────────
+export function PastEventCard({ event, color = "gray" }: { event: EventListItem; color?: string }) {
+    const start = new Date(event.startAt);
+    const monthYear = start.toLocaleDateString("nb-NO", { month: "long", year: "numeric" });
+    const monthYearCap = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+    const cat = getCategoryColorClasses(color);
+
+    return (
+        <Link href={`/events/${event.id}`} className="group block">
+            <article className="flex flex-col">
+                {/* Cover */}
+                <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
                     {event.coverImage ? (
                         <img
                             src={event.coverImage}
                             alt={event.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                     ) : (
-                        <div className="w-full h-full bg-gray-900" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-
-                    {/* Date badge */}
-                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 flex flex-col items-center shadow-sm">
-                        <span
-                            className="text-xl font-normal leading-none text-gray-900"
-                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
-                        >
-                            {day}
-                        </span>
-                        <span className="text-[9px] font-bold tracking-widest text-gray-400 mt-0.5">{mon}</span>
-                    </div>
-
-                    {/* Category badge */}
-                    {event.category && (
-                        <div className="absolute top-3 right-3">
-                            <div className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.15em] border backdrop-blur-md ${getCategoryColorClasses(color).bg} ${getCategoryColorClasses(color).text} ${getCategoryColorClasses(color).border}`}>
-                                {event.category}
-                            </div>
-                        </div>
+                        <StripePlaceholder label={event.title.toLowerCase()} className="absolute inset-0 w-full h-full" />
                     )}
                 </div>
 
                 {/* Body */}
-                <div className="p-4 flex flex-col flex-1 gap-3">
-                    {/* Location + time */}
-                    <div className="flex items-center gap-2 text-[10px] font-medium text-gray-400">
-                        {(event.location || event.isTba) && (
-                            <>
-                                <span className="material-symbols-outlined text-[13px]">location_on</span>
-                                <span>{event.isTba ? "TBA" : event.location}</span>
-                                <span className="text-gray-200">·</span>
-                            </>
-                        )}
-                        <span className="material-symbols-outlined text-[13px]">schedule</span>
-                        <span>{time}</span>
-                    </div>
-
-                    {/* Title */}
+                <div className="mt-3.5">
+                    {event.category && (
+                        <span className={`text-[10px] font-bold uppercase tracking-[0.18em] ${cat.text}`}>
+                            {event.category}
+                        </span>
+                    )}
                     <h3
-                        className="text-[17px] font-normal text-gray-900 leading-snug group-hover:text-gray-600 transition-colors"
-                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                        className="text-xl font-normal text-gray-900 leading-snug mt-0.5 group-hover:text-gray-600 transition-colors"
+                        style={{ fontFamily: SERIF }}
                     >
                         {event.title}
                     </h3>
-
-                    {event.description && (
-                        <p className="text-[12px] text-gray-400 line-clamp-2 leading-relaxed">
-                            {event.description}
-                        </p>
-                    )}
-
-                    {/* Footer */}
-                    <div className="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
-                        {/* Attendees */}
-                        {event.attendees.length > 0 ? (
-                            <div className="flex items-center gap-2">
-                                <div className="flex -space-x-1.5">
-                                    {event.attendees.map((a, i) => (
-                                        <Avatar
-                                            key={i}
-                                            src={a.avatarUrl ?? null}
-                                            initials={
-                                                a.firstName && a.lastName
-                                                    ? `${a.firstName[0]}${a.lastName[0]}`.toUpperCase()
-                                                    : (a.firstName || a.email || "?").substring(0, 2).toUpperCase()
-                                            }
-                                            className="w-5 h-5 border-[1.5px] border-white text-[9px]"
-                                        />
-                                    ))}
-                                    {event._count.attendees > 3 && (
-                                        <div className="w-5 h-5 rounded-full bg-gray-100 border-[1.5px] border-white flex items-center justify-center text-gray-500 text-[8px] font-bold">
-                                            +{event._count.attendees - 3}
-                                        </div>
-                                    )}
-                                </div>
-                                <span className="text-[10px] text-gray-400">{event._count.attendees} påmeldt{event._count.attendees !== 1 ? "e" : ""}</span>
-                            </div>
-                        ) : (
-                            <span className="text-[10px] text-gray-400">Ingen påmeldte ennå</span>
-                        )}
-
-                        <span className="material-symbols-outlined text-[18px] text-gray-300 group-hover:text-gray-500 transition-colors">
-                            chevron_right
+                    <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-400">
+                        <span>{monthYearCap}</span>
+                        <span className="inline-flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">group</span>
+                            {event.attendeeCount}
                         </span>
-                    </div>
-                </div>
-            </article>
-        </Link>
-    );
-}
-
-// ── Past event — list row ────────────────────────────────────────────────────
-export function EventCardPast({ event, color = "blue" }: { event: EventWithDetails; color?: string }) {
-    const startDate = new Date(event.startAt);
-    const day = startDate.toLocaleDateString("nb-NO", { day: "numeric" });
-    const mon = startDate.toLocaleDateString("nb-NO", { month: "short" }).replace(".", "").toUpperCase();
-
-    return (
-        <Link href={`/events/${event.id}`} className="block group">
-            <article className="flex items-stretch bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all h-20">
-                {/* Date column */}
-                <div className="flex flex-col items-center justify-center px-4 py-4 bg-gray-50 border-r border-gray-100 shrink-0 w-16">
-                    <span
-                        className="text-xl font-normal leading-none text-gray-900"
-                        style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
-                    >
-                        {day}
-                    </span>
-                    <span className="text-[9px] font-bold tracking-widest text-gray-400 mt-0.5">{mon}</span>
-                </div>
-
-                {/* Thumbnail */}
-                {event.coverImage && (
-                    <div className="w-24 shrink-0 m-2 rounded-lg overflow-hidden">
-                        <img
-                            src={event.coverImage}
-                            alt=""
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                )}
-
-                {/* Content */}
-                <div className="flex-1 min-w-0 px-4 py-3 flex flex-col justify-center gap-1">
-                    <div className="flex items-start justify-between gap-3">
-                        <h4
-                            className="font-normal text-[15px] text-gray-900 group-hover:text-gray-600 transition-colors leading-snug line-clamp-1"
-                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
-                        >
-                            {event.title}
-                        </h4>
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] text-gray-400">
-                        {event.location && (
-                            <span className="flex items-center gap-1 shrink-0">
-                                <span className="material-symbols-outlined text-[11px]">location_on</span>
-                                {event.location}
+                        {event.photoCount > 0 && (
+                            <span className="inline-flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[13px]">photo_library</span>
+                                {event.photoCount}
                             </span>
                         )}
-                        {event.description && (
-                            <>
-                                {event.location && <span className="text-gray-200">·</span>}
-                                <span className="line-clamp-1">{event.description}</span>
-                            </>
-                        )}
                     </div>
-                </div>
-
-                {/* Chevron */}
-                <div className="flex items-center pr-4 text-gray-300 group-hover:text-gray-500 transition-colors">
-                    <span className="material-symbols-outlined text-base">chevron_right</span>
                 </div>
             </article>
         </Link>
     );
-}
-
-// Default export kept for backwards compatibility
-export default function EventCard({ event, color = "blue" }: { event: EventWithDetails; color?: string }) {
-    const isUpcoming = new Date(event.startAt) >= new Date();
-    return isUpcoming
-        ? <EventCardUpcoming event={event} color={color} />
-        : <EventCardPast event={event} color={color} />;
 }

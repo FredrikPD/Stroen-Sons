@@ -183,8 +183,8 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
     return (
         <div className="w-full flex-1 min-h-screen pb-20 flex flex-col gap-8">
 
-            {/* ── HERO ───────────────────────────────────────────────── */}
-            <div className="relative w-full h-[300px] sm:h-[360px] rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+            {/* ── HERO (full-bleed, flush under the nav — like the dashboard) ─ */}
+            <div className="relative left-1/2 -translate-x-1/2 w-screen -mt-4 md:-mt-6 h-[300px] sm:h-[360px] overflow-hidden">
                 {event.coverImage ? (
                     <img
                         src={event.coverImage}
@@ -199,19 +199,18 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/25 to-transparent" />
 
-                <div className="absolute inset-0 p-5 sm:p-7 flex flex-col justify-between text-white">
+                <div className="absolute inset-0">
+                    <div className="mx-auto flex h-full w-full max-w-screen-xl flex-col justify-between px-4 py-5 text-white sm:px-5 sm:py-7 lg:px-6">
                     {/* Top row */}
                     <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">
-                            {event.hasPassed ? (
-                                <span className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
-                                    Gjennomført
-                                </span>
-                            ) : (
-                                <span className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
-                                    Påmelding åpen
-                                </span>
-                            )}
+                            <span className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em]">
+                                {event.hasPassed
+                                    ? "Gjennomført"
+                                    : isRegistrationClosed
+                                        ? "Påmelding stengt"
+                                        : "Påmelding åpen"}
+                            </span>
                             {event.category && (
                                 <span className={`backdrop-blur-md border text-[9px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-widest ${getCategoryColorClasses(categoryColor).bg} ${getCategoryColorClasses(categoryColor).text} ${getCategoryColorClasses(categoryColor).border}`}>
                                     {event.category}
@@ -231,7 +230,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     {/* Bottom content */}
                     <div className="space-y-3">
                         <h1
-                            className="text-2xl sm:text-3xl font-normal leading-tight text-white"
+                            className="text-4xl sm:text-5xl font-normal leading-tight text-white"
                             style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
                         >
                             {event.title}
@@ -253,6 +252,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
             </div>
 
@@ -264,7 +264,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                     {/* Description */}
                     {event.description && (
-                        <div className="space-y-4">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 space-y-4">
                             <div className="flex items-center gap-4">
                                 <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Om arrangementet</span>
                                 <div className="flex-1 h-px bg-gray-100" />
@@ -276,7 +276,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     )}
 
                     {/* Program */}
-                    <div className="space-y-4">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 space-y-4">
                         <div className="flex items-center gap-4">
                             <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Program</span>
                             <div className="flex-1 h-px bg-gray-100" />
@@ -318,7 +318,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
 
                     {/* Recap */}
                     {event.hasPassed && (
-                        <div className="space-y-4">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 space-y-4">
                             <div className="flex items-center gap-4">
                                 <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Etterrapport</span>
                                 <div className="flex-1 h-px bg-gray-100" />
@@ -517,7 +517,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                     )}
 
                     {/* Photos grid */}
-                    <div className="space-y-4">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 space-y-4">
                         <div className="flex items-center gap-4">
                             <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Bilder</span>
                             <div className="flex-1 h-px bg-gray-100" />
@@ -552,17 +552,14 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                 {/* ── RIGHT COLUMN — sidebar ──────────────────────────── */}
                 <div className="space-y-5 min-w-0">
 
-                    {/* Dark details card — mirrors dashboard membership card */}
-                    <div
-                        className="rounded-2xl p-5 flex flex-col gap-5"
-                        style={{ background: "linear-gradient(180deg, #2a2a2a 0%, #222222 100%)", boxShadow: "0 2px 12px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.05)" }}
-                    >
+                    {/* Details card */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-5">
                         {/* Header */}
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Detaljer</span>
+                            <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-500">Detaljer</span>
                         </div>
 
-                        <div className="h-px bg-white/8" />
+                        <div className="h-px bg-gray-100" />
 
                         <div className="space-y-4">
                             {/* Start */}
@@ -570,7 +567,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Start</p>
                                     <p
-                                        className="font-normal text-gray-100 text-sm leading-snug"
+                                        className="font-normal text-gray-900 text-sm leading-snug"
                                         style={{ fontFamily: "'Georgia', serif" }}
                                     >
                                         {dateStr}
@@ -586,7 +583,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     <div>
                                         <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Slutt</p>
                                         <p
-                                            className="font-normal text-gray-100 text-sm leading-snug"
+                                            className="font-normal text-gray-900 text-sm leading-snug"
                                             style={{ fontFamily: "'Georgia', serif" }}
                                         >
                                             {endDateStr !== dateStr ? endDateStr : endTimeStr}
@@ -605,7 +602,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     <div>
                                         <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Påmeldingsfrist</p>
                                         <p
-                                            className="font-normal text-gray-100 text-sm leading-snug"
+                                            className="font-normal text-gray-900 text-sm leading-snug"
                                             style={{ fontFamily: "'Georgia', serif" }}
                                         >
                                             {regDeadlineStr}
@@ -622,7 +619,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     <div className="min-w-0 pr-3">
                                         <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Sted</p>
                                         <p
-                                            className="font-normal text-gray-100 text-sm leading-snug truncate"
+                                            className="font-normal text-gray-900 text-sm leading-snug truncate"
                                             style={{ fontFamily: "'Georgia', serif" }}
                                         >
                                             {event.isTba ? "TBA" : (event.location || event.address)}
@@ -644,7 +641,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     <div>
                                         <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Din andel</p>
                                         <p
-                                            className="font-normal text-gray-100 leading-none"
+                                            className="font-normal text-gray-900 leading-none"
                                             style={{ fontFamily: "'Georgia', serif", fontSize: "1.25rem" }}
                                         >
                                             {memberCost.toLocaleString("nb-NO")},–
@@ -663,7 +660,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                         {/* Map */}
                         {event.address && !event.isTba && (
                             <>
-                                <div className="h-px bg-white/8" />
+                                <div className="h-px bg-gray-100" />
                                 <div className="h-28 w-full rounded-xl overflow-hidden">
                                     <iframe
                                         width="100%"
@@ -675,7 +672,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             </>
                         )}
 
-                        <div className="h-px bg-white/8" />
+                        <div className="h-px bg-gray-100" />
                         <AddToCalendarButton event={event} />
                     </div>
 

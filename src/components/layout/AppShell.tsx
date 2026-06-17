@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import Sidebar from "./Sidebar";
-import TopHeader from "./TopHeader";
+import TopNav from "./TopNav";
 import Footer from "./Footer";
 import MobileMenu from "./MobileMenu";
 import { getCurrentMember } from "@/server/actions/finance";
@@ -21,6 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     };
     fetchMember();
   }, []);
+
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
 
@@ -32,33 +32,52 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setMenuOpen(false); // Close mobile menu on navigate
   }, [pathname]);
 
-  return (
-    <div className="flex h-[100dvh] w-full max-w-full bg-background-main text-text-main overflow-hidden">
-      <Sidebar role={member?.role} userRole={member?.userRole} />
+  const userName = [member?.firstName, member?.lastName].filter(Boolean).join(" ") || null;
 
+  // The dashboard owns its own full-bleed layout (hero + centered body);
+  // every other page gets a centered, padded container.
+  const isDashboard = pathname === "/dashboard" || pathname === "/";
+
+  // These member surfaces (list + detail) sit on the same warm cream field as
+  // the dashboard body, so white cards pop the same way.
+  const CREAM_SURFACES = ["/posts", "/events", "/gallery", "/scoreboard", "/members", "/about"];
+  const isCreamSurface = CREAM_SURFACES.some(
+    (base) => pathname === base || pathname.startsWith(base + "/")
+  );
+
+  return (
+    <div className="flex flex-col h-[100dvh] w-full max-w-full bg-background-main text-text-main overflow-hidden">
       <MobileMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         role={member?.role}
         userRole={member?.userRole}
-        userName={[member?.firstName, member?.lastName].filter(Boolean).join(" ") || null}
+        userName={userName}
         avatarUrl={member?.avatarUrl ?? null}
+      />
+
+      <TopNav
+        loading={loading}
+        userName={userName}
+        avatarUrl={member?.avatarUrl ?? null}
+        role={member?.role}
+        userRole={member?.userRole}
+        onMenuClick={() => setMenuOpen(true)}
       />
 
       <main
         ref={mainRef}
-        className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto overflow-x-hidden relative bg-background-main"
+        className={`flex-1 min-w-0 flex flex-col overflow-y-auto overflow-x-hidden relative ${
+          isCreamSurface ? "bg-cream" : "bg-background-main"
+        }`}
       >
-        <TopHeader
-          loading={loading}
-          userName={[member?.firstName, member?.lastName].filter(Boolean).join(" ") || null}
-          avatarUrl={member?.avatarUrl ?? null}
-          onMenuClick={() => setMenuOpen(true)}
-        />
-
-        <div className="flex-1 px-4 py-4 md:px-8 md:pt-6 md:pb-8 lg:px-12 lg:pt-6 lg:pb-12 w-full min-w-0">
-          {children}
-        </div>
+        {isDashboard ? (
+          <div className="flex-1 w-full min-w-0">{children}</div>
+        ) : (
+          <div className="flex-1 mx-auto w-full max-w-screen-xl px-4 py-4 sm:px-5 md:pt-6 md:pb-8 lg:px-6 lg:pb-12 min-w-0">
+            {children}
+          </div>
+        )}
         <Footer />
       </main>
     </div>

@@ -9,8 +9,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
-    await ensureMember();
+    const member = await ensureMember();
     const albums = await getAlbums();
+    const isEditor = member?.role === "ADMIN" || member?.role === "MODERATOR";
 
-    return <GalleryView albums={albums} />;
+    return <GalleryView albums={albums} isEditor={isEditor} />;
 }

@@ -6,9 +6,11 @@ import { Album } from "@/app/(protected)/gallery/actions";
 
 interface GalleryViewProps {
     albums: Album[];
+    isEditor?: boolean;
 }
 
-export default function GalleryView({ albums }: GalleryViewProps) {
+export default function GalleryView({ albums, isEditor = false }: GalleryViewProps) {
+    const totalPhotos = albums.reduce((sum, a) => sum + a.photoCount, 0);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedYear, setSelectedYear] = useState<number | "ALL">("ALL");
 
@@ -35,25 +37,44 @@ export default function GalleryView({ albums }: GalleryViewProps) {
         <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
 
             {/* ── Page Header ─────────────────────────────────────────── */}
-            <div className="flex items-end justify-between gap-4 pt-1">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                        Foreningens minner
+                    </p>
                     <h1
                         className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
                         style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
                     >
-                        <em>Bildearkiv</em>
+                        Galleri
                     </h1>
-                    <div className="flex items-center gap-3 mt-3">
-                        <div className="h-px w-8 bg-gray-300" />
-                        <p className="text-[11px] text-gray-400 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
-                            Minner fra fellesskapet
-                        </p>
-                    </div>
                 </div>
-                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
-                    {albums.length} album{albums.length !== 1 ? "er" : ""}
-                </p>
+
+                <div className="flex items-center gap-5 shrink-0">
+                    <div className="flex items-center gap-4 text-[13px]">
+                        <span>
+                            <span className="font-semibold text-gray-900 tabular-nums">{totalPhotos}</span>{" "}
+                            <span className="text-gray-400">bilder</span>
+                        </span>
+                        <span>
+                            <span className="font-semibold text-gray-900 tabular-nums">{albums.length}</span>{" "}
+                            <span className="text-gray-400">album</span>
+                        </span>
+                    </div>
+                    {isEditor && (
+                        <Link
+                            href="/admin/photos"
+                            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[#0f0e0c] text-white text-[12px] font-bold hover:bg-[#0f0e0c]/90 transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span>
+                            Last opp bilder
+                        </Link>
+                    )}
+                </div>
             </div>
+
+            {/* ── Separator ── */}
+            <div className="h-px bg-gray-300 -mt-5" />
 
             <div className="flex flex-col md:flex-row gap-6 min-w-0">
 

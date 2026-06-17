@@ -3,6 +3,7 @@ import { prisma } from "@/server/db";
 import { ensureMember } from "@/server/auth/ensureMember";
 import { redirect } from "next/navigation";
 import EventsView from "@/components/events/EventsView";
+import { type EventListItem } from "@/components/events/EventCard";
 import { unstable_cache } from "next/cache";
 
 export const metadata: Metadata = {
@@ -19,14 +20,10 @@ type EventsListRow = {
     isTba: boolean;
     category: string | null;
     startAt: Date | string;
-    _count: { attendees: number };
-    attendees: Array<{
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
-        role: string;
-        email: string | null;
-    }>;
+    maxAttendees: number | null;
+    totalCost: number | null;
+    clubSubsidy: number | null;
+    _count: { attendees: number; photos: number };
     recap: { status: string } | null;
 };
 
@@ -39,60 +36,75 @@ export default async function EventsPage() {
     const getEvents = unstable_cache(
         async () => {
             return prisma.event.findMany({
-                orderBy: {
-                    startAt: "asc",
-                },
+                orderBy: { startAt: "asc" },
                 include: {
-                    _count: {
-                        select: { attendees: true },
-                    },
-                    recap: {
-                        select: { status: true },
-                    },
-                    attendees: {
-                        take: 3,
-                        select: {
-                            firstName: true,
-                            lastName: true,
-                            avatarUrl: true,
-                            role: true,
-                            email: true,
-                        }
-                    }
+                    _count: { select: { attendees: true, photos: true } },
+                    recap: { select: { status: true } },
                 },
-                cacheStrategy: { ttl: 60, swr: 60 }
+                cacheStrategy: { ttl: 60, swr: 60 },
             });
         },
         ["events-list-page"],
         { revalidate: 60, tags: ["events"] }
     );
 
-    const events = (await getEvents()) as unknown as EventsListRow[];
+    const now = new Date();
 
-    const categories = await prisma.eventCategory.findMany({
-        select: { name: true, color: true }
-    });
+    const [events, categories, attendingRows] = await Promise.all([
+        getEvents() as unknown as Promise<EventsListRow[]>,
+        prisma.eventCategory.findMany({ select: { name: true, color: true } }),
+        // Per-member attendance for upcoming events (uncached — varies per user).
+        prisma.event.findMany({
+            where: { startAt: { gte: now }, attendees: { some: { id: member.id } } },
+            select: { id: true },
+        }),
+    ]);
 
     const categoryColorMap = categories.reduce((acc, cat) => {
         acc[cat.name] = cat.color;
         return acc;
     }, {} as Record<string, string>);
 
-    const serializedEvents = events.map((event) => ({
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        coverImage: event.coverImage,
-        location: event.location,
-        isTba: event.isTba,
-        _count: event._count,
-        category: event.category,
-        attendees: event.attendees,
-        hasPublishedRecap: event.recap?.status === "PUBLISHED",
-        startAt: new Date(event.startAt).toISOString(),
-    }));
+    const serialize = (e: EventsListRow): EventListItem => ({
+        id: e.id,
+        title: e.title,
+        description: e.description,
+        coverImage: e.coverImage,
+        location: e.location,
+        isTba: e.isTba,
+        category: e.category,
+        startAt: new Date(e.startAt).toISOString(),
+        attendeeCount: e._count.attendees,
+        photoCount: e._count.photos,
+        maxAttendees: e.maxAttendees,
+        memberCost: e.totalCost != null ? e.totalCost - (e.clubSubsidy ?? 0) : null,
+        hasPublishedRecap: e.recap?.status === "PUBLISHED",
+    });
+
+    // Split: soonest-upcoming = hero, the rest = "Kommende" rows, past = "Tidligere".
+    const upcomingAll = events
+        .filter((e) => new Date(e.startAt) >= now)
+        .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+        .map(serialize);
+
+    const past = events
+        .filter((e) => new Date(e.startAt) < now)
+        .sort((a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime())
+        .map(serialize);
+
+    const featured = upcomingAll[0] ?? null;
+    const upcoming = upcomingAll.slice(1);
+
+    const isEditor = member.role === "ADMIN" || member.role === "MODERATOR";
 
     return (
-        <EventsView initialEvents={serializedEvents} categoryColorMap={categoryColorMap} />
+        <EventsView
+            featured={featured}
+            upcoming={upcoming}
+            past={past}
+            attendingEventIds={attendingRows.map((r) => r.id)}
+            categoryColorMap={categoryColorMap}
+            isEditor={isEditor}
+        />
     );
 }

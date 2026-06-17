@@ -8,7 +8,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 
-export default function NotificationBell() {
+export default function NotificationBell({ variant = "light" }: { variant?: "light" | "dark" }) {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -67,6 +67,18 @@ export default function NotificationBell() {
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     };
 
+    // Opening the panel counts as viewing everything: clear unread immediately
+    // (optimistic) and persist, so the user never has to click "Merk alt som lest".
+    const handleBellClick = () => {
+        const opening = !isOpen;
+        setIsOpen(opening);
+        if (opening && unreadCount > 0) {
+            setUnreadCount(0);
+            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+            markAllAsRead().catch((error) => console.error("Failed to mark all as read", error));
+        }
+    };
+
     const getIcon = (type: NotificationType) => {
         switch (type) {
             case "EVENT_CREATED": return "calendar_add_on";
@@ -90,14 +102,18 @@ export default function NotificationBell() {
     return (
         <div className="relative" ref={menuRef}>
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="relative text-gray-500 hover:text-[#4F46E5] transition-colors flex items-center p-1 rounded-full hover:bg-gray-100"
+                onClick={handleBellClick}
+                className={`relative transition-colors flex items-center p-1.5 rounded-full ${
+                    variant === "dark"
+                        ? "text-gray-300 hover:text-white hover:bg-white/10"
+                        : "text-gray-500 hover:text-[#4F46E5] hover:bg-gray-100"
+                }`}
             >
-                <span className={`material-symbols-outlined text-[1.5rem] ${isOpen ? 'text-[#4F46E5]' : ''}`}>
+                <span className={`material-symbols-outlined text-[1.4rem] ${isOpen ? (variant === "dark" ? "text-white" : "text-[#4F46E5]") : ""}`}>
                     notifications
                 </span>
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"></span>
+                    <span className={`absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 ${variant === "dark" ? "border-[#0f0e0c]" : "border-white"}`}></span>
                 )}
             </button>
 

@@ -94,25 +94,25 @@ export default async function MembersPage() {
         <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden">
 
             {/* ── Page Header ─────────────────────────────────────────── */}
-            <div className="flex items-end justify-between gap-4 pt-1">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                        Foreningens
+                    </p>
                     <h1
                         className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
                         style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
                     >
-                        <em>Medlemmer</em>
+                        Medlemmer
                     </h1>
-                    <div className="flex items-center gap-3 mt-3">
-                        <div className="h-px w-8 bg-gray-300" />
-                        <p className="text-[11px] text-gray-400 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
-                            Brødrene i Strøen Søns
-                        </p>
-                    </div>
                 </div>
-                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
-                    {members.length} medlemmer
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 shrink-0">
+                    <span className="text-gray-500">{members.length}</span> medlemmer
                 </p>
             </div>
+
+            {/* ── Separator ── */}
+            <div className="h-px bg-gray-300 -mt-5" />
 
             {/* ── Stats bar ───────────────────────────────────────────── */}
             <div

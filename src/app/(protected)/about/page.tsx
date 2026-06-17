@@ -48,19 +48,25 @@ export default async function AboutPage() {
         <div className="flex flex-col gap-12 min-w-0 overflow-x-hidden pb-12 w-full">
 
             {/* ── Page Header ─────────────────────────────────────────── */}
-            <div className="flex items-end justify-between gap-4 pt-1">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                        Om foreningen
+                    </p>
                     <h1
                         className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none"
                         style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
                     >
-                        <em>Om oss</em>
+                        Strøen Søns
                     </h1>
                 </div>
-                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest shrink-0 hidden sm:block">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 shrink-0">
                     Siden 2025
                 </p>
             </div>
+
+            {/* ── Separator ── */}
+            <div className="h-px bg-gray-300 -mt-9" />
 
             {/* ── History ─────────────────────────────────────────────── */}
             <section className="flex flex-col gap-4">

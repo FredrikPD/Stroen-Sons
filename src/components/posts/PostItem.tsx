@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
+import Image from "next/image";
 import { Avatar } from "@/components/Avatar";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { togglePinPost, deletePost } from "@/server/actions/posts";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/components/providers/ModalContext";
+import { SERIF, StripePlaceholder, excerpt, readingTime } from "./postPresentation";
 
 export type PostWithDetails = {
     id: string;
@@ -23,7 +24,7 @@ export type PostWithDetails = {
         email: string;
         role?: string;
     };
-    event?: { id: string; title: string } | null;
+    event?: { id: string; title: string; coverImage?: string | null } | null;
     attachments: { id: string; url: string; name: string; size: number; type: string }[];
 };
 
@@ -31,11 +32,13 @@ export default function PostItem({
     post,
     isAdmin,
     onDelete,
+    onTogglePin,
     categoryColorMap = {},
 }: {
     post: PostWithDetails;
     isAdmin: boolean;
     onDelete?: (id: string) => void;
+    onTogglePin?: (id: string, isPinned: boolean) => void;
     categoryColorMap?: Record<string, string>;
 }) {
     const authorName =
@@ -45,88 +48,74 @@ export default function PostItem({
 
     const dateDisplay = new Date(post.createdAt).toLocaleDateString("nb-NO", {
         day: "numeric",
-        month: "short",
+        month: "long",
         year: "numeric",
     });
 
-    const [isTruncated, setIsTruncated] = useState(false);
-    const contentRef = useRef<HTMLDivElement>(null);
+    const minutes = readingTime(post.content);
+    const preview = excerpt(post.content, 200);
 
-    useEffect(() => {
-        if (contentRef.current) {
-            setIsTruncated(contentRef.current.scrollHeight > contentRef.current.clientHeight);
-        }
-    }, [post.content]);
+    // Thumbnail rule: render a thumbnail IFF the post has a linked event.
+    const hasThumb = !!post.event;
 
     return (
-        <article className="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all overflow-hidden">
-            <div className="px-5 pt-5 flex flex-col gap-4">
+        <article className="group relative flex gap-4 sm:gap-5 rounded-xl p-4 -mx-4 cursor-pointer bg-white/40 hover:bg-white/70 transition-colors">
+            {/* Thumbnail — only when a post is linked to an event */}
+            {hasThumb && (
+                <div className="relative shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-gray-200">
+                    {post.event?.coverImage ? (
+                        <Image
+                            src={post.event.coverImage}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes="112px"
+                        />
+                    ) : (
+                        <StripePlaceholder label={post.category.toLowerCase()} className="w-full h-full" />
+                    )}
+                </div>
+            )}
 
-                {/* Top row: title + date + menu */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                    <div className="flex items-start gap-2 min-w-0">
-                        {post.isPinned && (
-                            <span className="material-symbols-outlined text-[13px] text-gray-400 mt-1 shrink-0">push_pin</span>
-                        )}
-                        <h2
-                            className="text-xl font-normal text-gray-900 leading-snug"
-                            style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
-                        >
-                            {post.title}
-                        </h2>
-                    </div>
-                    <div className="flex items-center gap-2 sm:shrink-0 sm:mt-0.5">
-                        <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] border ${categoryStyle}`}>
-                            {post.category}
-                        </span>
-                        <span className="text-[10px] text-gray-400">{dateDisplay}</span>
-                        <PostMenu post={post} isAdmin={isAdmin} onDelete={onDelete} />
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+                {/* Eyebrow: category chip + date + (admin menu) */}
+                <div className="flex items-center gap-2.5 mb-2">
+                    <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] border ${categoryStyle}`}>
+                        {post.category}
+                    </span>
+                    {post.isPinned && (
+                        <span className="material-symbols-outlined text-[13px] text-gray-400">push_pin</span>
+                    )}
+                    <span className="text-[11px] text-gray-400">{dateDisplay}</span>
+                    <div className="ml-auto relative z-10">
+                        <PostMenu post={post} isAdmin={isAdmin} onDelete={onDelete} onTogglePin={onTogglePin} />
                     </div>
                 </div>
 
-                {/* Hairline */}
-                <div className="h-px bg-gray-100" />
-
-                {/* Content preview */}
-                <div
-                    ref={contentRef}
-                    className="text-gray-500 text-[13px] leading-relaxed line-clamp-6 prose prose-sm prose-zinc max-w-none prose-p:text-gray-500 prose-p:my-0 prose-a:text-gray-700"
+                {/* Title — stretched link makes the whole card clickable */}
+                <Link
+                    href={`/posts/${post.id}`}
+                    className="block after:absolute after:inset-0 after:content-['']"
                 >
-                    <ReactMarkdown>{post.content}</ReactMarkdown>
-                </div>
+                    <h2
+                        className="text-xl font-normal text-gray-900 leading-snug group-hover:text-gray-600 transition-colors"
+                        style={{ fontFamily: SERIF }}
+                    >
+                        {post.title}
+                    </h2>
+                </Link>
 
-                {/* Attachments */}
-                {post.attachments && post.attachments.length > 0 && (
-                    <div className="space-y-1.5">
-                        {post.attachments.map((file) => (
-                            <a
-                                key={file.id}
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2.5 p-2.5 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors group/att"
-                            >
-                                <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center border border-gray-200 shrink-0">
-                                    <span className="material-symbols-outlined text-[14px] text-gray-400">description</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <span className="text-[12px] font-semibold text-gray-700 group-hover/att:text-gray-900 transition-colors truncate block">
-                                        {file.name}
-                                    </span>
-                                    <span className="text-[10px] text-gray-400">
-                                        {(file.size / 1024 / 1024).toFixed(2)} MB &middot;{" "}
-                                        {file.type.split("/")[1]?.toUpperCase() || "FIL"}
-                                    </span>
-                                </div>
-                                <span className="material-symbols-outlined text-[16px] text-gray-400 shrink-0">download</span>
-                            </a>
-                        ))}
-                    </div>
+                {/* Excerpt */}
+                {preview && (
+                    <p className="text-[13px] text-gray-500 leading-relaxed line-clamp-2 mt-1.5">
+                        {preview}
+                    </p>
                 )}
 
-                {/* Footer: author + read more */}
-                <div className="flex items-center justify-between gap-2 py-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2">
+                {/* Author + reading time + read cue */}
+                <div className="flex items-center justify-between gap-3 mt-3">
+                    <div className="flex items-center gap-2 min-w-0">
                         <Avatar
                             src={post.author.avatarUrl ?? null}
                             initials={
@@ -134,21 +123,18 @@ export default function PostItem({
                                     ? `${post.author.firstName[0]}${post.author.lastName ? post.author.lastName[0] : ""}`
                                     : "?"
                             }
-                            size="sm"
+                            size="xs"
                         />
-                        <span className="text-[11px] text-gray-400">{authorName}</span>
+                        <span className="text-[11px] text-gray-500 truncate">{authorName}</span>
+                        <span className="text-gray-300">&middot;</span>
+                        <span className="text-[11px] text-gray-400 whitespace-nowrap">{minutes} min lesing</span>
                     </div>
-                    {isTruncated && (
-                        <Link
-                            href={`/posts/${post.id}`}
-                            className="flex items-center gap-1 text-gray-400 hover:text-gray-900 transition-colors group/link"
-                        >
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Les mer</span>
-                            <span className="material-symbols-outlined text-[13px] group-hover/link:translate-x-0.5 transition-transform">
-                                arrow_forward
-                            </span>
-                        </Link>
-                    )}
+                    <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] text-gray-400 group-hover:text-gray-900 transition-colors">
+                        Les innlegget
+                        <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">
+                            arrow_forward
+                        </span>
+                    </span>
                 </div>
             </div>
         </article>
@@ -159,10 +145,12 @@ function PostMenu({
     post,
     isAdmin,
     onDelete,
+    onTogglePin,
 }: {
     post: PostWithDetails;
     isAdmin: boolean;
     onDelete?: (id: string) => void;
+    onTogglePin?: (id: string, isPinned: boolean) => void;
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -219,11 +207,16 @@ function PostMenu({
                     <button
                         onClick={async () => {
                             setIsOpen(false);
-                            toast.promise(togglePinPost(post.id), {
-                                loading: "Oppdaterer...",
-                                success: "Innlegg oppdatert!",
-                                error: "Noe gikk galt",
-                            });
+                            const newPinned = !post.isPinned;
+                            onTogglePin?.(post.id, newPinned); // optimistic — icon + label update now
+                            const res = await togglePinPost(post.id);
+                            if (res?.success) {
+                                toast.success(newPinned ? "Innlegget ble festet" : "Innlegget ble løsnet");
+                                router.refresh(); // keep the featured card / sidebar in sync
+                            } else {
+                                onTogglePin?.(post.id, post.isPinned); // revert
+                                toast.error(res?.error || "Noe gikk galt");
+                            }
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
