@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/server/db";
+import { prisma, ACTIVE_MEMBER_FILTER } from "@/server/db";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { syncClerkRoleMetadata } from "@/server/clerk/syncRoleMetadata";
 import { Role } from "@prisma/client";
@@ -11,7 +11,9 @@ export async function getRoles() {
         await ensureRole([Role.ADMIN]);
         const roles = await prisma.userRole.findMany({
             orderBy: { name: "asc" },
-            include: { _count: { select: { members: true } } }
+            // Count only active (non-deleted) members so the totals match the
+            // /members directory, which filters by ACTIVE_MEMBER_FILTER.
+            include: { _count: { select: { members: { where: ACTIVE_MEMBER_FILTER } } } }
         });
         return { success: true, roles };
     } catch (e) {
@@ -88,7 +90,7 @@ export async function deleteRole(id: string) {
     try {
         await ensureRole([Role.ADMIN]);
 
-        const role = await prisma.userRole.findUnique({ where: { id }, include: { _count: { select: { members: true } } } });
+        const role = await prisma.userRole.findUnique({ where: { id }, include: { _count: { select: { members: { where: ACTIVE_MEMBER_FILTER } } } } });
         if (!role) return { success: false, error: "Rolle ikke funnet." };
 
         if (role.isSystem) return { success: false, error: "Kan ikke slette systemroller." };
