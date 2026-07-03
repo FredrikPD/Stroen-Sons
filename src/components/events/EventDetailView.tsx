@@ -718,7 +718,7 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                             </button>
                             {!currentUserIsAttending && !isRegistrationClosed && (
                                 <ActionInfo variant="info" compact>
-                                    Når du melder deg på blir du med på kostnadsdelingen (din andel over). Etter påmeldingsfristen kan du ikke melde deg av selv. Ingen varsler sendes ut.
+                                    Når du melder deg på blir du med på kostnadsdelingen. Etter påmeldingsfristen kan du ikke melde deg av selv.
                                 </ActionInfo>
                             )}
                         </div>

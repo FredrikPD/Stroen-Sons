@@ -39,6 +39,12 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
         }
     };
 
+    const infoCard = (
+        <ActionInfo variant="info" icon="mail" title="Hva skjer når du sender invitasjonen?">
+            Personen får en e-post fra oss med en lenke for å opprette bruker. Medlemmet blir samtidig lagt inn med status «ventende» og får rollen og medlemskapstypen du velger her – velger du Admin, får personen full admin-tilgang så snart invitasjonen godtas. Ingen faktura opprettes nå; kontingent kommer først når medlemmet er aktivt.
+        </ActionInfo>
+    );
+
     return (
         <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -51,9 +57,8 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                         <p className="text-gray-500 mt-3">Opprett tilgang og send invitasjon.</p>
                     </div>
 
-                    <ActionInfo variant="info" icon="mail" title="Hva skjer når du sender invitasjonen?">
-                        Personen får en e-post fra oss med en lenke for å opprette bruker. Medlemmet blir samtidig lagt inn med status «ventende» og får rollen og medlemskapstypen du velger her – velger du Admin, får personen full admin-tilgang så snart invitasjonen godtas. Ingen faktura opprettes nå; kontingent kommer først når medlemmet er aktivt.
-                    </ActionInfo>
+                    {/* Mobile: info above the form (right-column copy is desktop-only) */}
+                    <div className="lg:hidden">{infoCard}</div>
 
                     <form ref={formRef} action={formAction} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
@@ -170,8 +175,11 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                     </form>
                 </div>
 
-                {/* Right Side: The Creative 'Card' Preview */}
-                <div className="hidden lg:flex flex-col items-center justify-center h-full min-h-[500px] relative">
+                {/* Right Side: info banner + card preview */}
+                <div className="hidden lg:flex flex-col gap-8">
+                    {infoCard}
+
+                    <div className="relative flex flex-1 flex-col items-center justify-center min-h-[420px]">
                     <div className="absolute inset-0 bg-gradient-to-tr from-cream to-primary/5 rounded-3xl -z-10 blur-3xl opacity-60" />
 
                     {/* Perspective Container */}
@@ -247,6 +255,7 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
 
                     <div className="mt-8 text-center max-w-xs">
                         <p className="text-sm font-medium text-gray-900">Forhåndsvisning</p>
+                    </div>
                     </div>
                 </div>
             </div>
