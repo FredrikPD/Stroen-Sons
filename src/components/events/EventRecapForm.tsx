@@ -6,6 +6,7 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { eventRecapSchema, EventRecapInput } from "@/lib/validators/event-recaps";
+import { card, textarea as textareaClass, input as inputClass, SERIF } from "@/components/admin/ui";
 
 type RecapGameFormInput = {
     gameType: string;
@@ -146,8 +147,8 @@ export function EventRecapForm({
         <form id={formId} onSubmit={submitForm} className="space-y-6 pb-10">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                        <h3 className="text-base font-bold text-gray-900">Kort oppsummert</h3>
+                    <div className={`${card} p-6 space-y-4`}>
+                        <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Kort oppsummert</h3>
                         <p className="text-xs text-gray-500">
                             Ett punkt per linje.
                         </p>
@@ -155,25 +156,25 @@ export function EventRecapForm({
                             {...register("summaryPointsText")}
                             rows={5}
                             placeholder={"Fantastisk laginnsats\nSterk defensiv i finalen\nGod stemning blant alle"}
-                            className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-4 py-3 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                            className={textareaClass}
                         />
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                    <div className={`${card} p-6 space-y-4`}>
                         <div className="flex items-center justify-between">
-                            <h3 className="text-base font-bold text-gray-900">Hva skjedde</h3>
-                            <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-1">
+                            <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Hva skjedde</h3>
+                            <div className="flex items-center gap-1 border border-border-color rounded-lg p-1">
                                 <button
                                     type="button"
                                     onClick={() => setPreviewStory(false)}
-                                    className={`px-3 py-1.5 text-xs font-semibold rounded ${!previewStory ? "bg-[#4F46E5] text-white" : "text-gray-500 hover:bg-gray-100"}`}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded ${!previewStory ? "bg-[#0f0e0c] text-white" : "text-gray-500 hover:bg-gray-100"}`}
                                 >
                                     Rediger
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setPreviewStory(true)}
-                                    className={`px-3 py-1.5 text-xs font-semibold rounded ${previewStory ? "bg-[#4F46E5] text-white" : "text-gray-500 hover:bg-gray-100"}`}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded ${previewStory ? "bg-[#0f0e0c] text-white" : "text-gray-500 hover:bg-gray-100"}`}
                                 >
                                     Forhåndsvisning
                                 </button>
@@ -184,18 +185,18 @@ export function EventRecapForm({
                                 {...register("story")}
                                 rows={10}
                                 placeholder="Skriv historien fra arrangementet..."
-                                className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-4 py-3 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                                className={textareaClass}
                             />
                         ) : (
-                            <div className="min-h-[220px] rounded-xl border border-gray-200 bg-gray-50/40 px-4 py-3 prose prose-sm max-w-none text-gray-700">
+                            <div className="min-h-[220px] rounded-xl border border-border-color bg-cream/40 px-4 py-3 prose prose-sm max-w-none text-gray-700">
                                 {story?.trim() ? <ReactMarkdown>{story}</ReactMarkdown> : <p>Ingen tekst enda.</p>}
                             </div>
                         )}
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                    <div className={`${card} p-6 space-y-4`}>
                         <div className="flex items-center justify-between">
-                            <h3 className="text-base font-bold text-gray-900">Kamper</h3>
+                            <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Kamper</h3>
                             <button
                                 type="button"
                                 onClick={() => append({
@@ -206,7 +207,7 @@ export function EventRecapForm({
                                     theirScore: "",
                                     winner: "",
                                 })}
-                                className="px-3 py-2 rounded-lg bg-[#EEF2FF] text-[#4F46E5] text-xs font-bold hover:bg-[#e4e9ff]"
+                                className="px-3 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
                             >
                                 + Legg til kamp
                             </button>
@@ -217,22 +218,22 @@ export function EventRecapForm({
                         ) : (
                             <div className="space-y-4">
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="rounded-xl border border-gray-200 p-4 space-y-3">
+                                    <div key={field.id} className="rounded-xl border border-border-color p-4 space-y-3">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <input
                                                 {...register(`games.${index}.gameType`)}
                                                 placeholder="Spilltype"
-                                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                                className={inputClass}
                                             />
                                             <input
                                                 {...register(`games.${index}.title`)}
                                                 placeholder="Lag 1 *"
-                                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                                className={inputClass}
                                             />
                                             <input
                                                 {...register(`games.${index}.opponent`)}
                                                 placeholder="Lag 2 *"
-                                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                                className={inputClass}
                                             />
                                         </div>
 
@@ -242,18 +243,18 @@ export function EventRecapForm({
                                                 min={0}
                                                 {...register(`games.${index}.ourScore`)}
                                                 placeholder="Score lag 1"
-                                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                                className={`${inputClass} tabular-nums`}
                                             />
                                             <input
                                                 type="number"
                                                 min={0}
                                                 {...register(`games.${index}.theirScore`)}
                                                 placeholder="Score lag 2"
-                                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                                className={`${inputClass} tabular-nums`}
                                             />
                                             <select
                                                 {...register(`games.${index}.winner`)}
-                                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                                className={inputClass}
                                             >
                                                 <option value="">Hvem vant?</option>
                                                 <option value="TEAM_A">Lag 1 vant</option>
@@ -263,7 +264,7 @@ export function EventRecapForm({
                                             <button
                                                 type="button"
                                                 onClick={() => remove(index)}
-                                                className="rounded-lg border border-red-200 text-red-600 hover:bg-red-50 px-3 py-2 text-sm font-semibold"
+                                                className="h-11 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 px-3 text-sm font-semibold transition-colors"
                                             >
                                                 Fjern
                                             </button>
@@ -276,11 +277,11 @@ export function EventRecapForm({
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                        <h3 className="text-base font-bold text-gray-900">Publisering</h3>
+                    <div className={`${card} p-6 space-y-4`}>
+                        <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Publisering</h3>
                         <select
                             {...register("status")}
-                            className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-4 py-2.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                            className={inputClass}
                         >
                             <option value="DRAFT">Utkast</option>
                             <option value="PUBLISHED">Publisert</option>
@@ -290,13 +291,13 @@ export function EventRecapForm({
                         </p>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                        <h3 className="text-base font-bold text-gray-900">Lærdom og neste gang</h3>
+                    <div className={`${card} p-6 space-y-4`}>
+                        <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Lærdom og neste gang</h3>
                         <textarea
                             {...register("lessons")}
                             rows={7}
                             placeholder="Hva lærte vi, og hva gjør vi neste gang?"
-                            className="w-full rounded-xl border border-gray-200 bg-gray-50/40 px-4 py-3 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                            className={textareaClass}
                         />
                     </div>
                 </div>

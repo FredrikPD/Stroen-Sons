@@ -7,6 +7,7 @@ import { SetHeader } from "@/components/layout/SetHeader";
 import { EventRecapForm } from "@/components/events/EventRecapForm";
 import { PodiumCard } from "@/components/events/PodiumCard";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { btnPrimary, SERIF } from "@/components/admin/ui";
 import { upsertEventRecap } from "@/server/actions/event-recaps";
 import { EventRecapInput } from "@/lib/validators/event-recaps";
 
@@ -135,26 +136,30 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
     return (
         <div className="space-y-8 pb-12">
             <SetHeader backHref={`/events/${event.id}`} backLabel={event.title} />
-            <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Etterrapport</h1>
-                    <p className="text-gray-500 text-sm">
-                        Skriv eller oppdater etterrapport for {event.title}.
-                    </p>
+            <div className="mb-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="min-w-0">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Arrangementer
+                        </p>
+                        <h1 className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none" style={{ fontFamily: SERIF }}>
+                            Etterrapport
+                        </h1>
+                        <p className="mt-3 text-sm text-text-secondary max-w-2xl leading-relaxed">
+                            Skriv eller oppdater etterrapport for {event.title}.
+                        </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                        <button type="submit" form={recapFormId} className={btnPrimary}>
+                            <span className="material-symbols-outlined text-base">save</span>
+                            Lagre endringer
+                        </button>
+                        <ActionInfo variant="info" compact className="max-w-xs text-right">
+                            Lagrer hele etterrapporten. Er status &quot;Publisert&quot; blir rapporten synlig for alle medlemmer &ndash; &quot;Utkast&quot; vises kun for admin/moderator. Kamplisten erstattes helt av det som står i skjemaet nå, så kamper du har fjernet blir borte. Ingen varsler sendes ut.
+                        </ActionInfo>
+                    </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end">
-                    <button
-                        type="submit"
-                        form={recapFormId}
-                        className="inline-flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4F46E5] text-white text-sm font-bold hover:bg-[#4338ca]"
-                    >
-                        <span className="material-symbols-outlined text-base">save</span>
-                        Lagre endringer
-                    </button>
-                    <ActionInfo variant="info" compact className="max-w-xs text-right">
-                        Lagrer hele etterrapporten. Er status &quot;Publisert&quot; blir rapporten synlig for alle medlemmer &ndash; &quot;Utkast&quot; vises kun for admin/moderator. Kamplisten erstattes helt av det som står i skjemaet nå, så kamper du har fjernet blir borte. Ingen varsler sendes ut.
-                    </ActionInfo>
-                </div>
+                <div className="h-px bg-gray-300 mt-5" />
             </div>
 
             <EventRecapForm

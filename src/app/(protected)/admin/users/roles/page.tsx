@@ -1,7 +1,7 @@
 import RolesManager from "@/components/admin/roles-manager";
-import Link from "next/link";
 import { SetHeader } from "@/components/layout/SetHeader";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader } from "@/components/admin/ui";
 
 export const metadata = {
     title: "Roller",
@@ -16,13 +16,11 @@ export default async function MemberRolesPage() {
         <div className="space-y-6">
             <SetHeader backHref="/admin/users" backLabel="Brukere" />
 
-
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Medlemsroller</h1>
-                <p className="text-gray-500 mt-2">
-                    Her kan du administrere roller og medlemstype for alle registrerte brukere.
-                </p>
-            </div>
+            <AdminPageHeader
+                eyebrow="Brukeradministrasjon"
+                title="Medlemsroller"
+                description="Her kan du administrere roller og medlemstype for alle registrerte brukere."
+            />
 
             <ActionInfo
                 variant="warning"

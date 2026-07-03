@@ -12,6 +12,7 @@ import { CreateInvoiceModal } from "@/components/admin/finance/CreateInvoiceModa
 import { InvoiceStatusModal, InvoiceStatusTarget } from "@/components/admin/finance/InvoiceStatusModal";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader, SERIF, btnSecondary } from "@/components/admin/ui";
 
 // Status chip metadata for the interactive monthly-fee cells.
 const STATUS_META: Record<RequestStatus, { label: string; chip: string; icon: string }> = {
@@ -383,32 +384,29 @@ export default function IncomePage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
-                <div className="min-w-0">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Månedskontingent</h1>
-                    <p className="text-gray-500 text-sm max-w-3xl">
-                        Administrer innbetalinger av medlemskontingent.
-                    </p>
-                </div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 sm:py-2 px-4 rounded-lg transition-colors inline-flex items-center justify-center gap-2 text-sm shadow-sm whitespace-nowrap shrink-0"
-                >
-                    <span className="material-symbols-outlined text-[1.2rem]">add</span>
-                    Nytt enkeltkrav
-                </button>
-            </div>
-
-
+            <AdminPageHeader
+                eyebrow="Inntekter"
+                title="Månedskontingent"
+                description="Administrer innbetalinger av medlemskontingent."
+                actions={
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className={`${btnSecondary} whitespace-nowrap`}
+                    >
+                        <span className="material-symbols-outlined text-[1.2rem]">add</span>
+                        Nytt enkeltkrav
+                    </button>
+                }
+            />
 
             {/* Stats & Overview Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Main Stats Card */}
-                <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6">
+                <div className="lg:col-span-2 bg-white border border-border-color rounded-2xl p-6">
                     <div className="flex flex-col h-full justify-between">
                         <div>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">PERIODE</p>
+                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">Periode</p>
                             <div className="flex flex-col sm:flex-row justify-between sm:items-end mb-6 gap-4">
                                 <select
                                     value={`${selectedYear}-${selectedMonth}`}
@@ -417,7 +415,7 @@ export default function IncomePage() {
                                         setSelectedYear(parseInt(y));
                                         setSelectedMonth(parseInt(m));
                                     }}
-                                    className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto"
+                                    className="bg-white border border-border-color rounded-xl px-4 h-11 text-sm font-medium text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors w-full sm:w-auto"
                                 >
                                     {periodOptions.map(opt => (
                                         <option key={`${opt.year}-${opt.month}`} value={`${opt.year}-${opt.month}`}>
@@ -428,14 +426,14 @@ export default function IncomePage() {
 
                                 <div className="grid grid-cols-2 gap-4 sm:gap-8 w-full sm:w-auto sm:flex sm:justify-end">
                                     <div className="text-left sm:text-right">
-                                        <p className="text-xs text-gray-500 mb-1">Totalt innbetalt</p>
-                                        <p className="text-xl font-bold text-gray-900">
+                                        <p className="text-[11px] text-gray-400 uppercase tracking-[0.15em] font-bold mb-1">Totalt innbetalt</p>
+                                        <p className="text-2xl font-normal text-emerald-600 tabular-nums" style={{ fontFamily: SERIF }}>
                                             {stats ? `Kr ${stats.totalCollected.toLocaleString("nb-NO")},-` : '...'}
                                         </p>
                                     </div>
                                     <div className="text-left sm:text-right">
-                                        <p className="text-xs text-gray-500 mb-1">Manglende</p>
-                                        <p className="text-xl font-bold text-red-500">
+                                        <p className="text-[11px] text-gray-400 uppercase tracking-[0.15em] font-bold mb-1">Manglende</p>
+                                        <p className="text-2xl font-normal text-red-600 tabular-nums" style={{ fontFamily: SERIF }}>
                                             {stats ? `Kr ${stats.missing.toLocaleString("nb-NO")},-` : '...'}
                                         </p>
                                     </div>
@@ -444,15 +442,15 @@ export default function IncomePage() {
 
                             {/* Logic for Generation Button */}
                             {stats && stats.totalCount === 0 ? (
-                                <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-yellow-800">
+                                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="text-sm text-amber-800">
                                             Ingen krav generert for denne måneden.
                                         </div>
                                         <button
                                             onClick={handleGenerateFees}
                                             disabled={generating}
-                                            className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                                            className="bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 shrink-0"
                                         >
                                             {generating ? 'Genererer...' : 'Generer krav'}
                                             <span className="material-symbols-outlined text-[1.2rem]">add_card</span>
@@ -468,18 +466,18 @@ export default function IncomePage() {
                                     <div className="relative pt-2">
                                         <div className="flex mb-2 items-center justify-between">
                                             <div>
-                                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-50">
+                                                <span className="text-[11px] font-bold inline-block py-1 px-2 uppercase tracking-[0.12em] rounded-full text-primary bg-primary/10">
                                                     Status
                                                 </span>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-xs font-semibold inline-block text-indigo-600">
+                                                <span className="text-xs font-semibold inline-block text-primary tabular-nums">
                                                     {stats.percentage}% fullført
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-100">
-                                            <div style={{ width: `${stats.percentage}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500 transition-all duration-500"></div>
+                                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-primary/15">
+                                            <div style={{ width: `${stats.percentage}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500"></div>
                                         </div>
                                     </div>
                                 )
@@ -498,7 +496,7 @@ export default function IncomePage() {
                                         >
                                             {markingPaid ? (
                                                 <>
-                                                    <span className="w-5 h-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                                                    <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                                                     Behandler...
                                                 </>
                                             ) : (
@@ -517,7 +515,7 @@ export default function IncomePage() {
                                         >
                                             {markingUnpaid ? (
                                                 <>
-                                                    <span className="w-5 h-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                                                    <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                                                     Behandler...
                                                 </>
                                             ) : (
@@ -538,16 +536,6 @@ export default function IncomePage() {
                                         Slett alle generatede krav
                                     </button>
                                 </div>
-                                <ActionInfo
-                                    variant="warning"
-                                    items={[
-                                        "Registrer alle som betalt: markerer alle ubetalte krav denne måneden som betalt på én gang. Det øker saldoen til hvert medlem og sender dem varsel (app + push) om innbetalingen. Bruk bare når du faktisk har mottatt pengene.",
-                                        "Registrer alle som ubetalt: angrer betaling for alle betalte krav denne måneden. Transaksjonene slettes og saldoen til hvert medlem reduseres tilsvarende. Medlemmene får ikke varsel om dette.",
-                                        "Slett alle genererte krav: sletter alle krav for denne måneden permanent – kan ikke angres. Fungerer bare hvis ingen har betalt ennå; er ett krav betalt, må du først registrere det som ubetalt.",
-                                    ]}
-                                >
-                                    Disse knappene gjelder alle medlemmer for valgt måned samtidig:
-                                </ActionInfo>
                                 </div>
                             )}
                         </div>
@@ -555,43 +543,45 @@ export default function IncomePage() {
                 </div>
 
                 {/* Info Card */}
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex flex-col justify-center">
-                    <div className="flex items-center gap-3 mb-3 text-blue-800">
-                        <span className="material-symbols-outlined">info</span>
-                        <h3 className="font-bold text-sm">Informasjon</h3>
+                <div className="bg-cream/50 border border-border-color rounded-2xl p-6">
+                    <div className="flex items-center gap-2.5 mb-3 text-gray-900">
+                        <span className="material-symbols-outlined text-primary">info</span>
+                        <h3 className="text-base font-normal" style={{ fontFamily: SERIF }}>Informasjon</h3>
                     </div>
-                    <p className="text-xs text-blue-900/80 leading-relaxed mb-4">
-                        Systemet baserer seg på "Betalingskrav".
-                        Du må trykke "Generer krav" hver måned for å opprette kravene.
-                        Da får hvert aktivt medlem et krav og varsel (app + push) om at fakturaen er klar – ingen penger flyttes før du fører betaling.
-                        Trygt å trykke flere ganger: medlemmer som allerede har krav hoppes over.
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                        Trykk «Generer krav» for å opprette månedens krav. Hvert aktivt medlem får et krav og varsel – ingen penger flyttes før du fører betaling. «Nytt enkeltkrav» oppretter krav for én person.
                     </p>
-                    <p className="text-xs text-blue-900/80 leading-relaxed mb-4">
-                        For å opprette enkeltkrav, trykk "Nytt enkeltkrav", velg person og antall måneder.
-                    </p>
+
+                    {stats && stats.totalCount > 0 && (
+                        <div className="mt-4 space-y-2.5 border-t border-border-color pt-4 text-xs leading-relaxed text-text-secondary">
+                            <p><span className="font-semibold text-gray-800">Registrer alle som betalt</span> – øker saldo og varsler medlemmene. Bruk kun når pengene er mottatt.</p>
+                            <p><span className="font-semibold text-gray-800">Registrer alle som ubetalt</span> – angrer betaling og reduserer saldo. Uten varsel.</p>
+                            <p><span className="font-semibold text-red-600">Slett alle</span> – fjerner månedens krav permanent. Kan ikke angres.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Member List Table */}
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="bg-white border border-border-color rounded-2xl overflow-hidden">
                 {loadingData ? (
                     <LoadingState className="h-40" spinnerSizeClassName="h-6 w-6" />
                 ) : (
                     <>
                         {/* Table Header */}
-                        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-[#faf8f3] border-b border-border-color text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                             <div className="col-span-4">Medlem</div>
                             <div className="col-span-2">MedlemsType</div>
                             {/* Periods: [Current, Prev, PrevPrev] -> Reverse for display? No, keeping provided order but checking indexes */}
                             <div className="col-span-2 text-center">{periods[2] ? formatTitle(periods[2]) : '-'}</div>
                             <div className="col-span-2 text-center">{periods[1] ? formatTitle(periods[1]) : '-'}</div>
-                            <div className="col-span-2 text-center text-indigo-600">{periods[0] ? formatTitle(periods[0]) : '-'}</div>
+                            <div className="col-span-2 text-center text-primary">{periods[0] ? formatTitle(periods[0]) : '-'}</div>
                         </div>
 
                         {/* Table Body */}
-                        <div className="divide-y divide-gray-100">
+                        <div className="divide-y divide-border-color">
                             {members.map((member) => (
-                                <div key={member.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
+                                <div key={member.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-black/[0.02] transition-colors">
                                     {/* Member Info */}
                                     <div className="col-span-12 md:col-span-4 flex items-center gap-3">
                                         <div className="flex-shrink-0">
@@ -604,7 +594,7 @@ export default function IncomePage() {
                                     </div>
 
                                     <div className="col-span-6 md:col-span-2 flex items-center">
-                                        <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-md text-gray-600">
+                                        <span className="text-xs font-medium px-2 py-1 bg-cream rounded-md text-text-secondary">
                                             {member.membershipType}
                                         </span>
                                     </div>

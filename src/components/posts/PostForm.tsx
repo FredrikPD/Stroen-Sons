@@ -11,6 +11,7 @@ import { deleteFile } from "@/server/actions/files";
 import { useModal } from "@/components/providers/ModalContext";
 import { useRouter } from "next/navigation";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, label, input, textarea, btnPrimary, card } from "@/components/admin/ui";
 
 interface PostFormProps {
     initialData?: Partial<PostInput> & { id?: string };
@@ -120,22 +121,21 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
 
             {/* Header with Submit Button */}
             {(pageTitle || pageDescription) && (
-                <div className="flex items-center justify-between border-b border-gray-100 pb-6 mb-6">
-                    <div className="flex items-center gap-4">
-                        <div>
-                            {pageTitle && <h1 className="text-2xl font-bold text-gray-900">{pageTitle}</h1>}
-                            {pageDescription && <p className="text-gray-500 text-sm">{pageDescription}</p>}
-                        </div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-gray-300 pb-6 mb-6">
+                    <div className="min-w-0">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">Innhold</p>
+                        {pageTitle && <h1 className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none" style={{ fontFamily: SERIF }}>{pageTitle}</h1>}
+                        {pageDescription && <p className="mt-3 text-sm text-text-secondary max-w-2xl leading-relaxed">{pageDescription}</p>}
                     </div>
 
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                        className={`${btnPrimary} shrink-0`}
                     >
                         {isSubmitting ? (
                             <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                                 Lagrer...
                             </>
                         ) : (
@@ -172,21 +172,21 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                 <div className="lg:col-span-2 space-y-6">
                     {/* Title & Category Row */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tittel</label>
+                        <div className="md:col-span-2">
+                            <label className={label}>Tittel</label>
                             <input
                                 {...register("title")}
                                 placeholder="Skriv en overskrift..."
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                                className={input}
                             />
-                            {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
+                            {errors.title && <p className="text-red-600 text-xs mt-1">{errors.title.message}</p>}
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</label>
+                        <div>
+                            <label className={label}>Kategori</label>
                             <div className="relative">
                                 <select
                                     {...register("category")}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                                    className={`${input} appearance-none pr-10`}
                                 >
                                     {categories.length > 0 ? (
                                         categories.map((cat) => (
@@ -211,16 +211,16 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                     {/* Content */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Innhold</label>
+                            <label className={`${label} mb-0`}>Innhold</label>
 
                             {/* View Mode Toggle */}
-                            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                            <div className="flex items-center bg-cream rounded-lg p-1">
                                 <button
                                     type="button"
                                     onClick={() => setViewMode("write")}
                                     className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "write"
-                                        ? "bg-white text-indigo-600 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700"
+                                        ? "bg-white text-primary shadow-sm"
+                                        : "text-text-secondary hover:text-gray-900"
                                         }`}
                                 >
                                     Rediger
@@ -229,8 +229,8 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                     type="button"
                                     onClick={() => setViewMode("preview")}
                                     className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "preview"
-                                        ? "bg-white text-indigo-600 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700"
+                                        ? "bg-white text-primary shadow-sm"
+                                        : "text-text-secondary hover:text-gray-900"
                                         }`}
                                 >
                                     Forhåndsvisning
@@ -240,16 +240,16 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
 
                         {viewMode === "write" ? (
                             <>
-                                <div className="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 border border-gray-200 rounded-xl">
-                                    <button type="button" onClick={() => insertFormat("### ")} className="p-2 hover:bg-gray-200 rounded-lg text-sm font-bold text-gray-700" title="Overskrift 3">H3</button>
-                                    <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
-                                    <button type="button" onClick={() => insertFormat("**", "**")} className="p-2 hover:bg-gray-200 rounded-lg text-gray-700" title="Fet">
+                                <div className="flex flex-wrap gap-2 mb-2 p-2 bg-cream/40 border border-border-color rounded-xl">
+                                    <button type="button" onClick={() => insertFormat("### ")} className="p-2 hover:bg-black/[0.04] rounded-lg text-sm font-bold text-gray-700" title="Overskrift 3">H3</button>
+                                    <div className="w-px h-6 bg-border-color mx-1 self-center" />
+                                    <button type="button" onClick={() => insertFormat("**", "**")} className="p-2 hover:bg-black/[0.04] rounded-lg text-gray-700" title="Fet">
                                         <span className="material-symbols-outlined text-lg">format_bold</span>
                                     </button>
-                                    <button type="button" onClick={() => insertFormat("*", "*")} className="p-2 hover:bg-gray-200 rounded-lg text-gray-700" title="Kursiv">
+                                    <button type="button" onClick={() => insertFormat("*", "*")} className="p-2 hover:bg-black/[0.04] rounded-lg text-gray-700" title="Kursiv">
                                         <span className="material-symbols-outlined text-lg">format_italic</span>
                                     </button>
-                                    <button type="button" onClick={() => insertFormat("- ")} className="p-2 hover:bg-gray-200 rounded-lg text-gray-700" title="Liste">
+                                    <button type="button" onClick={() => insertFormat("- ")} className="p-2 hover:bg-black/[0.04] rounded-lg text-gray-700" title="Liste">
                                         <span className="material-symbols-outlined text-lg">format_list_bulleted</span>
                                     </button>
                                 </div>
@@ -262,27 +262,27 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                     }}
                                     placeholder="Skriv innholdet her..."
                                     rows={20}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none resize-none leading-relaxed font-mono text-sm"
+                                    className={`${textarea} resize-none leading-relaxed font-mono`}
                                 />
                             </>
                         ) : (
-                            <div className="w-full px-8 py-8 bg-white border border-gray-200 rounded-xl min-h-[400px]">
-                                <div className="prose prose-zinc max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-indigo-600 prose-li:text-gray-600">
+                            <div className={`w-full px-8 py-8 ${card} min-h-[400px]`}>
+                                <div className="prose prose-zinc max-w-none prose-headings:font-normal prose-headings:text-gray-900 prose-p:text-text-secondary prose-a:text-primary prose-li:text-text-secondary" style={{ fontFamily: SERIF }}>
                                     <ReactMarkdown>{watch("content") || "*Ingen innhold å vise*"}</ReactMarkdown>
                                 </div>
                             </div>
                         )}
 
-                        {errors.content && <p className="text-red-500 text-xs mt-1">{errors.content.message}</p>}
+                        {errors.content && <p className="text-red-600 text-xs mt-1">{errors.content.message}</p>}
                     </div>
                 </div>
 
                 {/* Right Column: Attachments */}
                 <div className="space-y-6">
                     {/* Notification Card */}
-                    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 hover:border-orange-200 transition-colors">
+                    <div className="bg-amber-50 border border-amber-200/70 rounded-2xl p-5 hover:border-amber-300 transition-colors">
                         <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600 shadow-sm shadow-orange-100">
+                            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-600">
                                 <span className="material-symbols-outlined text-xl">mark_email_unread</span>
                             </div>
                             <div className="flex-1 space-y-1">
@@ -299,15 +299,15 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                 type="checkbox"
                                 {...register("sendNotification")}
                                 id="sendNotification"
-                                className="w-6 h-6 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600 mt-1"
+                                className="w-6 h-6 rounded border-gray-300 cursor-pointer accent-primary mt-1 focus:ring-primary"
                             />
                         </div>
                     </div>
 
 
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-indigo-600">attach_file</span>
+                    <div className={`${card} p-6 space-y-4`}>
+                        <h2 className="text-2xl font-normal text-gray-900 flex items-center gap-2" style={{ fontFamily: SERIF }}>
+                            <span className="material-symbols-outlined text-primary">attach_file</span>
                             Vedlegg
                         </h2>
 
@@ -319,14 +319,14 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                         {watch("attachments") && watch("attachments")!.length > 0 && (
                             <div className="space-y-2 mb-4">
                                 {watch("attachments")!.map((file, index) => (
-                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl group hover:border-indigo-200 transition-colors">
+                                    <div key={index} className="flex items-center justify-between p-3 bg-cream/40 border border-border-color rounded-xl group hover:border-primary/50 transition-colors">
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <div className="w-8 h-8 bg-white border border-gray-200 text-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <div className="w-8 h-8 bg-white border border-border-color text-primary rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <span className="material-symbols-outlined text-lg">description</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-xs font-bold text-gray-900 truncate">{file.name}</span>
-                                                <span className="text-[10px] text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                                <span className="text-[10px] text-gray-500 tabular-nums">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                                             </div>
                                         </div>
                                         <button
@@ -350,7 +350,7 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                                     }
                                                 }
                                             }}
-                                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                         >
                                             <span className="material-symbols-outlined text-lg">delete</span>
                                         </button>
@@ -360,7 +360,7 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                         )}
 
                         {/* Upload Area */}
-                        <div className="border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors p-6 flex flex-col items-center justify-center gap-3 cursor-pointer relative group min-h-[160px]">
+                        <div className="border-2 border-dashed border-border-color rounded-xl bg-cream/40 hover:bg-cream/70 hover:border-primary/50 transition-colors p-6 flex flex-col items-center justify-center gap-3 cursor-pointer relative group min-h-[160px]">
                             <input
                                 type="file"
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -394,12 +394,12 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                 }}
                             />
 
-                            <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <span className="material-symbols-outlined text-xl">upload_file</span>
                             </div>
 
                             <div className="text-center space-y-0.5">
-                                <p className="text-xs font-bold text-gray-700 group-hover:text-indigo-600 transition-colors">
+                                <p className="text-xs font-bold text-gray-700 group-hover:text-primary transition-colors">
                                     Last opp filer
                                 </p>
                                 <p className="text-[10px] text-gray-400">
@@ -410,8 +410,8 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                             {isUploading && (
                                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 backdrop-blur-sm rounded-xl">
                                     <div className="flex flex-col items-center gap-2">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
-                                        <span className="text-[10px] font-bold text-indigo-600">Laster opp...</span>
+                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary/30 border-t-primary"></div>
+                                        <span className="text-[10px] font-bold text-primary">Laster opp...</span>
                                     </div>
                                 </div>
                             )}
@@ -434,11 +434,11 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                        className={btnPrimary}
                     >
                         {isSubmitting ? (
                             <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                                 Behandler...
                             </>
                         ) : (

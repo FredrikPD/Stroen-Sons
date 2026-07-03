@@ -14,7 +14,7 @@ export function Toggle({ checked, onChange, disabled = false, loading = false, c
             type="button"
             onClick={onChange}
             disabled={disabled || loading}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
             ${checked ? 'bg-emerald-500' : 'bg-gray-200'} 
             ${(disabled || loading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} 
             ${className}`}

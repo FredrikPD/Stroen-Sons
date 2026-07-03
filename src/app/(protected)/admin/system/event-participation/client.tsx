@@ -7,6 +7,7 @@ import { getMembers } from "@/server/actions/members";
 import { Avatar } from "@/components/Avatar";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader, AdminSectionHeader, card, label, input } from "@/components/admin/ui";
 
 export default function EventParticipationClientPage() {
     const { openAlert, openConfirm } = useModal();
@@ -114,17 +115,18 @@ export default function EventParticipationClientPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Administrer Påmeldinger</h1>
-                <p className="text-gray-500">Meld medlemmer av/på arrangementer manuelt.</p>
-            </div>
+            <AdminPageHeader
+                eyebrow="Systemverktøy"
+                title="Administrer Påmeldinger"
+                description="Meld medlemmer av/på arrangementer manuelt."
+            />
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Velg Arrangement</label>
+            <div className={`${card} p-6`}>
+                <label className={label}>Velg Arrangement</label>
                 <select
                     value={selectedEventId}
                     onChange={(e) => setSelectedEventId(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={input}
                 >
                     <option value="">-- Velg --</option>
                     {events.map(e => (
@@ -139,20 +141,20 @@ export default function EventParticipationClientPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* List Existing */}
                     <div>
-                        <h3 className="font-bold text-gray-900 mb-1 flex justify-between items-center">
-                            <span>Påmeldte ({participants.length})</span>
-                            {pLoading && <span className="text-xs text-gray-400">Oppdaterer...</span>}
-                        </h3>
+                        <AdminSectionHeader
+                            title={`Påmeldte (${participants.length})`}
+                            action={pLoading ? <span className="text-xs text-gray-400">Oppdaterer...</span> : undefined}
+                        />
                         <ActionInfo variant="info" className="mb-4">
                             Å fjerne et medlem melder det av arrangementet, uavhengig av frister. Medlemmet får ingen beskjed, og ingen faktura endres. Du kan legge til medlemmet igjen etterpå.
                         </ActionInfo>
 
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden max-h-[500px] overflow-y-auto">
+                        <div className={`${card} overflow-hidden max-h-[500px] overflow-y-auto`}>
                             {participants.length === 0 ? (
                                 <p className="p-4 text-center text-gray-400 text-sm">Ingen påmeldte.</p>
                             ) : (
                                 participants.map(p => (
-                                    <div key={p.id} className="flex items-center justify-between p-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                                    <div key={p.id} className="flex items-center justify-between p-3 border-b border-border-color last:border-0 hover:bg-black/[0.02] transition-colors">
                                         <div className="flex items-center gap-3">
                                             <Avatar
                                                 src={p.avatarUrl}
@@ -164,7 +166,7 @@ export default function EventParticipationClientPage() {
                                         <button
                                             onClick={() => handleRemove(p.id, p.firstName)}
                                             disabled={adding}
-                                            className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100"
+                                            className="text-red-600 hover:text-red-700 text-xs font-bold px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
                                         >
                                             Fjern
                                         </button>
@@ -176,17 +178,17 @@ export default function EventParticipationClientPage() {
 
                     {/* Add New */}
                     <div>
-                        <h3 className="font-bold text-gray-900 mb-1">Legg til deltaker</h3>
+                        <AdminSectionHeader title="Legg til deltaker" />
                         <ActionInfo variant="info" className="mb-4">
                             Medlemmet meldes på arrangementet med én gang, selv om påmeldingsfristen har gått ut. Kapasitetsgrensen respekteres hvis den er satt. Medlemmet får ingen e-post eller varsel, og det opprettes ingen faktura. Kan angres med Fjern.
                         </ActionInfo>
-                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                        <div className={`${card} p-4`}>
                             <input
                                 type="text"
                                 placeholder="Søk etter medlem..."
                                 value={memberSearch}
                                 onChange={(e) => setMemberSearch(e.target.value)}
-                                className="w-full p-2 mb-4 rounded-lg border border-gray-200 bg-gray-50 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                                className={`${input} mb-4`}
                             />
 
                             <div className="max-h-[400px] overflow-y-auto space-y-2">
@@ -196,7 +198,7 @@ export default function EventParticipationClientPage() {
                                     <p className="text-center text-gray-400 text-xs py-4">Ingen treff.</p>
                                 ) : (
                                     filteredMembers.map(m => (
-                                        <div key={m.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100">
+                                        <div key={m.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-black/[0.02] border border-transparent hover:border-border-color transition-colors">
                                             <div className="flex items-center gap-2">
                                                 <Avatar
                                                     src={m.avatarUrl}
@@ -210,7 +212,7 @@ export default function EventParticipationClientPage() {
                                             <button
                                                 onClick={() => handleAdd(m.id)}
                                                 disabled={adding}
-                                                className="text-indigo-600 hover:text-indigo-800 text-xs font-bold"
+                                                className="text-primary hover:text-primary-hover text-xs font-bold transition-colors disabled:opacity-50"
                                             >
                                                 + Legg til
                                             </button>

@@ -11,6 +11,7 @@ import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import { SERIF, card, label, input, textarea, btnPrimary } from "@/components/admin/ui";
 
 interface EventFormProps {
     initialData?: Partial<EventInput> & { id?: string };
@@ -194,28 +195,28 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                 {/* Left Column - Main Info */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Event Details Card */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-6 h-full">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#4F46E5]">article</span>
+                    <div className={`${card} p-6 flex flex-col gap-6 h-full`}>
+                        <h2 className="text-xl font-normal text-gray-900 flex items-center gap-2.5" style={{ fontFamily: SERIF }}>
+                            <span className="material-symbols-outlined text-primary text-[22px]">article</span>
                             Generell Informasjon
                         </h2>
 
                         <div className="flex-1 flex flex-col gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Tittel *</label>
+                                <label className={label}>Tittel *</label>
                                 <input
                                     {...register("title")}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900 placeholder:text-gray-400"
+                                    className={input}
                                     placeholder="Eks: Sommerfest 2025"
                                 />
                                 {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Kategori</label>
+                                <label className={label}>Kategori</label>
                                 <select
                                     {...register("category")}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                                    className={input}
                                 >
                                     <option value="">Ingen kategori</option>
                                     {categories.map((cat) => (
@@ -227,15 +228,15 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             </div>
 
                             <div className="flex-1 flex flex-col">
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Beskrivelse</label>
+                                <label className={label}>Beskrivelse</label>
                                 <div className="flex-1 flex flex-col gap-2">
                                     {/* Tabs */}
-                                    <div className="flex items-center gap-1 border-b border-gray-200 mb-2">
+                                    <div className="flex items-center gap-1 border-b border-border-color mb-2">
                                         <button
                                             type="button"
                                             onClick={() => setPreviewMode(false)}
                                             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${!previewMode
-                                                ? "border-[#4F46E5] text-[#4F46E5]"
+                                                ? "border-primary text-primary"
                                                 : "border-transparent text-gray-500 hover:text-gray-700"
                                                 }`}
                                         >
@@ -245,7 +246,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                             type="button"
                                             onClick={() => setPreviewMode(true)}
                                             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${previewMode
-                                                ? "border-[#4F46E5] text-[#4F46E5]"
+                                                ? "border-primary text-primary"
                                                 : "border-transparent text-gray-500 hover:text-gray-700"
                                                 }`}
                                         >
@@ -256,7 +257,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                     {!previewMode ? (
                                         <div className="flex-1 flex flex-col gap-2">
                                             {/* Markdown Toolbar */}
-                                            <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200 w-fit">
+                                            <div className="flex items-center gap-1 bg-cream/40 p-1 rounded-lg border border-border-color w-fit">
                                                 <button
                                                     type="button"
                                                     onClick={() => {
@@ -369,7 +370,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                                 id="description-input"
                                                 {...register("description")}
                                                 rows={12}
-                                                className="w-full flex-1 min-h-[400px] px-4 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900 placeholder:text-gray-400 resize-none font-mono text-sm leading-relaxed"
+                                                className={`${textarea} flex-1 min-h-[400px] resize-none font-mono leading-relaxed`}
                                                 placeholder="Beskriv arrangementet..."
                                             />
                                             <p className="text-xs text-gray-400">
@@ -378,7 +379,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                             </p>
                                         </div>
                                     ) : (
-                                        <div className="prose prose-sm max-w-none bg-gray-50/50 p-6 rounded-xl border border-gray-200 min-h-[400px]">
+                                        <div className="prose prose-sm max-w-none bg-cream/40 p-6 rounded-xl border border-border-color min-h-[400px]">
                                             <ReactMarkdown>
                                                 {/* Use getValues to get current value for preview */}
                                                 {(document.getElementById('description-input') as HTMLTextAreaElement)?.value || "Ingen beskrivelse skjult."}
@@ -424,20 +425,20 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 type="checkbox"
                                 {...register("sendNotification")}
                                 id="sendNotification"
-                                className="w-6 h-6 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600 mt-1"
+                                className="w-6 h-6 border-gray-300 rounded focus:ring-primary/40 cursor-pointer accent-primary mt-1"
                             />
                         </div>
                     </div>
 
                     {/* Cover Image */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#4F46E5]">image</span>
+                    <div className={`${card} p-6 space-y-6`}>
+                        <h2 className="text-xl font-normal text-gray-900 flex items-center gap-2.5" style={{ fontFamily: SERIF }}>
+                            <span className="material-symbols-outlined text-primary text-[22px]">image</span>
                             Coverbilde
                         </h2>
 
                         {uploadedCoverImage ? (
-                            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-gray-100 group">
+                            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border-color group">
                                 <img
                                     src={uploadedCoverImage}
                                     alt="Cover"
@@ -458,7 +459,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 </div>
                             </div>
                         ) : (
-                            <div className="border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors h-48 flex flex-col items-center justify-center gap-4 cursor-pointer relative">
+                            <div className="border-2 border-dashed border-border-color rounded-xl bg-cream/40 hover:bg-cream/60 transition-colors h-48 flex flex-col items-center justify-center gap-4 cursor-pointer relative">
                                 <input
                                     type="file"
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -487,7 +488,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                         }
                                     }}
                                 />
-                                <div className="w-12 h-12 rounded-full bg-[#4F46E5]/10 flex items-center justify-center text-[#4F46E5]">
+                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                     <span className="material-symbols-outlined">upload</span>
                                 </div>
                                 <div className="text-center">
@@ -497,8 +498,8 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 {isUploading && (
                                     <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
                                         <div className="flex flex-col items-center gap-2">
-                                            <span className="w-6 h-6 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
-                                            <span className="text-xs font-semibold text-[#4F46E5]">Laster opp...</span>
+                                            <span className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                            <span className="text-xs font-semibold text-primary">Laster opp...</span>
                                         </div>
                                     </div>
                                 )}
@@ -508,20 +509,20 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                     </div>
 
                     {/* Economics */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#4F46E5]">payments</span>
+                    <div className={`${card} p-6 space-y-6`}>
+                        <h2 className="text-xl font-normal text-gray-900 flex items-center gap-2.5" style={{ fontFamily: SERIF }}>
+                            <span className="material-symbols-outlined text-primary text-[22px]">payments</span>
                             Økonomi
                         </h2>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Totalkostnad (p.p.)</label>
+                                <label className={label}>Totalkostnad (p.p.)</label>
                                 <div className="relative">
                                     <input
                                         type="number"
                                         {...register("totalCost")}
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                                        className={`${input} pl-9 tabular-nums`}
                                         min="0"
                                     />
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">kr</span>
@@ -529,12 +530,12 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Klubbstøtte (p.p.)</label>
+                                <label className={label}>Klubbstøtte (p.p.)</label>
                                 <div className="relative">
                                     <input
                                         type="number"
                                         {...register("clubSubsidy")}
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                                        className={`${input} pl-9 tabular-nums`}
                                         min="0"
                                     />
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">kr</span>
@@ -546,10 +547,10 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
             </div>
 
             {/* Location, Time & Economics - Full Width */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className={`${card} p-6 space-y-6`}>
                 <div className="flex flex-col md:flex-row gap-6 justify-between">
-                    <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#4F46E5]">location_on</span>
+                    <h2 className="text-xl font-normal text-gray-900 flex items-center gap-2.5" style={{ fontFamily: SERIF }}>
+                        <span className="material-symbols-outlined text-primary text-[22px]">location_on</span>
                         Tid og Sted
                     </h2>
                 </div>
@@ -557,24 +558,24 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Time Row */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Starttidspunkt *</label>
+                        <label className={label}>Starttidspunkt *</label>
                         <input
                             type="datetime-local"
                             {...register("startAt")}
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                            className={input}
                         />
                         {errors.startAt && <p className="text-red-500 text-xs mt-1">{errors.startAt?.message}</p>}
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between mb-1.5">
-                            <label className="block text-sm font-semibold text-gray-700">Sluttidspunkt (valgfritt)</label>
+                            <label className={`${label} mb-0`}>Sluttidspunkt (valgfritt)</label>
                             <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
                                     id="isSameDay"
                                     {...register("isSameDay")}
-                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                                    className="w-4 h-4 border-gray-300 rounded focus:ring-primary/40 cursor-pointer accent-primary"
                                 />
                                 <label htmlFor="isSameDay" className="text-xs font-medium text-gray-600 cursor-pointer select-none">
                                     Samme dag
@@ -585,30 +586,27 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             type="datetime-local"
                             {...register("endAt")}
                             disabled={isSameDay}
-                            className={`w-full px-4 py-2.5 rounded-xl border transition-all outline-none ${isSameDay
-                                ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] text-gray-900"
-                                }`}
+                            className={`${input} ${isSameDay ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
                         />
                         {errors.endAt && <p className="text-red-500 text-xs mt-1">{errors.endAt?.message}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Påmeldingsfrist</label>
+                        <label className={label}>Påmeldingsfrist</label>
                         <input
                             type="datetime-local"
                             {...register("registrationDeadline")}
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                            className={input}
                         />
                         {errors.registrationDeadline && <p className="text-red-500 text-xs mt-1">{errors.registrationDeadline?.message}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Maks antall plasser</label>
+                        <label className={label}>Maks antall plasser</label>
                         <input
                             type="number"
                             {...register("maxAttendees")}
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-all outline-none text-gray-900"
+                            className={`${input} tabular-nums`}
                             placeholder="Ubegrenset hvis tomt"
                             min="1"
                         />
@@ -618,13 +616,13 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                     {/* Location & Cost Row */}
                     <div>
                         <div className="flex items-center justify-between mb-1.5">
-                            <label className="block text-sm font-semibold text-gray-700">Stednavn</label>
+                            <label className={`${label} mb-0`}>Stednavn</label>
                             <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
                                     id="isTba"
                                     {...register("isTba")}
-                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                                    className="w-4 h-4 border-gray-300 rounded focus:ring-primary/40 cursor-pointer accent-primary"
                                 />
                                 <label htmlFor="isTba" className="text-xs font-medium text-gray-600 cursor-pointer select-none">
                                     Sted kommer (TBA)
@@ -634,23 +632,17 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                         <input
                             {...register("location")}
                             disabled={isTba}
-                            className={`w-full px-4 py-2.5 rounded-xl border transition-all outline-none ${isTba
-                                ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] text-gray-900 placeholder:text-gray-400"
-                                }`}
+                            className={`${input} ${isTba ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
                             placeholder="Eks: Klubbhuset"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Adresse</label>
+                        <label className={label}>Adresse</label>
                         <input
                             {...register("address")}
                             disabled={isTba}
-                            className={`w-full px-4 py-2.5 rounded-xl border transition-all outline-none ${isTba
-                                ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] text-gray-900 placeholder:text-gray-400"
-                                }`}
+                            className={`${input} ${isTba ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}
                             placeholder="Gateadresse 123, 0000 Sted"
                         />
                     </div>
@@ -660,10 +652,10 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
 
 
             {/* Program / Schedule - Full Width */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className={`${card} p-6 space-y-6`}>
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#4F46E5]">event_note</span>
+                    <h2 className="text-xl font-normal text-gray-900 flex items-center gap-2.5" style={{ fontFamily: SERIF }}>
+                        <span className="material-symbols-outlined text-primary text-[22px]">event_note</span>
                         Program
                     </h2>
                     <button
@@ -673,7 +665,7 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                             const defaultDate = currentStartDate ? currentStartDate.split('T')[0] : "";
                             append({ time: "", date: defaultDate, title: "", description: "" });
                         }}
-                        className="text-sm font-bold text-[#4F46E5] hover:text-[#4338ca] flex items-center gap-1"
+                        className="text-[11px] font-bold uppercase tracking-[0.15em] text-primary hover:text-primary-hover transition-colors flex items-center gap-1"
                     >
                         <span className="material-symbols-outlined text-lg">add</span>
                         Legg til punkt
@@ -682,12 +674,12 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
 
                 <div className="space-y-4">
                     {fields.map((field, index) => (
-                        <div key={field.id} className="flex gap-4 items-start bg-gray-50/50 p-4 rounded-xl border border-gray-200">
+                        <div key={field.id} className="flex gap-4 items-start bg-cream/40 p-4 rounded-xl border border-border-color">
                             <div className="w-32 flex-shrink-0">
                                 <input
                                     type="time"
                                     {...register(`program.${index}.time` as const)}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4F46E5] outline-none text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border-color bg-white text-sm text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors tabular-nums"
                                     placeholder="00:00"
                                 />
                                 {errors.program?.[index]?.time && (
@@ -699,16 +691,16 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                     type="date"
                                     {...register(`program.${index}.date` as const)}
                                     readOnly={isSameDay}
-                                    className={`w-full px-3 py-2 rounded-lg border transition-all outline-none text-sm ${isSameDay
-                                        ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                                        : "border-gray-200 focus:border-[#4F46E5]"
+                                    className={`w-full px-3 py-2 rounded-lg border bg-white text-sm text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors ${isSameDay
+                                        ? "bg-gray-100 border-border-color text-gray-400 cursor-not-allowed"
+                                        : "border-border-color"
                                         }`}
                                 />
                             </div>
                             <div className="flex-grow space-y-2">
                                 <input
                                     {...register(`program.${index}.title` as const)}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4F46E5] outline-none text-sm font-semibold"
+                                    className="w-full px-3 py-2 rounded-lg border border-border-color bg-white text-sm font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                                     placeholder="Hva skjer?"
                                 />
                                 {errors.program?.[index]?.title && (
@@ -716,35 +708,35 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 )}
                                 <input
                                     {...register(`program.${index}.description` as const)}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-[#4F46E5] outline-none text-sm text-gray-500 placeholder:text-gray-400"
+                                    className="w-full px-3 py-2 rounded-lg border border-border-color bg-white text-sm text-gray-500 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                                     placeholder="Kort beskrivelse (valgfritt)"
                                 />
                             </div>
                             <button
                                 type="button"
                                 onClick={() => remove(index)}
-                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors p-1.5"
                             >
                                 <span className="material-symbols-outlined">delete</span>
                             </button>
                         </div>
                     ))}
                     {fields.length === 0 && (
-                        <p className="text-center text-gray-400 text-sm py-8">Ingen programpunkter lagt til enda.</p>
+                        <p className="text-center text-gray-400 text-sm py-8 italic" style={{ fontFamily: SERIF }}>Ingen programpunkter lagt til enda.</p>
                     )}
                 </div>
             </div>
 
             {/* Footer / Submit */}
-            <div className="flex justify-end pt-6 border-t border-gray-100">
+            <div className="flex justify-end pt-6 border-t border-border-color">
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-[#4F46E5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`${btnPrimary} h-12 px-8`}
                 >
                     {isSubmitting ? (
                         <>
-                            <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             {isEditMode ? "Oppdaterer..." : "Oppretter..."}
                         </>
                     ) : (

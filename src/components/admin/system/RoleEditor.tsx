@@ -7,6 +7,7 @@ import { createRole, getRole, updateRole } from "@/server/actions/roles";
 import Link from "next/link";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader, btnPrimary, btnSecondary, card, label, input, textarea, SERIF } from "@/components/admin/ui";
 
 const PERMISSIONS = [
     { label: "Administrator (Full Tilgang)", path: "/admin.*", description: "Gir tilgang til absolutt alt i systemet." },
@@ -93,12 +94,11 @@ export default function RoleEditor({ id }: { id?: string }) {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{id ? "Rediger Rolle" : "Ny Rolle"}</h1>
-                    <p className="text-gray-500 text-sm">Angi navn, beskrivelse og tillatelser.</p>
-                </div>
-            </div>
+            <AdminPageHeader
+                eyebrow="System"
+                title={id ? "Rediger Rolle" : "Ny Rolle"}
+                description="Angi navn, beskrivelse og tillatelser."
+            />
 
             {!id && (
                 <ActionInfo
@@ -113,15 +113,15 @@ export default function RoleEditor({ id }: { id?: string }) {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                <div className={`${card} p-6 space-y-4`}>
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Rollenavn</label>
+                        <label className={label}>Rollenavn</label>
                         <input
                             type="text"
                             required
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50"
+                            className={`${input} disabled:bg-gray-50`}
                             placeholder="F.eks. Redaktør"
                             // System roles should ideally not change name as logic might depend on it (e.g. Admin check in code)
                             // But we allowed it in server action. Let's warn or block if system?
@@ -134,19 +134,19 @@ export default function RoleEditor({ id }: { id?: string }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Beskrivelse</label>
+                        <label className={label}>Beskrivelse</label>
                         <textarea
                             value={description}
                             onChange={e => setDescription(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 h-24 resize-none"
+                            className={`${textarea} h-24 resize-none`}
                             placeholder="Hva brukes denne rollen til?"
                         />
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600">verified_user</span>
+                <div className={`${card} p-6`}>
+                    <h3 className="text-xl font-normal text-gray-900 mb-4 flex items-center gap-2" style={{ fontFamily: SERIF }}>
+                        <span className="material-symbols-outlined text-primary">verified_user</span>
                         Tilganger
                     </h3>
 
@@ -171,16 +171,16 @@ export default function RoleEditor({ id }: { id?: string }) {
                             // Let's keep it simple.
 
                             return (
-                                <label key={perm.path} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isChecked ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
+                                <label key={perm.path} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${isChecked ? 'bg-primary/10 border-primary/50' : 'bg-white border-border-color hover:border-gray-300'}`}>
                                     <input
                                         type="checkbox"
                                         checked={isChecked}
                                         onChange={() => togglePermission(perm.path)}
-                                        className="mt-1 w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                                        className="mt-1 w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary"
                                     />
                                     <div>
-                                        <div className="font-bold text-gray-900 text-sm">{perm.label}</div>
-                                        <div className="text-gray-500 text-xs">{perm.description}</div>
+                                        <div className="font-semibold text-gray-900 text-sm">{perm.label}</div>
+                                        <div className="text-text-secondary text-xs">{perm.description}</div>
                                     </div>
                                 </label>
                             );
@@ -189,13 +189,13 @@ export default function RoleEditor({ id }: { id?: string }) {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                    <Link href="/admin/system/user-roles" className="px-6 py-2 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors">
+                    <Link href="/admin/system/user-roles" className={btnSecondary}>
                         Avbryt
                     </Link>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-shadow shadow-sm disabled:opacity-50"
+                        className={btnPrimary}
                     >
                         {loading ? "Lagrer..." : "Lagre Rolle"}
                     </button>

@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { db } from "@/server/db";
 import { updateEvent } from "@/server/actions/events";
 import { EventForm } from "@/components/events/EventForm";
+import { AdminPageHeader } from "@/components/admin/ui";
 import { EventInput } from "@/lib/validators/events";
 
 interface EditEventPageProps {
@@ -82,13 +82,11 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
 
     return (
         <div className="space-y-8 pb-12">
-            {/* Header */}
-            <div className="flex items-center gap-4 border-b border-gray-100 pb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Rediger Arrangement</h1>
-                    <p className="text-gray-500 text-sm">Endre informasjonen for dette arrangementet.</p>
-                </div>
-            </div>
+            <AdminPageHeader
+                eyebrow="Arrangementer"
+                title="Rediger Arrangement"
+                description="Endre informasjonen for dette arrangementet."
+            />
 
             <EventForm
                 initialData={initialData}

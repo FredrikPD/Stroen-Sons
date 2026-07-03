@@ -257,7 +257,8 @@ export default function TopNav({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative text-[13px] tracking-wide font-medium transition-colors whitespace-nowrap py-1 ${
+                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                  className={`relative text-[15px] transition-colors whitespace-nowrap py-1 ${
                     active ? "text-white" : "text-gray-400 hover:text-gray-100"
                   }`}
                 >

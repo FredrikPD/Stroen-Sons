@@ -7,6 +7,7 @@ import { ActionInfo } from "@/components/ui/ActionInfo";
 import { useModal } from "@/components/providers/ModalContext";
 import { upsertEventPodium, deleteEventPodium } from "@/server/actions/event-podium";
 import type { EventPodiumInput } from "@/lib/validators/event-podium";
+import { card, SERIF } from "@/components/admin/ui";
 
 type MemberOption = {
     id: string;
@@ -78,7 +79,7 @@ function MemberSelect({
     return (
         <div className="relative">
             {value && selected ? (
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 bg-gray-50/40">
+                <div className="flex items-center gap-2 rounded-lg border border-border-color px-3 py-2 bg-cream/40">
                     <Avatar
                         src={selected.avatarUrl}
                         initials={`${selected.firstName?.[0] || ""}${selected.lastName?.[0] || ""}`}
@@ -90,7 +91,7 @@ function MemberSelect({
                     <button
                         type="button"
                         onClick={() => { onChange(""); setSearch(""); }}
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-gray-400 hover:text-red-600"
                     >
                         <span className="material-symbols-outlined text-[16px]">close</span>
                     </button>
@@ -102,14 +103,14 @@ function MemberSelect({
                     onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
                     onFocus={() => setOpen(true)}
                     placeholder={placeholder}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                    className="w-full rounded-lg border border-border-color px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                 />
             )}
 
             {open && !value && (
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-                    <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-border-color rounded-xl shadow-lg max-h-48 overflow-y-auto">
                         {filtered.length === 0 ? (
                             <div className="px-3 py-2 text-sm text-gray-400">Ingen treff</div>
                         ) : (
@@ -118,7 +119,7 @@ function MemberSelect({
                                     key={m.id}
                                     type="button"
                                     onClick={() => { onChange(m.id); setSearch(""); setOpen(false); }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left"
+                                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-black/[0.02] text-left"
                                 >
                                     <Avatar
                                         src={m.avatarUrl}
@@ -165,7 +166,7 @@ function MemberMultiSelect({
                     {selectedMembers.map((m) => (
                         <span
                             key={m.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-lg text-xs text-gray-700"
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-cream rounded-lg text-xs text-text-secondary"
                         >
                             <Avatar
                                 src={m.avatarUrl}
@@ -177,7 +178,7 @@ function MemberMultiSelect({
                             <button
                                 type="button"
                                 onClick={() => onChange(value.filter((id) => id !== m.id))}
-                                className="text-gray-400 hover:text-red-500 ml-0.5"
+                                className="text-gray-400 hover:text-red-600 ml-0.5"
                             >
                                 <span className="material-symbols-outlined text-[12px]">close</span>
                             </button>
@@ -193,13 +194,13 @@ function MemberMultiSelect({
                     onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
                     onFocus={() => setOpen(true)}
                     placeholder="Legg til medlem..."
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                    className="w-full rounded-lg border border-border-color px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                 />
 
                 {open && (
                     <>
                         <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-                        <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-border-color rounded-xl shadow-lg max-h-48 overflow-y-auto">
                             {filtered.length === 0 ? (
                                 <div className="px-3 py-2 text-sm text-gray-400">Ingen treff</div>
                             ) : (
@@ -211,7 +212,7 @@ function MemberMultiSelect({
                                             onChange([...value, m.id]);
                                             setSearch("");
                                         }}
-                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left"
+                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-black/[0.02] text-left"
                                     >
                                         <Avatar
                                             src={m.avatarUrl}
@@ -331,11 +332,11 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
         : [];
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <div className={`${card} p-6 space-y-5`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#F5C518] text-lg">emoji_events</span>
-                    <h3 className="text-base font-bold text-gray-900">Podium</h3>
+                    <span className="material-symbols-outlined text-primary text-lg">emoji_events</span>
+                    <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Podium</h3>
                 </div>
                 <div className="flex items-center gap-2">
                     {existingPodium && (
@@ -343,7 +344,7 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
                             type="button"
                             onClick={handleDelete}
                             disabled={saving}
-                            className="px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold disabled:opacity-50"
+                            className="px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition-colors disabled:opacity-50"
                         >
                             Slett
                         </button>
@@ -352,7 +353,7 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
                         type="button"
                         onClick={handleSave}
                         disabled={saving}
-                        className="px-3 py-2 rounded-lg bg-[#4F46E5] text-white text-xs font-bold hover:bg-[#4338ca] disabled:opacity-50"
+                        className="px-3 py-2 rounded-lg bg-[#0f0e0c] text-white text-xs font-bold hover:bg-[#0f0e0c]/90 transition-colors disabled:opacity-50"
                     >
                         {saving ? "Lagrer..." : "Lagre podium"}
                     </button>
@@ -364,12 +365,12 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
             </ActionInfo>
 
             {/* Type toggle */}
-            <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-1 w-fit">
+            <div className="flex items-center gap-1 border border-border-color rounded-lg p-1 w-fit">
                 <button
                     type="button"
                     onClick={() => { setType("INDIVIDUAL"); setEntries(emptyEntries()); }}
                     className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
-                        type === "INDIVIDUAL" ? "bg-[#4F46E5] text-white" : "text-gray-500 hover:bg-gray-100"
+                        type === "INDIVIDUAL" ? "bg-[#0f0e0c] text-white" : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                     Individuelt
@@ -378,7 +379,7 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
                     type="button"
                     onClick={() => { setType("TEAM"); setEntries(emptyEntries()); }}
                     className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
-                        type === "TEAM" ? "bg-[#4F46E5] text-white" : "text-gray-500 hover:bg-gray-100"
+                        type === "TEAM" ? "bg-[#0f0e0c] text-white" : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                     Lag
@@ -390,12 +391,12 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
                 {entries.map((entry) => {
                     const style = placeLabels[entry.place];
                     return (
-                        <div key={entry.place} className="rounded-xl border border-gray-200 p-4 space-y-3">
+                        <div key={entry.place} className="rounded-xl border border-border-color p-4 space-y-3">
                             <div className="flex items-center gap-2">
                                 <span className={`inline-flex items-center justify-center size-7 rounded-full text-xs font-bold shadow-sm ${style.badge}`}>
                                     {entry.place}
                                 </span>
-                                <span className="text-sm font-bold text-gray-700">{style.label}</span>
+                                <span className="text-sm font-semibold text-text-secondary">{style.label}</span>
                             </div>
 
                             {type === "INDIVIDUAL" ? (
@@ -413,7 +414,7 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
                                         value={entry.teamName}
                                         onChange={(e) => updateEntry(entry.place, { teamName: e.target.value })}
                                         placeholder="Lagnavn"
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4F46E5]"
+                                        className="w-full rounded-lg border border-border-color px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                                     />
                                     <div>
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">

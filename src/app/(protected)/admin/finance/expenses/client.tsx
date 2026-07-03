@@ -15,6 +15,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ActionInfo } from "@/components/ui/ActionInfo";
 import { toast } from "sonner";
+import { AdminPageHeader, SERIF, btnPrimary, btnSecondary, label as labelClass, input as inputClass } from "@/components/admin/ui";
 
 type Member = {
     id: string;
@@ -533,18 +534,18 @@ export default function ExpensesPage() {
 
     return (
         <div className="space-y-6 pb-16">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Utgifter</h1>
-                </div>
-            </div>
+            <AdminPageHeader
+                eyebrow="Utgifter"
+                title="Utgifter"
+                description="Bokfør, splitt og vedlikehold klubbens utgifter."
+            />
 
             <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
-                <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+                <section className="bg-white border border-border-color rounded-2xl overflow-hidden">
+                    <div className="px-6 py-4 border-b border-border-color bg-[#faf8f3] flex items-center justify-between">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">{mode === "edit" ? "Rediger Utgift" : "Ny Utgift"}</p>
-                            <h2 className="text-lg font-bold text-gray-900">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">{mode === "edit" ? "Rediger Utgift" : "Ny Utgift"}</p>
+                            <h2 className="text-xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>
                                 {mode === "edit" ? "Oppdater bokført utgift" : "Bokfør ny utgift"}
                             </h2>
                         </div>
@@ -552,7 +553,7 @@ export default function ExpensesPage() {
                         {mode === "edit" && (
                             <button
                                 onClick={resetForm}
-                                className="text-xs font-bold text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 bg-white"
+                                className="text-xs font-bold text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg border border-border-color hover:border-gray-300 bg-white transition-colors"
                             >
                                 Ny registrering
                             </button>
@@ -568,7 +569,7 @@ export default function ExpensesPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Beløp</label>
+                                <label className={labelClass}>Beløp</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -576,38 +577,38 @@ export default function ExpensesPage() {
                                     value={amountInput}
                                     onChange={(e) => setAmountInput(e.target.value)}
                                     placeholder="0.00"
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className={inputClass}
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Dato</label>
+                                <label className={labelClass}>Dato</label>
                                 <input
                                     type="date"
                                     value={dateInput}
                                     onChange={(e) => setDateInput(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className={inputClass}
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Beskrivelse</label>
+                            <label className={labelClass}>Beskrivelse</label>
                             <input
                                 type="text"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Eks. Innkjøp til kickoff"
-                                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                className={inputClass}
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Kategori</label>
+                                <label className={labelClass}>Kategori</label>
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className={inputClass}
                                 >
                                     {CATEGORIES.map((item) => (
                                         <option key={item} value={item}>{item}</option>
@@ -615,11 +616,11 @@ export default function ExpensesPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Arrangement (valgfritt)</label>
+                                <label className={labelClass}>Arrangement (valgfritt)</label>
                                 <select
                                     value={selectedEventId}
                                     onChange={(e) => setSelectedEventId(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className={inputClass}
                                 >
                                     <option value="">Ingen arrangement</option>
                                     {events.map((event) => (
@@ -631,7 +632,7 @@ export default function ExpensesPage() {
                             </div>
                         </div>
 
-                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
+                        <div className="rounded-xl border border-border-color bg-cream/40 p-4">
                             <div className="flex items-start sm:items-center justify-between gap-3 mb-3">
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-gray-900">Splitt mellom medlemmer</p>
@@ -643,7 +644,7 @@ export default function ExpensesPage() {
                                 <button
                                     type="button"
                                     onClick={() => setSplitEnabled((prev) => !prev)}
-                                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${splitEnabled ? "bg-indigo-600" : "bg-gray-300"}`}
+                                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${splitEnabled ? "bg-primary" : "bg-gray-300"}`}
                                 >
                                     <span
                                         className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${splitEnabled ? "translate-x-6" : "translate-x-1"}`}
@@ -659,12 +660,12 @@ export default function ExpensesPage() {
                                             value={memberQuery}
                                             onChange={(e) => setMemberQuery(e.target.value)}
                                             placeholder="Søk medlem"
-                                            className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                            className="flex-1 h-11 bg-white border border-border-color rounded-xl px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                                         />
                                         <button
                                             type="button"
                                             onClick={toggleSelectAllVisibleMembers}
-                                            className="px-3 py-2 text-xs font-bold rounded-lg border border-gray-200 bg-white hover:bg-gray-100"
+                                            className="px-3 py-2 text-xs font-bold rounded-xl border border-border-color bg-white hover:border-gray-300 hover:bg-gray-50 transition-colors"
                                         >
                                             {selectedAllMembers ? "Fjern alle" : "Velg alle"}
                                         </button>
@@ -679,8 +680,8 @@ export default function ExpensesPage() {
                                                     key={member.id}
                                                     onClick={() => toggleMemberSelection(member.id)}
                                                     className={`text-left flex items-center gap-2.5 p-2.5 rounded-lg border transition-colors ${selected
-                                                        ? "bg-indigo-50 border-indigo-200"
-                                                        : "bg-white border-gray-200 hover:border-indigo-200"
+                                                        ? "bg-primary/10 border-primary/40"
+                                                        : "bg-white border-border-color hover:border-primary/40"
                                                         }`}
                                                 >
                                                     <Avatar
@@ -705,9 +706,9 @@ export default function ExpensesPage() {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Kvittering (valgfritt)</label>
+                            <label className={labelClass}>Kvittering (valgfritt)</label>
                             {receiptFile ? (
-                                <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                                <div className="flex items-center justify-between gap-3 rounded-xl border border-border-color bg-cream/40 p-3">
                                     <div className="min-w-0">
                                         <p className="text-xs font-bold text-gray-900 truncate">{receiptFile.name}</p>
                                         <p className="text-[10px] text-gray-500 truncate">{receiptFile.size ? `${(receiptFile.size / 1024 / 1024).toFixed(2)} MB` : "Eksisterende vedlegg"}</p>
@@ -715,13 +716,13 @@ export default function ExpensesPage() {
                                     <button
                                         type="button"
                                         onClick={handleRemoveReceipt}
-                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                     >
                                         <span className="material-symbols-outlined">delete</span>
                                     </button>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center cursor-pointer hover:bg-indigo-50/40 hover:border-indigo-300 transition-colors relative overflow-hidden">
+                                <label className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border-color bg-cream/40 px-4 py-6 text-center cursor-pointer hover:bg-primary/5 hover:border-primary/40 transition-colors relative overflow-hidden">
                                     <input
                                         type="file"
                                         accept="image/*,.pdf"
@@ -737,26 +738,26 @@ export default function ExpensesPage() {
 
                                     {isUploading && (
                                         <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm">
-                                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
+                                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary/30 border-t-primary"></div>
                                         </div>
                                     )}
                                 </label>
                             )}
                         </div>
 
-                        <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-[#F9FAFB] to-[#F3F6FF] p-4">
+                        <div className="rounded-xl border border-border-color bg-cream/40 p-4">
                             <div className="grid grid-cols-3 gap-3">
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Total</p>
-                                    <p className="text-sm font-bold text-gray-900">{formatCurrency(amount)}</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">Total</p>
+                                    <p className="text-lg font-normal text-gray-900 tabular-nums" style={{ fontFamily: SERIF }}>{formatCurrency(amount)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Medlemmer</p>
-                                    <p className="text-sm font-bold text-gray-900">{splitEnabled ? splitCount : 0}</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">Medlemmer</p>
+                                    <p className="text-lg font-normal text-gray-900 tabular-nums" style={{ fontFamily: SERIF }}>{splitEnabled ? splitCount : 0}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Per medlem</p>
-                                    <p className="text-sm font-bold text-gray-900">{formatCurrency(amountPerPerson)}</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">Per medlem</p>
+                                    <p className="text-lg font-normal text-gray-900 tabular-nums" style={{ fontFamily: SERIF }}>{formatCurrency(amountPerPerson)}</p>
                                 </div>
                             </div>
 
@@ -765,7 +766,7 @@ export default function ExpensesPage() {
                                     type="button"
                                     onClick={handleSave}
                                     disabled={saving || isUploading}
-                                    className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    className={btnPrimary}
                                 >
                                     {saving ? "Lagrer..." : mode === "edit" ? "Oppdater Utgift" : "Bokfør Utgift"}
                                 </button>
@@ -774,7 +775,7 @@ export default function ExpensesPage() {
                                     <button
                                         type="button"
                                         onClick={resetForm}
-                                        className="px-4 py-2 rounded-lg bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-100"
+                                        className={btnSecondary}
                                     >
                                         Avbryt redigering
                                     </button>
@@ -784,24 +785,24 @@ export default function ExpensesPage() {
                     </div>
                 </section>
 
-                <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/60">
-                        <h3 className="text-base font-bold text-gray-900">Historikk og vedlikehold</h3>
+                <section className="bg-white border border-border-color rounded-2xl overflow-hidden">
+                    <div className="px-5 py-4 border-b border-border-color bg-[#faf8f3]">
+                        <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: SERIF }}>Historikk og vedlikehold</h3>
                         <p className="text-xs text-gray-500 mt-0.5">Finn tidligere utgifter, rediger feil, eller slett registreringer.</p>
                     </div>
 
-                    <div className="p-4 border-b border-gray-100 space-y-2">
+                    <div className="p-4 border-b border-border-color space-y-2">
                         <input
                             type="text"
                             value={listQuery}
                             onChange={(e) => setListQuery(e.target.value)}
                             placeholder="Søk på beskrivelse, kategori, event eller medlem"
-                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                            className={inputClass}
                         />
                         <select
                             value={listCategory}
                             onChange={(e) => setListCategory(e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                            className={inputClass}
                         >
                             <option value="ALL">Alle kategorier</option>
                             {CATEGORIES.map((item) => (
@@ -814,9 +815,9 @@ export default function ExpensesPage() {
                         {loadingList && displayedExpenses.length === 0 ? (
                             <LoadingState className="h-40" spinnerSizeClassName="h-7 w-7" />
                         ) : displayedExpenses.length === 0 ? (
-                            <div className="text-center py-16 text-gray-500">
-                                <p className="font-medium">Ingen utgifter funnet.</p>
-                                <p className="text-xs mt-1">Prøv andre filtre eller opprett en ny utgift.</p>
+                            <div className="text-center py-16">
+                                <p className="text-sm text-gray-400 italic" style={{ fontFamily: SERIF }}>Ingen utgifter funnet.</p>
+                                <p className="text-xs text-gray-400 mt-1">Prøv andre filtre eller opprett en ny utgift.</p>
                             </div>
                         ) : (
                             displayedExpenses.map((expense) => {
@@ -827,15 +828,15 @@ export default function ExpensesPage() {
                                     <article
                                         key={expense.id}
                                         className={`rounded-xl border p-3 transition-colors ${isEditing
-                                            ? "border-indigo-300 bg-indigo-50/40"
-                                            : "border-gray-200 bg-white hover:border-indigo-200"
+                                            ? "border-primary/40 bg-primary/5"
+                                            : "border-border-color bg-white hover:border-primary/40"
                                             }`}
                                     >
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <p className="text-sm font-bold text-gray-900 truncate">{expense.description}</p>
-                                                    <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+                                                    <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-cream text-text-secondary border border-border-color">
                                                         {expense.category}
                                                     </span>
                                                 </div>
@@ -851,7 +852,7 @@ export default function ExpensesPage() {
                                             </div>
 
                                             <div className="text-right">
-                                                <p className="text-sm font-bold text-gray-900">{formatCurrency(expense.totalAmount)}</p>
+                                                <p className="text-base font-normal text-gray-900 tabular-nums" style={{ fontFamily: SERIF }}>{formatCurrency(expense.totalAmount)}</p>
                                                 <p className="text-[10px] text-gray-500">{expense.transactionIds.length} transaksjoner</p>
                                             </div>
                                         </div>
@@ -861,13 +862,13 @@ export default function ExpensesPage() {
                                                 {expense.members.slice(0, 3).map((member) => (
                                                     <span
                                                         key={member.id}
-                                                        className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded border border-indigo-100 bg-indigo-50 text-indigo-700"
+                                                        className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded border border-primary/20 bg-primary/10 text-primary"
                                                     >
                                                         {member.name}
                                                     </span>
                                                 ))}
                                                 {expense.members.length > 3 && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded border border-gray-200 bg-gray-50 text-gray-600">
+                                                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded border border-border-color bg-cream text-text-secondary">
                                                         +{expense.members.length - 3} flere
                                                     </span>
                                                 )}
@@ -882,7 +883,7 @@ export default function ExpensesPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => startEditingExpense(expense)}
-                                                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-gray-100"
+                                                    className="px-2.5 py-1.5 rounded-lg border border-border-color bg-white text-xs font-bold text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
                                                 >
                                                     Rediger
                                                 </button>
@@ -890,7 +891,7 @@ export default function ExpensesPage() {
                                                     type="button"
                                                     onClick={() => handleDeleteExpense(expense)}
                                                     disabled={isDeleting}
-                                                    className="px-2.5 py-1.5 rounded-lg border border-red-200 bg-red-50 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-50"
+                                                    className="px-2.5 py-1.5 rounded-lg border border-red-200 bg-red-50 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors"
                                                 >
                                                     {isDeleting ? "Sletter..." : "Slett"}
                                                 </button>
@@ -902,7 +903,7 @@ export default function ExpensesPage() {
                         )}
 
                         {loadingList && displayedExpenses.length > 0 && (
-                            <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 px-3 py-2 text-xs font-medium text-indigo-700">
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-medium text-primary">
                                 Oppdaterer liste...
                             </div>
                         )}
@@ -913,7 +914,7 @@ export default function ExpensesPage() {
                                     type="button"
                                     onClick={handleLoadMore}
                                     disabled={loadingMore || loadingList}
-                                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                                    className="w-full rounded-lg border border-border-color bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                                 >
                                     {loadingMore ? "Laster flere..." : "Last flere utgifter"}
                                 </button>

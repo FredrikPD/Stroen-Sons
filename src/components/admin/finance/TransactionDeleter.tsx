@@ -5,6 +5,7 @@ import { getAllTransactionsRaw, deleteTransaction, deleteAllTransactions } from 
 import { useRouter } from "next/navigation";
 import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { SERIF, card, input } from "@/components/admin/ui";
 
 type Transaction = {
     id: string;
@@ -141,15 +142,15 @@ export function TransactionDeleter() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div className={`${card} flex flex-col gap-4 p-4`}>
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="flex flex-col md:flex-row gap-4 w-full md:items-center">
                         <div className="relative w-full md:w-96">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">search</span>
                             <input
                                 type="text"
                                 placeholder="Søk..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                className={`${input} pl-10`}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -159,7 +160,7 @@ export function TransactionDeleter() {
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 hover:bg-white focus:ring-2 focus:ring-gray-200 outline-none transition-all"
+                            className={input}
                         >
                             <option value="ALL">Alle Kategorier</option>
                             {categories.map(c => (
@@ -171,7 +172,7 @@ export function TransactionDeleter() {
                         <select
                             value={memberFilter}
                             onChange={(e) => setMemberFilter(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 hover:bg-white focus:ring-2 focus:ring-gray-200 outline-none transition-all"
+                            className={input}
                         >
                             <option value="ALL">Alle Medlemmer</option>
                             {members.map(m => (
@@ -183,10 +184,10 @@ export function TransactionDeleter() {
                     <button
                         onClick={handleDeleteAll}
                         disabled={deletingAll || transactions.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        className="flex items-center gap-2 px-4 h-11 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     >
                         {deletingAll ? (
-                            <div className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
                         ) : (
                             <span className="material-symbols-outlined text-lg">delete_forever</span>
                         )}
@@ -195,29 +196,29 @@ export function TransactionDeleter() {
                 </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className={`${card} overflow-hidden`}>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
+                        <thead className="bg-[#faf8f3] border-b border-border-color">
                             <tr>
-                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Dato</th>
-                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beskrivelse</th>
-                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Medlem</th>
-                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Beløp</th>
-                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Handling</th>
+                                <th className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Dato</th>
+                                <th className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Beskrivelse</th>
+                                <th className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Medlem</th>
+                                <th className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-right">Beløp</th>
+                                <th className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-right">Handling</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-border-color">
                             {paginatedTransactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 italic">
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-400 italic" style={{ fontFamily: SERIF }}>
                                         Ingen transaksjoner funnet for valgte filtere.
                                     </td>
                                 </tr>
                             ) : (
                                 paginatedTransactions.map(tx => (
-                                    <tr key={tx.id} className="group hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                    <tr key={tx.id} className="group hover:bg-black/[0.02] transition-colors">
+                                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap tabular-nums">
                                             {tx.date.toLocaleDateString("nb-NO")}
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900">
@@ -227,18 +228,18 @@ export function TransactionDeleter() {
                                         <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
                                             {tx.member ? tx.member.name : <span className="italic text-gray-400">Ingen (Felles)</span>}
                                         </td>
-                                        <td className={`px-6 py-4 text-sm font-bold text-right tabular-nums ${tx.amount > 0 ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                        <td className={`px-6 py-4 text-sm font-normal text-right tabular-nums ${tx.amount > 0 ? 'text-emerald-600' : 'text-gray-900'}`} style={{ fontFamily: SERIF }}>
                                             {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString("nb-NO")}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <button
                                                 onClick={() => handleDelete(tx.id)}
                                                 disabled={deletingId === tx.id}
-                                                className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50 disabled:opacity-50"
+                                                className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-50 disabled:opacity-50"
                                                 title="Slett"
                                             >
                                                 {deletingId === tx.id ? (
-                                                    <div className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                                                    <div className="w-4 h-4 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
                                                 ) : (
                                                     <span className="material-symbols-outlined text-lg">delete</span>
                                                 )}
@@ -253,25 +254,25 @@ export function TransactionDeleter() {
 
                 {/* Pagination Controls */}
                 {filteredTransactions.length > itemsPerPage && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
-                        <div className="text-sm text-gray-500">
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-border-color bg-[#faf8f3]">
+                        <div className="text-sm text-gray-500 tabular-nums">
                             Viser {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredTransactions.length)} av {filteredTransactions.length}
                         </div>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="p-2 text-gray-600 hover:bg-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 transition-all"
+                                className="p-2 text-gray-600 hover:bg-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-border-color transition-all"
                             >
                                 <span className="material-symbols-outlined text-lg">chevron_left</span>
                             </button>
-                            <span className="text-sm font-medium text-gray-700">
+                            <span className="text-sm font-medium text-gray-700 tabular-nums">
                                 Side {currentPage} av {totalPages}
                             </span>
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
-                                className="p-2 text-gray-600 hover:bg-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 transition-all"
+                                className="p-2 text-gray-600 hover:bg-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-border-color transition-all"
                             >
                                 <span className="material-symbols-outlined text-lg">chevron_right</span>
                             </button>

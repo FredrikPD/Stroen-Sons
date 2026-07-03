@@ -7,27 +7,27 @@ const VARIANT_STYLES: Record<
     { container: string; icon: string; title: string; body: string; marker: string; defaultIcon: string }
 > = {
     info: {
-        container: "bg-blue-50 border-blue-100",
-        icon: "text-blue-500",
-        title: "text-blue-900",
-        body: "text-blue-800/90",
-        marker: "bg-blue-400",
+        container: "bg-primary/[0.06] border-primary/20",
+        icon: "text-primary",
+        title: "text-gray-900",
+        body: "text-text-secondary",
+        marker: "bg-primary/70",
         defaultIcon: "info",
     },
     warning: {
-        container: "bg-amber-50 border-amber-100",
-        icon: "text-amber-500",
+        container: "bg-amber-50/70 border-amber-200/60",
+        icon: "text-amber-600",
         title: "text-amber-900",
-        body: "text-amber-800/90",
-        marker: "bg-amber-400",
+        body: "text-amber-900/75",
+        marker: "bg-amber-500",
         defaultIcon: "warning",
     },
     danger: {
-        container: "bg-red-50 border-red-100",
-        icon: "text-red-500",
+        container: "bg-red-50/70 border-red-200/60",
+        icon: "text-red-600",
         title: "text-red-900",
-        body: "text-red-800/90",
-        marker: "bg-red-400",
+        body: "text-red-900/75",
+        marker: "bg-red-500",
         defaultIcon: "warning",
     },
 };
@@ -78,9 +78,9 @@ export function ActionInfo({
 
     return (
         <div className={`flex gap-3 rounded-xl border p-4 ${s.container} ${className}`}>
-            <span className={`material-symbols-outlined text-xl shrink-0 ${s.icon}`}>{iconName}</span>
-            <div className={`text-sm leading-relaxed ${s.body} space-y-1.5`}>
-                {title && <p className={`font-bold ${s.title}`}>{title}</p>}
+            <span className={`material-symbols-outlined text-[20px] leading-none shrink-0 ${s.icon}`}>{iconName}</span>
+            <div className={`text-[13px] leading-relaxed ${s.body} space-y-1.5`}>
+                {title && <p className={`font-semibold text-sm ${s.title}`}>{title}</p>}
                 {children && <div className="space-y-1.5">{children}</div>}
                 {items && items.length > 0 && (
                     <ul className="space-y-1.5">

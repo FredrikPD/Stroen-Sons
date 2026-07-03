@@ -1,9 +1,9 @@
 import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
-import Link from "next/link";
 import UserManagementClient from "./user-management-client";
 import { SetHeader } from "@/components/layout/SetHeader";
 import { Role } from "@prisma/client";
 import { ensureRole } from "@/server/auth/ensureRole";
+import { AdminHero } from "@/components/admin/ui";
 
 export const metadata = {
     title: "Administrer Brukere",
@@ -71,57 +71,39 @@ export default async function UserManagementPage() {
 
     const stats = [
         {
-            title: "Totalt Medlemmer",
-            value: totalMembers,
             icon: "groups",
-            colorName: "indigo-500", // For text-indigo-500 and from-indigo-500
-            gradientFrom: "from-indigo-500/5"
+            label: "Totalt Medlemmer",
+            value: totalMembers,
         },
         {
-            title: "Administratorer",
-            value: adminCount,
             icon: "admin_panel_settings",
-            colorName: "purple-500",
-            gradientFrom: "from-purple-500/5"
+            label: "Administratorer",
+            value: adminCount,
         },
         {
-            title: "Ventende",
-            value: pendingCount,
-            suffix: "invitasjoner",
+            icon: "school",
+            label: "Studenter",
+            value: studentCount,
+        },
+        {
             icon: "hourglass_top",
-            colorName: "amber-500",
-            gradientFrom: "from-amber-500/5"
+            label: "Ventende",
+            value: pendingCount,
+            sub: "invitasjoner",
+            valueClass: "text-amber-400",
         },
     ];
 
     return (
         <div className="space-y-8">
             <SetHeader backHref="/admin/dashboard" backLabel="Dashboard" />
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Brukeradministrasjon</h1>
-                <p className="text-gray-500 mt-2">Administrer medlemmer, tildel roller og hold oversikt over aktivitet i klubben.</p>
-            </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {stats.map((stat, i) => (
-                    <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between h-[120px] relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradientFrom} to-transparent pointer-events-none`} />
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className={`material-symbols-outlined text-${stat.colorName} text-lg`}>{stat.icon}</span>
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{stat.title}</span>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
-                            {stat.suffix && <span className="text-xs text-gray-500 font-medium">{stat.suffix}</span>}
-                        </div>
-                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-0 group-hover:opacity-10 transition-opacity">
-                            <span className={`material-symbols-outlined text-7xl text-${stat.colorName}`}>{stat.icon}</span>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <AdminHero
+                eyebrow="Administrasjon"
+                title="Brukeradministrasjon"
+                subtitle="Administrer medlemmer, tildel roller og hold oversikt over aktivitet i klubben."
+                stats={stats}
+            />
 
             <UserManagementClient members={formattedMembers} availableRoles={availableRoles} />
         </div>

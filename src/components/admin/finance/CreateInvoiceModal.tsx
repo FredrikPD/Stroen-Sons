@@ -5,6 +5,7 @@ import { PremiumModal } from "@/components/ui/PremiumModal";
 import { createFutureMonthlyFees } from "@/server/actions/finance";
 import { useModal } from "@/components/providers/ModalContext";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, btnPrimary, btnSecondary, label as labelClass, input as inputClass } from "@/components/admin/ui";
 
 interface MemberOption {
     id: string;
@@ -65,25 +66,25 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
             {/* Backdrop */}
             <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
                 <div
-                    className="fixed inset-0 bg-gray-900/40 transition-opacity"
+                    className="fixed inset-0 bg-black/40 transition-opacity"
                     onClick={onClose}
                     aria-hidden="true"
                 />
 
                 {/* Modal Panel */}
-                <div className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="relative transform overflow-hidden rounded-2xl bg-white text-left border border-border-color shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                     <form onSubmit={handleSubmit}>
                         <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                             <div className="sm:flex sm:items-start mb-6">
-                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 sm:mx-0 sm:h-10 sm:w-10">
-                                    <span className="material-symbols-outlined text-indigo-600 text-2xl">add_card</span>
+                                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
+                                    <span className="material-symbols-outlined text-primary text-2xl">add_card</span>
                                 </div>
                                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                                    <h3 className="text-lg font-bold leading-6 text-gray-900">
+                                    <h3 className="text-xl font-normal leading-7 text-gray-900" style={{ fontFamily: SERIF }}>
                                         Opprett enkeltkrav
                                     </h3>
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-500">
+                                    <div className="mt-1.5">
+                                        <p className="text-sm text-text-secondary">
                                             Manuelt opprett medlemskontingent for fremtidige måneder.
                                         </p>
                                     </div>
@@ -93,21 +94,21 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
                             <div className="space-y-5">
                                 {/* Member Selection */}
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                    <label className={labelClass}>
                                         Medlem
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={selectedMemberId}
                                             onChange={(e) => setSelectedMemberId(e.target.value)}
-                                            className="block w-full appearance-none rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500 sm:text-sm transition-colors"
+                                            className={`${inputClass} appearance-none pr-11`}
                                         >
                                             <option value="">Velg medlem...</option>
                                             {members.map(m => (
                                                 <option key={m.id} value={m.id}>{m.name}</option>
                                             ))}
                                         </select>
-                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
                                             <span className="material-symbols-outlined text-sm">expand_more</span>
                                         </div>
                                     </div>
@@ -116,31 +117,31 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
                                 {/* Date Selection */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        <label className={labelClass}>
                                             Start År
                                         </label>
                                         <input
                                             type="number"
                                             value={startYear}
                                             onChange={(e) => setStartYear(parseInt(e.target.value))}
-                                            className="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500 sm:text-sm transition-colors"
+                                            className={inputClass}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        <label className={labelClass}>
                                             Start Måned
                                         </label>
                                         <div className="relative">
                                             <select
                                                 value={startMonth}
                                                 onChange={(e) => setStartMonth(parseInt(e.target.value))}
-                                                className="block w-full appearance-none rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500 sm:text-sm transition-colors"
+                                                className={`${inputClass} appearance-none pr-11`}
                                             >
                                                 {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                                                     <option key={m} value={m}>{new Date(2000, m - 1, 1).toLocaleString('nb-NO', { month: 'long' })}</option>
                                                 ))}
                                             </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
                                                 <span className="material-symbols-outlined text-sm">expand_more</span>
                                             </div>
                                         </div>
@@ -149,7 +150,7 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
 
                                 {/* Count */}
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                    <label className={labelClass}>
                                         Antall måneder
                                     </label>
                                     <div className="flex items-center gap-4">
@@ -159,9 +160,9 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
                                             max="12"
                                             value={count}
                                             onChange={(e) => setCount(parseInt(e.target.value))}
-                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
                                         />
-                                        <span className="flex items-center justify-center w-12 h-10 rounded-lg bg-indigo-50 text-indigo-700 font-bold border border-indigo-100">
+                                        <span className="flex items-center justify-center w-12 h-10 rounded-lg bg-primary/10 text-primary font-bold border border-primary/20 tabular-nums" style={{ fontFamily: SERIF }}>
                                             {count}
                                         </span>
                                     </div>
@@ -176,17 +177,17 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse gap-3 border-t border-gray-100">
+                        <div className="bg-cream/40 px-6 py-4 sm:flex sm:flex-row-reverse gap-3 border-t border-border-color">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="inline-flex w-full justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all sm:w-auto disabled:opacity-50 disabled:shadow-none"
+                                className={`${btnPrimary} w-full sm:w-auto`}
                             >
                                 {loading ? 'Oppretter...' : 'Opprett Krav'}
                             </button>
                             <button
                                 type="button"
-                                className="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all"
+                                className={`${btnSecondary} mt-3 w-full sm:mt-0 sm:w-auto`}
                                 onClick={onClose}
                             >
                                 Avbryt

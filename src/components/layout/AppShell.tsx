@@ -40,7 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // These member surfaces (list + detail) sit on the same warm cream field as
   // the dashboard body, so white cards pop the same way.
-  const CREAM_SURFACES = ["/posts", "/events", "/gallery", "/scoreboard", "/members", "/about"];
+  const CREAM_SURFACES = ["/posts", "/events", "/gallery", "/scoreboard", "/members", "/about", "/admin"];
   const isCreamSurface = CREAM_SURFACES.some(
     (base) => pathname === base || pathname.startsWith(base + "/")
   );

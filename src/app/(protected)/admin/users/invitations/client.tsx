@@ -8,6 +8,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { ActionInfo } from "@/components/ui/ActionInfo";
 import { revokeInvitation, type Invitation } from "@/server/actions/invitations";
 import { inviteMember } from "@/server/actions/invite-member"; // We can reuse the action, but might need a form
+import { SERIF, AdminPageHeader, btnPrimary, btnSecondary, card, label, input } from "@/components/admin/ui";
 
 interface Props {
     initialInvitations: Invitation[];
@@ -82,21 +83,17 @@ export default function InvitationsClientPage({ initialInvitations, initialError
 
     return (
         <div className="space-y-6">
-
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                    <h1 className="text-2xl font-bold text-gray-900">Invitasjoner</h1>
-                    <p className="text-gray-500 text-sm">Administrer utsendte invitasjoner og send nye.</p>
-                </div>
-                <button
-                    onClick={() => setShowInviteModal(true)}
-                    className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
-                >
-                    <span className="material-symbols-outlined text-lg">add</span>
-                    Inviter ny
-                </button>
-            </div>
+            <AdminPageHeader
+                eyebrow="Brukeradministrasjon"
+                title="Invitasjoner"
+                description="Administrer utsendte invitasjoner og send nye."
+                actions={
+                    <button onClick={() => setShowInviteModal(true)} className={btnPrimary}>
+                        <span className="material-symbols-outlined text-lg">add</span>
+                        Inviter ny
+                    </button>
+                }
+            />
 
             {initialError && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -104,10 +101,10 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                 </div>
             )}
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className={`${card} overflow-hidden`}>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[860px]">
-                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
+                        <thead className="bg-[#faf8f3] text-[11px] font-bold text-gray-400 uppercase tracking-wider text-left border-b border-border-color">
                             <tr>
                                 <th className="px-6 py-4 min-w-[340px]">E-post</th>
                                 <th className="px-6 py-4 min-w-[150px]">Rolle</th>
@@ -116,21 +113,21 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                                 <th className="px-6 py-4 min-w-[170px] text-right">Handling</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-border-color">
                             {invitations.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-sm italic">
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-400 text-sm italic" style={{ fontFamily: SERIF }}>
                                         Ingen ventende invitasjoner.
                                     </td>
                                 </tr>
                             ) : (
                                 invitations.map((inv) => (
-                                    <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr key={inv.id} className="hover:bg-black/[0.02] transition-colors">
                                         <td className="px-6 py-4 min-w-[340px] text-sm font-medium text-gray-900 whitespace-nowrap">
                                             {inv.email}
                                         </td>
                                         <td className="px-6 py-4 min-w-[150px] text-sm text-gray-600">
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cream text-text-secondary whitespace-nowrap">
                                                 {inv.role}
                                             </span>
                                         </td>
@@ -139,7 +136,7 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                                                 {inv.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 min-w-[150px] text-sm text-gray-500 whitespace-nowrap">
+                                        <td className="px-6 py-4 min-w-[150px] text-sm text-gray-500 whitespace-nowrap tabular-nums">
                                             {new Date(inv.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 min-w-[170px] text-right">
@@ -161,11 +158,11 @@ export default function InvitationsClientPage({ initialInvitations, initialError
 
             {/* Invite Modal */}
             {showInviteModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl border border-border-color shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200">
                         <div className="flex justify-between items-start mb-6">
-                            <h2 className="text-xl font-bold text-gray-900">Inviter nytt medlem</h2>
-                            <button onClick={() => setShowInviteModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Inviter nytt medlem</h2>
+                            <button onClick={() => setShowInviteModal(false)} className="text-gray-400 hover:text-gray-600 rounded-lg">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
@@ -173,45 +170,45 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                         <form onSubmit={handleInviteSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Fornavn</label>
+                                    <label className={label}>Fornavn</label>
                                     <input
                                         required
                                         type="text"
                                         value={inviteForm.firstName}
                                         onChange={e => setInviteForm({ ...inviteForm, firstName: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className={input}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Etternavn</label>
+                                    <label className={label}>Etternavn</label>
                                     <input
                                         required
                                         type="text"
                                         value={inviteForm.lastName}
                                         onChange={e => setInviteForm({ ...inviteForm, lastName: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className={input}
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">E-postadresse</label>
+                                <label className={label}>E-postadresse</label>
                                 <input
                                     required
                                     type="email"
                                     value={inviteForm.email}
                                     onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className={input}
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Rolle</label>
+                                    <label className={label}>Rolle</label>
                                     <select
                                         value={inviteForm.role}
                                         onChange={e => setInviteForm({ ...inviteForm, role: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                        className={input}
                                     >
                                         <option value="MEMBER">Medlem</option>
                                         <option value="MODERATOR">Moderator</option>
@@ -219,11 +216,11 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Medlemskap</label>
+                                    <label className={label}>Medlemskap</label>
                                     <select
                                         value={inviteForm.membershipType}
                                         onChange={e => setInviteForm({ ...inviteForm, membershipType: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                        className={input}
                                     >
                                         <option value="STANDARD">Standard</option>
                                         <option value="HONORARY">Æresmedlem</option>
@@ -243,22 +240,22 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                                 ]}
                             />
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-border-color mt-6">
                                 <button
                                     type="button"
                                     onClick={() => setShowInviteModal(false)}
-                                    className="px-4 py-2 text-gray-700 font-medium text-sm hover:bg-gray-100 rounded-lg transition"
+                                    className={btnSecondary}
                                 >
                                     Avbryt
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={inviteLoading}
-                                    className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+                                    className={btnPrimary}
                                 >
                                     {inviteLoading ? (
                                         <>
-                                            <span className="animate-spin w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full"></span>
+                                            <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
                                             Sender...
                                         </>
                                     ) : (

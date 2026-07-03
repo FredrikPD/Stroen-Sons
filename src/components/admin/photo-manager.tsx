@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useModal } from "@/components/providers/ModalContext";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, btnDanger } from "@/components/admin/ui";
 
 interface PhotoManagerProps {
     initialEvents: Awaited<ReturnType<typeof getRecentEvents>>;
@@ -221,12 +222,16 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Administrer Eventbilder</h1>
-            <p className="text-gray-500 mb-4 sm:mb-6">Velg arrangement for å laste opp eller redigere bildearkivet.</p>
+            <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">System</p>
+                <h1 className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none" style={{ fontFamily: SERIF }}>Administrer Eventbilder</h1>
+                <p className="text-gray-500 text-sm mt-3">Velg arrangement for å laste opp eller redigere bildearkivet.</p>
+                <div className="h-px bg-gray-300 mt-5" />
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Col: Event Details (2/3 width) */}
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-5 sm:p-8 shadow-sm flex flex-col gap-6 sm:gap-0 sm:justify-between min-h-[unset] sm:min-h-[320px]">
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-border-color p-5 sm:p-8 flex flex-col gap-6 sm:gap-0 sm:justify-between min-h-[unset] sm:min-h-[320px]">
                     <div className="relative event-dropdown-container">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
                             VELG AKTIVT ARRANGEMENT
@@ -237,7 +242,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="group cursor-pointer flex items-center justify-between border-b-2 border-gray-100 py-2 hover:border-gray-300 transition-colors"
                         >
-                            <span className={`text-xl sm:text-2xl font-bold truncate pr-3 ${selectedEventId ? 'text-gray-900' : 'text-gray-500'}`}>
+                            <span className={`text-xl sm:text-2xl font-normal truncate pr-3 ${selectedEventId ? 'text-gray-900' : 'text-gray-500'}`} style={{ fontFamily: SERIF }}>
                                 {currentEvent ? currentEvent.title : "Alle Bilder"}
                             </span>
                             <span className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}>
@@ -246,20 +251,20 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                         </div>
 
                         {/* Custom Dropdown Menu */}
-                        <div className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden transition-all duration-200 origin-top ${isDropdownOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
+                        <div className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-border-color z-50 overflow-hidden transition-all duration-200 origin-top ${isDropdownOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
                             <div className="max-h-[300px] overflow-y-auto py-1">
                                 <button
                                     onClick={() => handleSelectEvent("")}
-                                    className={`w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center justify-between transition-colors ${selectedEventId === "" ? 'bg-amber-50 text-amber-900' : 'text-gray-700'}`}
+                                    className={`w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center justify-between transition-colors ${selectedEventId === "" ? 'bg-primary/10 text-primary' : 'text-gray-700'}`}
                                 >
                                     <span className="font-medium">Alle Bilder</span>
-                                    {selectedEventId === "" && <span className="material-symbols-outlined text-amber-500 text-sm">check</span>}
+                                    {selectedEventId === "" && <span className="material-symbols-outlined text-primary text-sm">check</span>}
                                 </button>
                                 {initialEvents.map((event) => (
                                     <button
                                         key={event.id}
                                         onClick={() => handleSelectEvent(event.id)}
-                                        className={`w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center justify-between transition-colors ${selectedEventId === event.id ? 'bg-amber-50 text-amber-900' : 'text-gray-700'}`}
+                                        className={`w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center justify-between transition-colors ${selectedEventId === event.id ? 'bg-primary/10 text-primary' : 'text-gray-700'}`}
                                     >
                                         <div>
                                             <span className="font-medium block truncate">{event.title}</span>
@@ -267,7 +272,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                                                 {new Date(event.startAt).toLocaleDateString("nb-NO", { day: 'numeric', month: 'long', year: 'numeric' })}
                                             </span>
                                         </div>
-                                        {selectedEventId === event.id && <span className="material-symbols-outlined text-amber-500 text-sm">check</span>}
+                                        {selectedEventId === event.id && <span className="material-symbols-outlined text-primary text-sm">check</span>}
                                     </button>
                                 ))}
                             </div>
@@ -278,7 +283,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                         <div className="rounded-xl bg-gray-50 px-3 py-3 sm:bg-transparent sm:px-0 sm:py-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">EVENT DATO</p>
                             <div className="flex items-center gap-2 text-gray-700 font-medium text-sm sm:text-base">
-                                <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">calendar_today</span>
+                                <span className="material-symbols-outlined text-primary text-[20px] sm:text-[22px]">calendar_today</span>
                                 <span className="truncate">
                                     {currentEvent ? new Date(currentEvent.startAt).toLocaleDateString("nb-NO", { day: 'numeric', month: 'short', year: 'numeric' }) : "—"}
                                 </span>
@@ -287,14 +292,14 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                         <div className="rounded-xl bg-gray-50 px-3 py-3 sm:bg-transparent sm:px-0 sm:py-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">ARKIVSTATUS</p>
                             <div className="flex items-center gap-2 text-gray-700 font-medium text-sm sm:text-base">
-                                <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">photo_library</span>
+                                <span className="material-symbols-outlined text-primary text-[20px] sm:text-[22px]">photo_library</span>
                                 <span>{currentEvent ? `${photoCount} bilder` : `${initialPhotos.length} totalt`}</span>
                             </div>
                         </div>
                         <div className="rounded-xl bg-gray-50 px-3 py-3 sm:bg-transparent sm:px-0 sm:py-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">LAGRINGSPLASS</p>
                             <div className="flex items-center gap-2 text-gray-700 font-medium text-sm sm:text-base">
-                                <span className="material-symbols-outlined text-amber-500 text-[20px] sm:text-[22px]">cloud</span>
+                                <span className="material-symbols-outlined text-primary text-[20px] sm:text-[22px]">cloud</span>
                                 <span className="break-words">
                                     {storageStats
                                         ? `${(storageStats.totalBytes / (1024 * 1024 * 1024)).toFixed(2)} GB / 2 GB`
@@ -306,7 +311,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                 </div>
 
                 {/* Right Col: Custom Upload UI */}
-                <div className={`bg-white rounded-2xl border-2 border-dashed ${selectedEventId ? 'border-gray-200' : 'border-gray-100 opacity-60'} p-8 shadow-sm flex flex-col items-center justify-center min-h-[320px] relative transition-colors ${isUploading ? 'bg-amber-50 border-amber-200' : ''}`}>
+                <div className={`bg-white rounded-2xl border-2 border-dashed ${selectedEventId ? 'border-border-color' : 'border-gray-100 opacity-60'} p-8 flex flex-col items-center justify-center min-h-[320px] relative transition-colors ${isUploading ? 'bg-primary/5 border-primary/30' : ''}`}>
                     {selectedEventId ? (
                         <div className="w-full flex flex-col items-center text-center">
 
@@ -323,11 +328,11 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
                             {isUploading ? (
                                 <div className="flex flex-col items-center animate-in fade-in duration-300 w-full max-w-xs">
-                                    <div className="w-16 h-16 border-4 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin mb-4"></div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-1">Laster opp bilder...</h3>
+                                    <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+                                    <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Laster opp bilder...</h3>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
                                         <div
-                                            className="bg-amber-500 h-2.5 rounded-full transition-all duration-300 ease-out"
+                                            className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
                                             style={{ width: `${uploadProgress}%` }}
                                         ></div>
                                     </div>
@@ -335,18 +340,18 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                                 </div>
                             ) : (
                                 <>
-                                    <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-amber-600">
+                                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
                                         <span className="material-symbols-outlined text-3xl">cloud_upload</span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Last opp bilder</h3>
+                                    <h3 className="text-lg font-normal text-gray-900 mb-2" style={{ fontFamily: SERIF }}>Last opp bilder</h3>
                                     <p className="text-gray-500 text-sm mb-2 max-w-[200px]">Dra og slipp bilder her, eller klikk for å velge filer.</p>
-                                    <p className="text-amber-600/80 text-xs font-medium mb-6 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                                    <p className="text-primary text-xs font-medium mb-6 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                                         Max {settings.maxFiles} bilder (opp til {settings.maxSizeMB}MB per fil)
                                     </p>
 
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="bg-amber-500 hover:bg-amber-600 text-white font-medium px-8 py-3 rounded-full transition-transform active:scale-95 shadow-md shadow-amber-500/20"
+                                        className="bg-primary hover:bg-primary-hover text-white font-medium px-8 py-3 rounded-full transition-transform active:scale-95 shadow-md shadow-primary/20"
                                     >
                                         Velg filer fra maskin
                                     </button>
@@ -361,7 +366,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                                 <span className="material-symbols-outlined text-3xl">cloud_off</span>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Last opp nye bilder</h3>
+                            <h3 className="text-lg font-normal text-gray-900 mb-2" style={{ fontFamily: SERIF }}>Last opp nye bilder</h3>
                             <p className="text-gray-500 text-sm">Velg et arrangement til venstre for å aktivere opplasting.</p>
                         </div>
                     )}
@@ -373,9 +378,9 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                 <div className="flex items-center gap-6">
                     <button
                         onClick={toggleSelectAll}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-border-color rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
                     >
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isAllSelected ? "bg-amber-500 border-amber-500 text-white" : "border-gray-300"}`}>
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isAllSelected ? "bg-primary border-primary text-white" : "border-gray-300"}`}>
                             {isAllSelected && <span className="material-symbols-outlined text-[10px] font-bold">check</span>}
                         </div>
                         Velg alle
@@ -386,13 +391,13 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                 <div className="flex items-center gap-4">
                     {selectedPhotos.size > 0 && (
                         <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-200">
-                            <div className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm font-medium border border-amber-100">
+                            <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium border border-primary/20">
                                 {selectedPhotos.size} markert
                             </div>
                             <button
                                 onClick={handleBulkDelete}
                                 disabled={isDeleting}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-sm transition-colors text-sm font-medium disabled:opacity-50"
+                                className={btnDanger}
                             >
                                 <span className="material-symbols-outlined text-lg">delete</span>
                                 {isDeleting ? "Sletter..." : "Slett valgte"}
@@ -410,7 +415,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                         <div
                             key={photo.id}
                             onClick={() => togglePhotoSelection(photo.id)}
-                            className={`group relative aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-4 ring-amber-500 z-10' : 'hover:shadow-md border border-gray-200'}`}
+                            className={`group relative aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-4 ring-primary z-10' : 'hover:shadow-md border border-border-color'}`}
                         >
                             <Image
                                 src={photo.url}
@@ -422,7 +427,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
                             {/* Selection Overlay */}
                             <div className={`absolute inset-0 transition-colors flex items-start justify-end p-2 ${isSelected ? 'bg-black/20' : 'bg-black/0 group-hover:bg-black/10'}`}>
-                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-amber-500 border-amber-500 text-white' : 'bg-black/30 border-white/50 text-transparent group-hover:bg-white group-hover:border-white group-hover:text-gray-300'}`}>
+                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'bg-black/30 border-white/50 text-transparent group-hover:bg-white group-hover:border-white group-hover:text-gray-300'}`}>
                                     <span className="material-symbols-outlined text-sm font-bold">{isSelected ? 'check' : ''}</span>
                                 </div>
                             </div>

@@ -4,23 +4,15 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FinanceStats } from "@/lib/admin-finance";
-
-const COLOR_MAP: Record<string, string> = {
-    emerald: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
-    red: "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white",
-    violet: "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white",
-    blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
-    cyan: "bg-cyan-50 text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white",
-    slate: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white",
-};
+import { AdminHero, AdminSectionHeader, SERIF, seeAllLink } from "@/components/admin/ui";
 
 const QUICK_ACTIONS = [
-    { href: "/admin/finance/income", icon: "add_circle", color: "emerald", label: "Registrer Inntekt", desc: "Loggfør medlemskontingenter" },
-    { href: "/admin/finance/expenses", icon: "remove_circle", color: "red", label: "Registrer Utgift", desc: "Loggfør regninger og kjøp" },
-    { href: "/admin/finance/invoices", icon: "receipt_long", color: "violet", label: "Fakturaer", desc: "Administrer betalingskrav" },
-    { href: "/admin/finance/balance", icon: "account_balance_wallet", color: "blue", label: "Saldooversikt", desc: "Se saldo for medlemmer" },
-    { href: "/admin/finance/transactions", icon: "swap_vert", color: "cyan", label: "Transaksjoner", desc: "Se alle bevegelser" },
-    { href: "/admin/finance/reports", icon: "table_view", color: "slate", label: "Regnskap", desc: "Rapporter og bilag" },
+    { href: "/admin/finance/income", icon: "add_circle", label: "Registrer Inntekt", desc: "Loggfør medlemskontingenter" },
+    { href: "/admin/finance/expenses", icon: "remove_circle", label: "Registrer Utgift", desc: "Loggfør regninger og kjøp" },
+    { href: "/admin/finance/invoices", icon: "receipt_long", label: "Fakturaer", desc: "Administrer betalingskrav" },
+    { href: "/admin/finance/balance", icon: "account_balance_wallet", label: "Saldooversikt", desc: "Se saldo for medlemmer" },
+    { href: "/admin/finance/transactions", icon: "swap_vert", label: "Transaksjoner", desc: "Se alle bevegelser" },
+    { href: "/admin/finance/reports", icon: "table_view", label: "Regnskap", desc: "Rapporter og bilag" },
 ];
 
 export default function FinancePortalClientPage({ initialData }: { initialData: FinanceStats }) {
@@ -61,98 +53,63 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
     const currentYear = new Date().getFullYear();
 
     return (
-        <div className="space-y-8 pb-10">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Økonomiportal</h1>
-                <p className="text-sm text-gray-500 mt-1">
-                    Sentralisert oversikt over klubbens økonomi — {currentYear}
-                </p>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Balance — featured dark card */}
-                <div className="bg-slate-900 p-5 rounded-2xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-950 pointer-events-none" />
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-1.5 mb-4">
-                            <span className="material-symbols-outlined text-slate-400 text-[18px]">account_balance</span>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NÅVÆRENDE SALDO</p>
-                        </div>
-                        <p className="text-3xl font-bold text-white tabular-nums">{formatCurrency(treasuryBalance)}</p>
-                        <p className="text-xs text-slate-500 mt-2">Tilgjengelig på konto</p>
-                    </div>
-                </div>
-
-                {/* Income */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-1.5">
-                                <span className="material-symbols-outlined text-emerald-500 text-[18px]">savings</span>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">TOTAL INNTEKT</p>
-                            </div>
-                            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                                {incomeProgress.toFixed(0)}%
-                            </span>
-                        </div>
-                        <p className="text-2xl font-bold text-gray-900 tabular-nums">{formatCurrency(totalIncome)}</p>
-                        <div className="mt-3 w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-emerald-500 rounded-full"
-                                style={{ width: `${Math.min(incomeProgress, 100)}%` }}
-                            />
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-1.5">av {formatCurrency(expectedAnnualIncome)} forventet</p>
-                    </div>
-                </div>
-
-                {/* Expenses */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-1.5">
-                                <span className="material-symbols-outlined text-red-500 text-[18px]">payments</span>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">TOTAL UTGIFT</p>
-                            </div>
-                            <span className="text-[11px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
-                                {expenseRatio.toFixed(0)}%
-                            </span>
-                        </div>
-                        <p className="text-2xl font-bold text-gray-900 tabular-nums">{formatCurrency(Math.abs(totalExpenses))}</p>
-                        <div className="mt-3 w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                                className={`h-full rounded-full ${expenseRatio > 80 ? "bg-red-500" : expenseRatio > 50 ? "bg-amber-400" : "bg-red-400"}`}
-                                style={{ width: `${Math.min(expenseRatio, 100)}%` }}
-                            />
-                        </div>
-                        <p className="text-[11px] text-gray-400 mt-1.5">brukt av total inntekt</p>
-                    </div>
-                </div>
-
-            </div>
+        <div>
+            {/* Hero with treasury / income / expense KPIs */}
+            <AdminHero
+                eyebrow="Økonomi"
+                title="Økonomiportal"
+                subtitle={`Sentralisert oversikt over klubbens økonomi — ${currentYear}`}
+                stats={[
+                    {
+                        icon: "account_balance",
+                        label: "Nåværende saldo",
+                        value: formatCurrency(treasuryBalance),
+                        sub: "Tilgjengelig på konto",
+                    },
+                    {
+                        icon: "savings",
+                        label: "Total inntekt",
+                        value: formatCurrency(totalIncome),
+                        sub: `${incomeProgress.toFixed(0)}% av ${formatCurrency(expectedAnnualIncome)}`,
+                        valueClass: "text-emerald-400",
+                    },
+                    {
+                        icon: "payments",
+                        label: "Total utgift",
+                        value: formatCurrency(Math.abs(totalExpenses)),
+                        sub: `${expenseRatio.toFixed(0)}% av inntekt`,
+                        valueClass: "text-red-400",
+                    },
+                    {
+                        icon: "trending_up",
+                        label: "Netto",
+                        value: formatCurrency(totalIncome - Math.abs(totalExpenses)),
+                        sub: "Inntekt minus utgift",
+                        valueClass: totalIncome - Math.abs(totalExpenses) >= 0 ? "text-emerald-400" : "text-red-400",
+                    },
+                ]}
+            />
 
             {/* Quick Actions */}
-            <div>
-                <h2 className="text-base font-bold text-gray-900 mb-3">Handlinger</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {QUICK_ACTIONS.map(({ href, icon, color, label, desc }) => (
+            <div className="mt-12">
+                <AdminSectionHeader title="Handlinger" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {QUICK_ACTIONS.map(({ href, icon, label, desc }) => (
                         <Link
                             key={href}
                             href={href}
-                            className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3.5 hover:shadow-md hover:border-gray-300 transition-all group"
+                            className="group rounded-2xl bg-white border border-border-color p-5 flex items-center gap-4 hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(75,58,30,0.08)] transition-all"
                         >
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${COLOR_MAP[color]}`}>
-                                <span className="material-symbols-outlined text-xl">{icon}</span>
+                            <div className="w-[42px] h-[42px] rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-[21px]">{icon}</span>
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="font-semibold text-gray-900 text-sm leading-tight">{label}</p>
-                                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                                <h3 className="text-lg font-normal text-gray-900 leading-tight" style={{ fontFamily: SERIF }}>
+                                    {label}
+                                </h3>
+                                <p className="text-[13px] text-text-secondary mt-0.5">{desc}</p>
                             </div>
-                            <span className="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-gray-500 transition-colors shrink-0">
+                            <span className="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary transition-colors shrink-0">
                                 chevron_right
                             </span>
                         </Link>
@@ -161,13 +118,15 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
             </div>
 
             {/* Transactions + Member Balances */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recent Transactions */}
                 <div className="lg:col-span-2">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-base font-bold text-gray-900">Siste Transaksjoner</h2>
+                    <div className="flex items-center justify-between mb-4 gap-4">
+                        <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>
+                            Siste Transaksjoner
+                        </h2>
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                            <div className="flex items-center gap-0.5 bg-cream rounded-lg p-0.5 border border-border-color">
                                 {(["ALL", "INNTEKT", "UTGIFT"] as const).map((f) => (
                                     <button
                                         key={f}
@@ -182,32 +141,29 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
                                     </button>
                                 ))}
                             </div>
-                            <Link
-                                href="/admin/finance/transactions"
-                                className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
-                            >
+                            <Link href="/admin/finance/transactions" className={seeAllLink}>
                                 Se alle
                             </Link>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="rounded-2xl bg-white border border-border-color overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-gray-100 bg-gray-50/60">
+                                    <tr className="border-b border-border-color bg-[#faf8f3]">
                                         <th className="py-3 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Dato</th>
                                         <th className="py-3 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Beskrivelse</th>
                                         <th className="py-3 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider hidden md:table-cell">Kategori</th>
                                         <th className="py-3 px-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-right">Beløp</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-border-color">
                                     {filteredTransactions.slice(0, 8).map((tx) => (
                                         <tr
                                             key={tx.id}
                                             onClick={() => router.push(`/admin/finance/transactions/${tx.id}`)}
-                                            className="hover:bg-gray-50/70 transition-colors cursor-pointer"
+                                            className="hover:bg-black/[0.02] transition-colors cursor-pointer"
                                         >
                                             <td className="py-3.5 px-5 text-sm text-gray-500 whitespace-nowrap">
                                                 {formatDate(tx.date)}
@@ -232,7 +188,7 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
                                                 </div>
                                             </td>
                                             <td className="py-3.5 px-5 hidden md:table-cell">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-cream text-text-secondary">
                                                     {tx.category}
                                                 </span>
                                             </td>
@@ -249,7 +205,9 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
                                                 <span className="material-symbols-outlined text-gray-200 text-4xl block mb-2">
                                                     receipt_long
                                                 </span>
-                                                <p className="text-sm text-gray-400">Ingen transaksjoner funnet</p>
+                                                <p className="text-sm text-gray-400 italic" style={{ fontFamily: SERIF }}>
+                                                    Ingen transaksjoner funnet
+                                                </p>
                                             </td>
                                         </tr>
                                     )}
@@ -261,22 +219,21 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
 
                 {/* Member Balances */}
                 <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-base font-bold text-gray-900">Medlemssaldo</h2>
-                        <Link
-                            href="/admin/finance/balance"
-                            className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
-                        >
+                    <div className="flex items-center justify-between mb-4 gap-4">
+                        <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>
+                            Medlemssaldo
+                        </h2>
+                        <Link href="/admin/finance/balance" className={seeAllLink}>
                             Se alle
                         </Link>
                     </div>
 
-                    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="divide-y divide-gray-50">
+                    <div className="rounded-2xl bg-white border border-border-color overflow-hidden">
+                        <div className="divide-y divide-border-color">
                             {memberBalances.map((member) => (
                                 <div key={member.id} className="flex items-center justify-between px-5 py-3.5">
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0">
+                                        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
                                             {member.firstName?.charAt(0)}{member.lastName?.charAt(0)}
                                         </div>
                                         <div className="min-w-0">
@@ -297,7 +254,9 @@ export default function FinancePortalClientPage({ initialData }: { initialData: 
                             ))}
                             {memberBalances.length === 0 && (
                                 <div className="py-10 text-center">
-                                    <p className="text-sm text-gray-400">Ingen aktive saldoer funnet</p>
+                                    <p className="text-sm text-gray-400 italic" style={{ fontFamily: SERIF }}>
+                                        Ingen aktive saldoer funnet
+                                    </p>
                                 </div>
                             )}
                         </div>

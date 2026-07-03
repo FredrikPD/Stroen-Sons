@@ -7,6 +7,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { toast } from "sonner";
 import { CATEGORY_COLORS, getCategoryColorClasses } from "@/lib/category-colors";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader, SERIF, btnPrimary, btnSecondary, label, input, textarea } from "@/components/admin/ui";
 
 interface Props {
     initialCategories: EventCategoryWithCount[];
@@ -96,40 +97,38 @@ export function EventCategoriesClient({ initialCategories }: Props) {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Arrangementskategorier</h1>
-                    <p className="text-gray-500">Administrer kategorier for arrangementer og aktiviteter.</p>
-                </div>
-                <button
-                    onClick={handleOpenCreate}
-                    className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-sm">add</span>
-                    Ny Kategori
-                </button>
-            </div>
+            <AdminPageHeader
+                eyebrow="Innholdsstyring"
+                title="Arrangementskategorier"
+                description="Administrer kategorier for arrangementer og aktiviteter."
+                actions={
+                    <button onClick={handleOpenCreate} className={btnPrimary}>
+                        <span className="material-symbols-outlined text-[18px]">add</span>
+                        Ny Kategori
+                    </button>
+                }
+            />
 
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-white rounded-2xl border border-border-color overflow-hidden">
+                <table className="min-w-full divide-y divide-border-color">
+                    <thead className="bg-[#faf8f3]">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Navn</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Beskrivelse</th>
-                            <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Arrangementer</th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Handlinger</th>
+                            <th scope="col" className="px-6 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Navn</th>
+                            <th scope="col" className="px-6 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Beskrivelse</th>
+                            <th scope="col" className="px-6 py-3 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider">Arrangementer</th>
+                            <th scope="col" className="px-6 py-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Handlinger</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-border-color">
                         {categories.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-400 italic" style={{ fontFamily: SERIF }}>
                                     Ingen kategorier funnet. Opprett en ny for å komme i gang.
                                 </td>
                             </tr>
                         ) : (
                             categories.map((category) => (
-                                <tr key={category.id} className="hover:bg-gray-50 transition-colors">
+                                <tr key={category.id} className="hover:bg-black/[0.02] transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
                                             <div className={`w-3 h-3 rounded-full ${getCategoryColorClasses(category.color).dot}`} />
@@ -137,10 +136,10 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-500">{category.description || "-"}</div>
+                                        <div className="text-sm text-text-secondary">{category.description || "-"}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${category._count.events > 0 ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-800"
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium tabular-nums ${category._count.events > 0 ? "bg-cream text-text-secondary" : "bg-gray-100 text-gray-500"
                                             }`}>
                                             {category._count.events}
                                         </span>
@@ -149,14 +148,14 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => handleOpenEdit(category)}
-                                                className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded transition-colors"
+                                                className="text-gray-400 hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
                                                 title="Rediger"
                                             >
                                                 <span className="material-symbols-outlined text-lg">edit</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(category)}
-                                                className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                                className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
                                                 title="Slett"
                                             >
                                                 <span className="material-symbols-outlined text-lg">delete</span>
@@ -172,13 +171,13 @@ export function EventCategoriesClient({ initialCategories }: Props) {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={handleCloseModal}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="text-lg font-bold text-gray-900">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleCloseModal}>
+                    <div className="bg-white rounded-2xl border border-border-color shadow-xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="px-6 py-4 border-b border-border-color flex justify-between items-center">
+                            <h3 className="text-xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>
                                 {editingCategory ? "Rediger Kategori" : "Ny Kategori"}
                             </h3>
-                            <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500 transition-colors">
+                            <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
@@ -189,14 +188,14 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                                 </ActionInfo>
                             )}
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="name" className={label}>
                                     Navn
                                 </label>
                                 <input
                                     type="text"
                                     id="name"
                                     required
-                                    className="block w-full rounded-lg border-gray-300 border bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className={input}
                                     placeholder="F.eks. Fest"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -208,25 +207,25 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="description" className={label}>
                                     Beskrivelse (valgfritt)
                                 </label>
                                 <textarea
                                     id="description"
                                     rows={3}
-                                    className="block w-full rounded-lg border-gray-300 border bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className={textarea}
                                     placeholder="Beskriv kategorien..."
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
                             <div>
-                                <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="color" className={label}>
                                     Farge
                                 </label>
                                 <select
                                     id="color"
-                                    className="block w-full rounded-lg border-gray-300 border bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className={input}
                                     value={formData.color}
                                     onChange={e => setFormData({ ...formData, color: e.target.value })}
                                 >
@@ -244,17 +243,17 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                                    className={btnSecondary}
                                 >
                                     Avbryt
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className={btnPrimary}
                                 >
                                     {isSubmitting && (
-                                        <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin"></span>
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                     )}
                                     {editingCategory ? "Lagre" : "Opprett"}
                                 </button>

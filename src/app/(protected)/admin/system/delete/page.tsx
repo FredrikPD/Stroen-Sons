@@ -3,6 +3,7 @@ import DeleteUserClient from "./delete-user-client";
 import { SetHeader } from "@/components/layout/SetHeader";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
+import { AdminPageHeader } from "@/components/admin/ui";
 
 export const metadata = {
     title: "Slett Brukere",
@@ -42,10 +43,11 @@ export default async function DeleteUserPage() {
     return (
         <div className="min-h-[80vh] flex flex-col p-4">
             <SetHeader backHref="/admin/users" backLabel="Brukere" />
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Slett Medlem</h1>
-                <p className="text-gray-500 mt-2">Deaktiver medlemmer og anonymiser personlig data. Navnet beholdes i historikk.</p>
-            </div>
+            <AdminPageHeader
+                eyebrow="System"
+                title="Slett Medlem"
+                description="Deaktiver medlemmer og anonymiser personlig data. Navnet beholdes i historikk."
+            />
             <DeleteUserClient initialMembers={formattedMembers} />
         </div>
     );

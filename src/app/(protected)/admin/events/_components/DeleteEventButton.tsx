@@ -43,12 +43,12 @@ export function DeleteEventButton({ id, title }: DeleteEventButtonProps) {
         <button
             onClick={handleDelete}
             disabled={isPending}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
             title="Slett"
             type="button"
         >
             {isPending ? (
-                <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             ) : (
                 <span className="material-symbols-outlined text-lg">delete</span>
             )}

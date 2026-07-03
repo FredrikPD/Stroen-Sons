@@ -7,6 +7,14 @@ import { PaymentCategory } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import {
+    SERIF,
+    card,
+    label,
+    input,
+    textarea,
+    btnPrimary,
+} from "@/components/admin/ui";
 
 const parseAmount = (value: string) => {
     const parsed = Number.parseFloat(value.replace(",", "."));
@@ -123,28 +131,29 @@ export default function CreateInvoicePage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
-            <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-xl shadow-gray-200/50">
-                <div className="mb-8 border-b border-gray-100 pb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Opprett Faktura</h1>
-                    <p className="text-gray-500">Send betalingskrav til medlemmer eller deltakere.</p>
+            <div className={`${card} p-8`}>
+                <div className="mb-8 border-b border-border-color pb-6">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">Økonomi</p>
+                    <h1 className="text-3xl font-normal text-gray-900 mb-2" style={{ fontFamily: SERIF }}>Opprett Faktura</h1>
+                    <p className="text-text-secondary text-sm">Send betalingskrav til medlemmer eller deltakere.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Basic Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Tittel</label>
+                            <label className={label}>Tittel</label>
                             <input
                                 required
                                 type="text"
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
-                                className="w-full bg-gray-50 border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                                className={input}
                                 placeholder="F.eks. Hytte tur Depositum"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Beløp (NOK)</label>
+                            <label className={label}>Beløp (NOK)</label>
                             <div className="relative">
                                 <input
                                     required
@@ -153,7 +162,7 @@ export default function CreateInvoicePage() {
                                     onChange={e => setAmount(e.target.value)}
                                     min="0"
                                     step="0.01"
-                                    className="w-full bg-gray-50 border-gray-100 rounded-xl pl-4 pr-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                                    className={input}
                                     placeholder="0.00"
                                 />
                             </div>
@@ -161,135 +170,135 @@ export default function CreateInvoicePage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Beskrivelse</label>
+                        <label className={label}>Beskrivelse</label>
                         <textarea
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             rows={3}
-                            className="w-full bg-gray-50 border-gray-100 rounded-xl px-4 py-3 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none resize-none"
+                            className={`${textarea} resize-none`}
                             placeholder="Mottaker vil se denne teksten..."
                         />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Kategori</label>
+                            <label className={label}>Kategori</label>
                             <div className="relative">
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value as any)}
-                                    className="w-full bg-gray-50 border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none appearance-none"
+                                    className={`${input} appearance-none pr-11`}
                                 >
                                     <option value="EVENT">Arrangement & Turer</option>
                                     <option value="OTHER">Annet</option>
                                 </select>
-                                <span className="absolute right-4 top-3.5 pointer-events-none text-gray-400 material-symbols-outlined">expand_more</span>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 material-symbols-outlined">expand_more</span>
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Betalingsfrist</label>
+                            <label className={label}>Betalingsfrist</label>
                             <input
                                 type="date"
                                 value={dueDate}
                                 onChange={e => setDueDate(e.target.value)}
-                                className="w-full bg-gray-50 border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                                className={input}
                             />
                         </div>
                     </div>
 
                     {/* Linking */}
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Knytt til Arrangement (Valgfritt)</label>
+                        <label className={label}>Knytt til Arrangement (Valgfritt)</label>
                         <div className="relative">
                             <select
                                 value={selectedEventId}
                                 onChange={(e) => setSelectedEventId(e.target.value)}
-                                className="w-full bg-gray-50 border-gray-100 rounded-xl px-4 py-3 font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none appearance-none"
+                                className={`${input} appearance-none pr-11`}
                             >
                                 <option value="">Ingen tilknytning</option>
                                 {events.map(ev => (
                                     <option key={ev.id} value={ev.id}>{ev.title}</option>
                                 ))}
                             </select>
-                            <span className="absolute right-4 top-3.5 pointer-events-none text-gray-400 material-symbols-outlined">expand_more</span>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 material-symbols-outlined">expand_more</span>
                         </div>
                         <p className="text-xs text-gray-400 ml-1">Hjelper deg å velge deltakere automatisk.</p>
                     </div>
 
                     {/* Targeting - Redesigned as Cards */}
-                    <div className="pt-8 border-t border-gray-100">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1 mb-4 block">Hvem skal betale?</label>
+                    <div className="pt-8 border-t border-border-color">
+                        <label className={`${label} mb-4`}>Hvem skal betale?</label>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <button
                                 type="button"
                                 onClick={() => setTargetType('ALL')}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${targetType === 'ALL'
-                                    ? 'border-indigo-600 bg-indigo-50'
-                                    : 'border-gray-100 hover:border-indigo-200'
+                                className={`p-4 rounded-2xl border-2 text-left transition-all ${targetType === 'ALL'
+                                    ? 'border-primary bg-cream'
+                                    : 'border-border-color hover:border-primary/50'
                                     }`}
                             >
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'ALL' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'ALL' ? 'bg-primary text-[#0f0e0c]' : 'bg-gray-100 text-gray-500'
                                     }`}>
                                     <span className="material-symbols-outlined">groups</span>
                                 </div>
-                                <h3 className={`font-bold text-sm ${targetType === 'ALL' ? 'text-indigo-900' : 'text-gray-900'}`}>Alle Medlemmer</h3>
+                                <h3 className="font-bold text-sm text-gray-900">Alle Medlemmer</h3>
                                 <p className="text-xs text-gray-500 mt-1">Send til hele klubben.</p>
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setTargetType('EVENT_ATTENDEES')}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${targetType === 'EVENT_ATTENDEES'
-                                    ? 'border-indigo-600 bg-indigo-50'
-                                    : 'border-gray-100 hover:border-indigo-200'
+                                className={`p-4 rounded-2xl border-2 text-left transition-all ${targetType === 'EVENT_ATTENDEES'
+                                    ? 'border-primary bg-cream'
+                                    : 'border-border-color hover:border-primary/50'
                                     }`}
                             >
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'EVENT_ATTENDEES' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'EVENT_ATTENDEES' ? 'bg-primary text-[#0f0e0c]' : 'bg-gray-100 text-gray-500'
                                     }`}>
                                     <span className="material-symbols-outlined">confirmation_number</span>
                                 </div>
-                                <h3 className={`font-bold text-sm ${targetType === 'EVENT_ATTENDEES' ? 'text-indigo-900' : 'text-gray-900'}`}>Arrangement</h3>
+                                <h3 className="font-bold text-sm text-gray-900">Arrangement</h3>
                                 <p className="text-xs text-gray-500 mt-1">Kun påmeldte deltakere.</p>
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setTargetType('MANUAL')}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${targetType === 'MANUAL'
-                                    ? 'border-indigo-600 bg-indigo-50'
-                                    : 'border-gray-100 hover:border-indigo-200'
+                                className={`p-4 rounded-2xl border-2 text-left transition-all ${targetType === 'MANUAL'
+                                    ? 'border-primary bg-cream'
+                                    : 'border-border-color hover:border-primary/50'
                                     }`}
                             >
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'MANUAL' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${targetType === 'MANUAL' ? 'bg-primary text-[#0f0e0c]' : 'bg-gray-100 text-gray-500'
                                     }`}>
                                     <span className="material-symbols-outlined">touch_app</span>
                                 </div>
-                                <h3 className={`font-bold text-sm ${targetType === 'MANUAL' ? 'text-indigo-900' : 'text-gray-900'}`}>Manuell</h3>
+                                <h3 className="font-bold text-sm text-gray-900">Manuell</h3>
                                 <p className="text-xs text-gray-500 mt-1">Velg personer selv.</p>
                             </button>
                         </div>
 
                         {/* Manual Selection Interface */}
                         {targetType === 'MANUAL' && (
-                            <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50/50">
+                            <div className="border border-border-color rounded-2xl p-4 bg-[#faf8f3]">
                                 <input
                                     type="text"
                                     placeholder="Søk etter medlem..."
                                     value={memberSearch}
                                     onChange={(e) => setMemberSearch(e.target.value)}
-                                    className="w-full bg-white border-gray-200 rounded-lg px-4 py-2 text-sm mb-4 outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className={`${input} mb-4`}
                                 />
                                 <div className="max-h-60 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {filteredMembers.map(m => (
                                         <label key={m.id} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${selectedMemberIds.includes(m.id)
-                                            ? 'bg-indigo-50 border-indigo-200'
-                                            : 'bg-white border-gray-100 hover:border-indigo-200'
+                                            ? 'bg-cream border-primary'
+                                            : 'bg-white border-border-color hover:border-primary/50'
                                             }`}>
                                             <div className="relative flex items-center justify-center">
                                                 <input
                                                     type="checkbox"
-                                                    className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                                    className="w-5 h-5 rounded text-primary focus:ring-primary border-gray-300"
                                                     checked={selectedMemberIds.includes(m.id)}
                                                     onChange={(e) => {
                                                         if (e.target.checked) setSelectedMemberIds([...selectedMemberIds, m.id]);
@@ -297,7 +306,7 @@ export default function CreateInvoicePage() {
                                                     }}
                                                 />
                                             </div>
-                                            <span className={`text-sm font-medium ${selectedMemberIds.includes(m.id) ? 'text-indigo-900' : 'text-gray-700'}`}>
+                                            <span className={`text-sm font-medium ${selectedMemberIds.includes(m.id) ? 'text-gray-900' : 'text-gray-700'}`}>
                                                 {m.firstName} {m.lastName}
                                             </span>
                                         </label>
@@ -309,16 +318,16 @@ export default function CreateInvoicePage() {
                             </div>
                         )}
 
-                        <div className="mt-6 bg-indigo-50 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                        <div className="mt-6 bg-cream border border-border-color rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                             <div className="min-w-0">
-                                <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Oppsummering</p>
-                                <p className="text-sm sm:text-base text-indigo-900 font-medium">
+                                <p className="text-[11px] font-bold text-primary uppercase tracking-[0.15em]">Oppsummering</p>
+                                <p className="text-sm sm:text-base text-gray-900 font-medium">
                                     Du sender krav til <span className="font-bold">{targetCount}</span> personer.
                                 </p>
                             </div>
-                            <div className="w-full sm:w-auto pt-3 sm:pt-0 border-t border-indigo-200/70 sm:border-0 text-left sm:text-right">
-                                <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Total Inntekt</p>
-                                <p className="text-2xl sm:text-xl font-bold text-indigo-900 whitespace-nowrap leading-tight">{formatNok(totalIncome)} kr</p>
+                            <div className="w-full sm:w-auto pt-3 sm:pt-0 border-t border-border-color sm:border-0 text-left sm:text-right">
+                                <p className="text-[11px] font-bold text-primary uppercase tracking-[0.15em]">Total Inntekt</p>
+                                <p className="text-2xl font-normal text-gray-900 whitespace-nowrap leading-tight tabular-nums" style={{ fontFamily: SERIF }}>{formatNok(totalIncome)} kr</p>
                             </div>
                         </div>
                     </div>
@@ -338,7 +347,7 @@ export default function CreateInvoicePage() {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-50 shadow-lg shadow-gray-900/20 hover:shadow-gray-900/30 active:scale-95 transform"
+                            className={`${btnPrimary} h-auto px-8 py-4 text-sm`}
                         >
                             {submitting ? 'Oppretter fakturaer...' : 'Send Betalingskrav'}
                         </button>

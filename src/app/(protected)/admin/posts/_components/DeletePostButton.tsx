@@ -54,12 +54,12 @@ export function DeletePostButton({ id, title }: DeletePostButtonProps) {
     return (
         <button
             onClick={handleDelete}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Slett"
             disabled={isDeleting}
         >
             {isDeleting ? (
-                <span className="w-5 h-5 block border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                <span className="w-5 h-5 block border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             ) : (
                 <span className="material-symbols-outlined text-[20px]">delete</span>
             )}

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { RequestStatus } from "@prisma/client";
 import { setInvoiceStatus } from "@/server/actions/finance";
 import { useModal } from "@/components/providers/ModalContext";
+import { SERIF, btnPrimary, btnSecondary } from "@/components/admin/ui";
 
 export interface InvoiceStatusTarget {
     id: string;
@@ -94,7 +95,7 @@ export function InvoiceStatusModal({ invoice, onClose, onSuccess }: InvoiceStatu
         ? "bg-emerald-50 text-emerald-800 border-emerald-100"
         : leavingPaid
             ? "bg-amber-50 text-amber-800 border-amber-100"
-            : "bg-blue-50 text-blue-900/80 border-blue-100";
+            : "bg-cream/50 text-text-secondary border-border-color";
 
     const handleConfirm = async () => {
         if (unchanged) return;
@@ -127,21 +128,21 @@ export function InvoiceStatusModal({ invoice, onClose, onSuccess }: InvoiceStatu
             <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
                 {/* Backdrop */}
                 <div
-                    className="fixed inset-0 bg-gray-900/40 transition-opacity"
+                    className="fixed inset-0 bg-black/40 transition-opacity"
                     onClick={loading ? undefined : onClose}
                     aria-hidden="true"
                 />
 
                 {/* Panel */}
-                <div className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="relative transform overflow-hidden rounded-2xl bg-white text-left border border-border-color shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                     <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div className="flex items-start gap-4 mb-5">
-                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 sm:h-10 sm:w-10">
-                                <span className="material-symbols-outlined text-indigo-600 text-2xl">receipt_long</span>
+                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 sm:h-10 sm:w-10">
+                                <span className="material-symbols-outlined text-primary text-2xl">receipt_long</span>
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-lg font-bold leading-6 text-gray-900">Endre status</h3>
-                                <p className="text-sm text-gray-500 mt-0.5 truncate">{invoice.memberName}</p>
+                                <h3 className="text-xl font-normal leading-7 text-gray-900" style={{ fontFamily: SERIF }}>Endre status</h3>
+                                <p className="text-sm text-text-secondary mt-0.5 truncate">{invoice.memberName}</p>
                                 <p className="text-xs text-gray-400">
                                     {invoice.title} · {formatNok(invoice.amount)} kr
                                 </p>
@@ -192,12 +193,12 @@ export function InvoiceStatusModal({ invoice, onClose, onSuccess }: InvoiceStatu
                         </div>
                     </div>
 
-                    <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse gap-3 border-t border-gray-100">
+                    <div className="bg-cream/40 px-6 py-4 sm:flex sm:flex-row-reverse gap-3 border-t border-border-color">
                         <button
                             type="button"
                             onClick={handleConfirm}
                             disabled={loading || unchanged}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all sm:w-auto disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
+                            className={`${btnPrimary} w-full sm:w-auto`}
                         >
                             {loading ? (
                                 <>
@@ -212,7 +213,7 @@ export function InvoiceStatusModal({ invoice, onClose, onSuccess }: InvoiceStatu
                             type="button"
                             onClick={onClose}
                             disabled={loading}
-                            className="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all disabled:opacity-50"
+                            className={`${btnSecondary} mt-3 w-full sm:mt-0 sm:w-auto`}
                         >
                             Avbryt
                         </button>

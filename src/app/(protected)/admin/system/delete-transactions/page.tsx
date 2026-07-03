@@ -9,18 +9,18 @@ export const metadata = {
 
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
+import { AdminPageHeader } from "@/components/admin/ui";
 
 export default async function TransactionDeletePage() {
     await ensureRole([Role.ADMIN]);
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Slett Transaksjoner</h1>
-                    <p className="text-gray-500 text-sm">Søk opp og slett enkelttransaksjoner, eller nullstill hele systemet.</p>
-                </div>
-            </div>
+            <AdminPageHeader
+                eyebrow="System"
+                title="Slett Transaksjoner"
+                description="Søk opp og slett enkelttransaksjoner, eller nullstill hele systemet."
+            />
 
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
                 <span className="material-symbols-outlined text-amber-600">warning</span>

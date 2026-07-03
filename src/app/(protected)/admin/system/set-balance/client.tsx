@@ -8,6 +8,7 @@ import { getMembersAndEvents, setMemberBalance } from "@/server/actions/finance"
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader, card, label, input, textarea, btnPrimary } from "@/components/admin/ui";
 
 type Member = {
     id: string;
@@ -81,12 +82,11 @@ export default function SetBalancePage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Sett Saldo</h1>
-                <p className="text-gray-500 mt-2">
-                    Juster saldo manuelt. Dette vil opprette en korrigerende transaksjon automatisk.
-                </p>
-            </div>
+            <AdminPageHeader
+                eyebrow="Systemverktøy"
+                title="Sett Saldo"
+                description="Juster saldo manuelt. Dette vil opprette en korrigerende transaksjon automatisk."
+            />
 
             <div className="max-w-2xl mx-auto w-full">
                 <ActionInfo
@@ -101,12 +101,12 @@ export default function SetBalancePage() {
                 />
             </div>
 
-            <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+            <div className={`max-w-2xl mx-auto ${card} p-8`}>
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                     {/* Member Select */}
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Medlem</label>
+                        <label className={label}>Medlem</label>
                         <select
                             value={selectedMemberId}
                             onChange={(e) => {
@@ -114,7 +114,7 @@ export default function SetBalancePage() {
                                 // Reset current balance view or trigger fetch here in future
                                 setCurrentBalance(null);
                             }}
-                            className="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
+                            className={input}
                         >
                             <option value="">Velg medlem...</option>
                             {members.map(m => (
@@ -127,13 +127,13 @@ export default function SetBalancePage() {
 
                     {/* New Balance */}
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Ny Saldo (NOK)</label>
+                        <label className={label}>Ny Saldo (NOK)</label>
                         <input
                             type="number"
                             value={newBalance}
                             onChange={(e) => setNewBalance(e.target.value)}
                             placeholder="f.eks. 0"
-                            className="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 font-mono text-lg"
+                            className={`${input} font-mono text-lg tabular-nums`}
                         />
                         <p className="text-xs text-gray-400 mt-2">
                             Dette er beløpet medlemmet skal ha stående på konto ETTER justeringen.
@@ -142,20 +142,20 @@ export default function SetBalancePage() {
 
                     {/* Reason */}
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Årsak til justering</label>
+                        <label className={label}>Årsak til justering</label>
                         <textarea
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="Forklar hvorfor saldoen endres..."
                             rows={3}
-                            className="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
+                            className={textarea}
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={submitting || !selectedMemberId}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all disabled:opacity-50 disabled:shadow-none"
+                        className={`${btnPrimary} w-full h-12`}
                     >
                         {submitting ? 'Oppdaterer...' : 'Oppdater Saldo'}
                     </button>

@@ -101,7 +101,11 @@ export function PremiumModal({
 
                             {/* Content */}
                             <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                <h3 className="text-lg font-bold leading-6 text-gray-900" id="modal-title">
+                                <h3
+                                    className="text-xl font-normal leading-6 text-gray-900"
+                                    id="modal-title"
+                                    style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
+                                >
                                     {title}
                                 </h3>
                                 <div className="mt-2">

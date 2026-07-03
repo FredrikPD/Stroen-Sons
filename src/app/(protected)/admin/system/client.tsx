@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useModal } from "@/components/providers/ModalContext";
-import { ActionInfo } from "@/components/ui/ActionInfo";
 import { recalculateAllBalances } from "@/server/actions/finance";
+import { AdminPageHeader, SERIF } from "@/components/admin/ui";
 
 export default function AdminSystemClientPage() {
     const { data } = useAdminDashboard();
@@ -59,28 +59,28 @@ export default function AdminSystemClientPage() {
 
     return (
         <div className="space-y-10">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Systeminnstillinger</h1>
-                <p className="text-gray-500 text-sm">Her kan du enkelt administrere klubbens daglige drift og innhold.</p>
-            </div>
+            <AdminPageHeader
+                eyebrow="Administrasjon"
+                title="Systeminnstillinger"
+                description="Her kan du enkelt administrere klubbens daglige drift og innhold."
+            />
 
             {/* Section 1: Økonomi */}
             <div>
-                <div className="flex items-center gap-2 mb-4 text-[#1A56DB]">
-                    <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-                    <h2 className="text-lg font-bold text-gray-900">Økonomi</h2>
+                <div className="flex items-center gap-2.5 mb-4 text-gray-900">
+                    <span className="material-symbols-outlined text-xl text-primary">account_balance_wallet</span>
+                    <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Økonomi</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Sett Saldo */}
-                    <Link href="/admin/system/set-balance" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-fuchsia-50 text-fuchsia-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/set-balance" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">edit_note</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Sett Saldo</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Sett Saldo</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Sett saldo for enkeltmedlemmer.
                             </p>
                         </div>
@@ -90,48 +90,45 @@ export default function AdminSystemClientPage() {
                     <button
                         onClick={handleSyncBalances}
                         disabled={syncing}
-                        className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow text-left w-full group flex items-start gap-3"
+                        className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all text-left w-full group flex items-start gap-3 disabled:opacity-60"
                     >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${syncing ? 'bg-amber-100 text-amber-600' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${syncing ? 'bg-amber-100 text-amber-600' : 'bg-primary/10 text-primary group-hover:bg-[#0f0e0c] group-hover:text-white'}`}>
                             {syncing ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]" />
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary/30 border-t-primary" />
                             ) : (
                                 <span className="material-symbols-outlined text-xl">sync_saved_locally</span>
                             )}
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Synkroniser Saldoer</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Synkroniser Saldoer</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 {syncing ? 'Synkroniserer...' : 'Gjenopprett og rekalkuler alle saldoer.'}
                             </p>
-                            <ActionInfo variant="danger" compact>
-                                Regner ut saldoen til ALLE medlemmer på nytt og overskriver den lagrede saldoen. Manuelle justeringer uten transaksjon blir borte. Ingen varsler sendes.
-                            </ActionInfo>
                         </div>
                     </button>
 
 
                     {/* Slett Fakturaer */}
-                    <Link href="/admin/system/delete-invoices" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/delete-invoices" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">remove_shopping_cart</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Slett Fakturaer</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Slett Fakturaer</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Bulk-sletting av ubetalte fakturaer.
                             </p>
                         </div>
                     </Link>
 
                     {/* Slett Transaksjoner */}
-                    <Link href="/admin/system/delete-transactions" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/delete-transactions" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">delete_forever</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Slett Transaksjoner</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Slett Transaksjoner</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Slett feilførte transaksjoner.
                             </p>
                         </div>
@@ -141,58 +138,58 @@ export default function AdminSystemClientPage() {
 
             {/* Section 2: Medlemspleie */}
             <div>
-                <div className="flex items-center gap-2 mb-4 text-[#1A56DB]">
-                    <span className="material-symbols-outlined text-xl">favorite_border</span>
-                    <h2 className="text-lg font-bold text-gray-900">Medlemspleie</h2>
+                <div className="flex items-center gap-2.5 mb-4 text-gray-900">
+                    <span className="material-symbols-outlined text-xl text-primary">favorite_border</span>
+                    <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Medlemspleie</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Brukerroller */}
-                    <Link href="/admin/system/user-roles" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/user-roles" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">security</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Brukerroller</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Brukerroller</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Administrer roller og rettigheter.
                             </p>
                         </div>
                     </Link>
                     {/* Slett Bruker */}
-                    <Link href="/admin/system/delete" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/delete" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">person_remove</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Slett Bruker</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Slett Bruker</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Fjern medlem permanent.
                             </p>
                         </div>
                     </Link>
 
                     {/* Medlemstyper */}
-                    <Link href="/admin/system/membership-types" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/membership-types" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">loyalty</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Medlemstyper</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Medlemstyper</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Medlemskapstyper og kontingenter
                             </p>
                         </div>
                     </Link>
 
                     {/* Event Participation */}
-                    <Link href="/admin/system/event-participation" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/event-participation" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">event_available</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Påmeldinger</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Påmeldinger</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Administrer påmeldinger manuelt.
                             </p>
                         </div>
@@ -202,46 +199,46 @@ export default function AdminSystemClientPage() {
 
             {/* Section 3: Innholdsstyring */}
             <div>
-                <div className="flex items-center gap-2 mb-4 text-[#1A56DB]">
-                    <span className="material-symbols-outlined text-xl">menu_book</span>
-                    <h2 className="text-lg font-bold text-gray-900">Innholdsstyring</h2>
+                <div className="flex items-center gap-2.5 mb-4 text-gray-900">
+                    <span className="material-symbols-outlined text-xl text-primary">menu_book</span>
+                    <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Innholdsstyring</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Administrer kategorier */}
-                    <Link href="/admin/system/categories" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/categories" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">category</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Innlegg kategorier</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Innlegg kategorier</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Administrer innlegg kategorier.
                             </p>
                         </div>
                     </Link>
 
                     {/* Administrer arrangementskategorier */}
-                    <Link href="/admin/system/event-categories" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/event-categories" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">event_upcoming</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Arrangementer kategorier</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Arrangementer kategorier</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Administrer kategorier for arrangementer.
                             </p>
                         </div>
                     </Link>
 
                     {/* Bildeinnstillinger */}
-                    <Link href="/admin/system/photos" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/photos" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">image</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Bildeinnstillinger</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Bildeinnstillinger</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Opplastingsgrenser og bildearkiv.
                             </p>
                         </div>
@@ -251,20 +248,20 @@ export default function AdminSystemClientPage() {
 
             {/* Section 4: Systemstatus */}
             <div>
-                <div className="flex items-center gap-2 mb-4 text-[#1A56DB]">
-                    <span className="material-symbols-outlined text-xl">monitoring</span>
-                    <h2 className="text-lg font-bold text-gray-900">Systemstatus</h2>
+                <div className="flex items-center gap-2.5 mb-4 text-gray-900">
+                    <span className="material-symbols-outlined text-xl text-primary">monitoring</span>
+                    <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Systemstatus</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Resource Manager */}
-                    <Link href="/admin/system/resource-manager" className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex items-start gap-3">
-                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <Link href="/admin/system/resource-manager" className="bg-white p-4 rounded-2xl border border-border-color hover:border-primary/50 hover:shadow-sm transition-all group flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#0f0e0c] group-hover:text-white transition-colors">
                             <span className="material-symbols-outlined text-xl">memory</span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 mb-1">Resource Manager</h3>
-                            <p className="text-sm text-gray-500 leading-snug">
+                            <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Resource Manager</h3>
+                            <p className="text-sm text-text-secondary leading-snug">
                                 Systemressurser og lagring.
                             </p>
                         </div>

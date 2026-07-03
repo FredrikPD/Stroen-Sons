@@ -13,6 +13,14 @@ import { Toggle } from "@/components/ui/Toggle";
 import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import {
+    SERIF,
+    card,
+    label,
+    input,
+    btnPrimary,
+    btnSecondary,
+} from "@/components/admin/ui";
 
 const parseAmount = (value: string) => {
     const parsed = Number.parseFloat(value.replace(",", "."));
@@ -235,10 +243,10 @@ export default function InvoiceDetailPage() {
             </div>
 
             {isEditing ? (
-                <div className="bg-white border border-indigo-200 rounded-xl p-6 mb-6 shadow-sm ring-4 ring-indigo-50/50">
+                <div className={`${card} p-6 mb-6 ring-4 ring-primary/10`}>
                     <div className="flex justify-between items-start mb-4">
-                        <h2 className="font-bold text-lg text-gray-900">Rediger fakturadetaljer</h2>
-                        <button onClick={() => setIsEditing(false)} className="text-gray-400 hover:text-gray-600">
+                        <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Rediger fakturadetaljer</h2>
+                        <button onClick={() => setIsEditing(false)} className="text-gray-400 hover:text-gray-600 rounded-lg p-1 transition-colors">
                             <span className="material-symbols-outlined">close</span>
                         </button>
                     </div>
@@ -257,64 +265,64 @@ export default function InvoiceDetailPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Beskrivelse</label>
+                            <label className={label}>Beskrivelse</label>
                             <input
                                 type="text"
                                 value={editForm.description}
                                 onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                className={input}
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Forfallsdato</label>
+                            <label className={label}>Forfallsdato</label>
                             <input
                                 type="date"
                                 value={editForm.dueDate}
                                 onChange={e => setEditForm({ ...editForm, dueDate: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                className={input}
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Beløp (NOK)</label>
+                            <label className={label}>Beløp (NOK)</label>
                             <input
                                 type="number"
                                 value={editForm.amount}
                                 onChange={e => setEditForm({ ...editForm, amount: parseAmount(e.target.value) })}
                                 min="0"
                                 step="0.01"
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                className={input}
                             />
                             <p className="text-[10px] text-gray-400 mt-1">Dette vil oppdatere beløpet for ALLE i denne gruppen.</p>
                         </div>
                     </div>
 
-                    <div className="mb-6 pt-4 border-t border-gray-100">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Mottakere ({selectedMemberIds.length})</label>
+                    <div className="mb-6 pt-4 border-t border-border-color">
+                        <label className={label}>Mottakere ({selectedMemberIds.length})</label>
                         <input
                             type="text"
                             placeholder="Søk etter medlem..."
                             value={memberSearch}
                             onChange={(e) => setMemberSearch(e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className={`${input} mb-3`}
                         />
-                        <div className="max-h-60 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div className="max-h-60 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border border-border-color rounded-xl bg-[#faf8f3]">
                             {allMembers
                                 .filter(m => (m.firstName + " " + m.lastName).toLowerCase().includes(memberSearch.toLowerCase()))
                                 .map(m => (
                                     <label key={m.id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${selectedMemberIds.includes(m.id)
-                                        ? 'bg-indigo-50 border-indigo-200'
-                                        : 'bg-white border-gray-100 hover:border-indigo-200'
+                                        ? 'bg-cream border-primary'
+                                        : 'bg-white border-border-color hover:border-primary/50'
                                         }`}>
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                            className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300"
                                             checked={selectedMemberIds.includes(m.id)}
                                             onChange={(e) => {
                                                 if (e.target.checked) setSelectedMemberIds([...selectedMemberIds, m.id]);
                                                 else setSelectedMemberIds(selectedMemberIds.filter(id => id !== m.id));
                                             }}
                                         />
-                                        <span className={`text-sm font-medium ${selectedMemberIds.includes(m.id) ? 'text-indigo-900' : 'text-gray-700'}`}>
+                                        <span className={`text-sm font-medium ${selectedMemberIds.includes(m.id) ? 'text-gray-900' : 'text-gray-700'}`}>
                                             {m.firstName} {m.lastName}
                                         </span>
                                     </label>
@@ -329,7 +337,7 @@ export default function InvoiceDetailPage() {
                         <button
                             onClick={handleDeleteGroup}
                             disabled={updatingId === 'group_delete'}
-                            className="px-4 py-2 text-red-600 font-medium text-sm hover:bg-red-50 rounded-lg transition flex items-center gap-2"
+                            className="inline-flex items-center gap-2 h-10 px-4 rounded-lg text-red-600 text-[12px] font-bold hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {updatingId === 'group_delete' ? "Sletter..." : (
                                 <>
@@ -342,18 +350,18 @@ export default function InvoiceDetailPage() {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="px-4 py-2 text-gray-600 font-medium text-sm hover:bg-gray-100 rounded-lg transition"
+                                className={btnSecondary}
                             >
                                 Avbryt
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={updatingId === 'group'}
-                                className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+                                className={btnPrimary}
                             >
                                 {updatingId === 'group' ? (
                                     <>
-                                        <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                         Lagrer...
                                     </>
                                 ) : (
@@ -367,13 +375,13 @@ export default function InvoiceDetailPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6 shadow-sm group">
+                <div className={`${card} overflow-hidden mb-6 group`}>
                     <div className="p-6 relative">
                         <div className="absolute top-6 right-6 z-10">
                             <Dropdown
                                 trigger={
                                     <button
-                                        className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                                        className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
                                         title="Alternativer"
                                     >
                                         <span className="material-symbols-outlined">more_horiz</span>
@@ -399,12 +407,12 @@ export default function InvoiceDetailPage() {
                             {/* Main Info */}
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                                         <span className="material-symbols-outlined">receipt_long</span>
                                     </div>
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900">{displayTitle}</h1>
-                                        <p className="text-xs text-gray-500 font-mono uppercase tracking-wider">
+                                        <h1 className="text-2xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>{displayTitle}</h1>
+                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                                             {requests[0]?.category === 'MEMBERSHIP_FEE' ? 'Medlemskontingent' :
                                                 requests[0]?.category === 'EVENT' ? 'Arrangement' : 'Faktura'}
                                         </p>
@@ -415,7 +423,7 @@ export default function InvoiceDetailPage() {
                                     {requests[0]?.description || "Ingen beskrivelse lagt til."}
                                 </p>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-gray-100 pt-6">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-border-color pt-6">
                                     <div>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Opprettet</p>
                                         <p className="text-sm font-medium text-gray-900">
@@ -430,14 +438,14 @@ export default function InvoiceDetailPage() {
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Beløp per pers</p>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-gray-900 tabular-nums">
                                             {formatNok(Number(requests[0]?.amount || 0))} kr
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tilknyttet Event</p>
                                         {requests[0]?.eventId ? (
-                                            <Link href={`/events/${requests[0].eventId}`} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 group">
+                                            <Link href={`/events/${requests[0].eventId}`} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-hover transition-colors group">
                                                 <span className="group-hover:underline">{requests[0].event?.title || "Se event"}</span>
                                                 <span className="material-symbols-outlined text-xs">arrow_outward</span>
                                             </Link>
@@ -447,12 +455,12 @@ export default function InvoiceDetailPage() {
                                     </div>
                                 </div>
 
-                                <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row gap-2 max-w-xl">
+                                <div className="mt-4 pt-4 border-t border-border-color flex flex-col sm:flex-row gap-2 max-w-xl">
                                     <button
                                         type="button"
                                         onClick={() => handleBulkUpdateStatus("PAID")}
                                         disabled={pendingCount === 0 || updatingId !== null}
-                                        className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                        className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-emerald-600 text-white text-[12px] font-bold hover:bg-emerald-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                                     >
                                         {updatingId === "group_mark_all_paid" ? "Oppdaterer..." : "Registrer alle som betalt"}
                                     </button>
@@ -460,7 +468,7 @@ export default function InvoiceDetailPage() {
                                         type="button"
                                         onClick={() => handleBulkUpdateStatus("PENDING")}
                                         disabled={paidCount === 0 || updatingId !== null}
-                                        className="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 text-xs font-bold hover:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                        className={`${btnSecondary} disabled:text-gray-400`}
                                     >
                                         {updatingId === "group_unmark_all_paid" ? "Oppdaterer..." : "Registrer alle som ubetalt"}
                                     </button>
@@ -476,14 +484,14 @@ export default function InvoiceDetailPage() {
                             </div>
 
                             {/* Status Sidebar */}
-                            <div className="w-full md:w-72 bg-gray-50 rounded-xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Statusoversikt</h3>
+                            <div className="w-full md:w-72 bg-[#faf8f3] rounded-2xl p-5 border border-border-color">
+                                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">Statusoversikt</h3>
 
                                 <div className="space-y-4">
                                     <div>
                                         <div className="flex justify-between text-sm mb-1">
                                             <span className="text-gray-600">Betalt</span>
-                                            <span className="font-bold text-emerald-600">{paidCount}/{requests.length}</span>
+                                            <span className="font-bold text-emerald-600 tabular-nums">{paidCount}/{requests.length}</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                                             <div
@@ -493,13 +501,13 @@ export default function InvoiceDetailPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                                    <div className="flex justify-between items-center py-2 border-t border-border-color">
                                         <span className="text-xs text-gray-500">Totalt innbetalt</span>
-                                        <span className="text-lg font-bold text-gray-900">{formatNok(paidAmount)} kr</span>
+                                        <span className="text-lg font-normal text-gray-900 tabular-nums" style={{ fontFamily: SERIF }}>{formatNok(paidAmount)} kr</span>
                                     </div>
-                                    <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                                    <div className="flex justify-between items-center py-2 border-t border-border-color">
                                         <span className="text-xs text-gray-500">Utestående</span>
-                                        <span className="text-base font-medium text-red-500">{formatNok(totalAmount - paidAmount)} kr</span>
+                                        <span className="text-base font-normal text-red-500 tabular-nums" style={{ fontFamily: SERIF }}>{formatNok(totalAmount - paidAmount)} kr</span>
                                     </div>
 
                                 </div>
@@ -513,10 +521,10 @@ export default function InvoiceDetailPage() {
                 Slår du på Betalt for et medlem, opprettes en transaksjon, medlemmets saldo øker og medlemmet får varsel (også push). Slår du den av igjen, slettes transaksjonen og saldoen settes tilbake — uten varsel.
             </ActionInfo>
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className={`${card} overflow-hidden`}>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[860px]">
-                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
+                        <thead className="bg-[#faf8f3] text-[11px] font-bold text-gray-400 uppercase tracking-wider text-left">
                             <tr>
                                 <th className="px-4 sm:px-6 py-4 text-left min-w-[320px]">Medlem</th>
                                 <th className="px-4 sm:px-6 py-4 text-left min-w-[170px]">Beløp</th>
@@ -524,9 +532,9 @@ export default function InvoiceDetailPage() {
                                 <th className="px-4 sm:px-6 py-4 text-right min-w-[230px]">Handling</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-border-color">
                             {requests.map((req) => (
-                                <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr key={req.id} className="hover:bg-black/[0.02] transition-colors">
                                     <td className="px-4 sm:px-6 py-4 min-w-[320px]">
                                         <div className="font-medium text-gray-900 whitespace-nowrap">
                                             {req.member.firstName} {req.member.lastName}
@@ -535,7 +543,7 @@ export default function InvoiceDetailPage() {
                                             Forfall: {req.dueDate ? new Date(req.dueDate).toLocaleDateString() : 'Ingen'}
                                         </div>
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 min-w-[170px] font-mono text-sm text-gray-600 whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 min-w-[170px] font-mono text-sm text-gray-600 whitespace-nowrap tabular-nums">
                                         {formatNok(Number(req.amount))} kr
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 min-w-[140px]">

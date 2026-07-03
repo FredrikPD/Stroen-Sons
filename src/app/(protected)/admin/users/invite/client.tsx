@@ -3,6 +3,7 @@
 import { useActionState, useState, useRef, useEffect } from "react";
 import { inviteMember } from "@/server/actions/invite-member";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, label, input, btnPrimary } from "@/components/admin/ui";
 
 export default function InviteMemberForm({ availableRoles }: { availableRoles: { id: string, name: string }[] }) {
     const [state, formAction, isPending] = useActionState(inviteMember, {});
@@ -45,8 +46,9 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                 {/* Left Side: The Form */}
                 <div className="space-y-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Inviter Nytt Medlem</h1>
-                        <p className="text-gray-500 mt-2">Opprett tilgang og send invitasjon.</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">Brukeradministrasjon</p>
+                        <h1 className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none" style={{ fontFamily: SERIF }}>Inviter Nytt Medlem</h1>
+                        <p className="text-gray-500 mt-3">Opprett tilgang og send invitasjon.</p>
                     </div>
 
                     <ActionInfo variant="info" icon="mail" title="Hva skjer når du sender invitasjonen?">
@@ -56,24 +58,24 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                     <form ref={formRef} action={formAction} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Fornavn</label>
+                                <label className={label}>Fornavn</label>
                                 <input
                                     name="firstName"
                                     type="text"
                                     required
-                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium"
+                                    className={input}
                                     placeholder="Ola"
                                     onChange={handleChange}
                                 />
                                 {state.fieldErrors?.firstName && <p className="text-red-500 text-xs">{state.fieldErrors.firstName}</p>}
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Etternavn</label>
+                                <label className={label}>Etternavn</label>
                                 <input
                                     name="lastName"
                                     type="text"
                                     required
-                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium"
+                                    className={input}
                                     placeholder="Nordmann"
                                     onChange={handleChange}
                                 />
@@ -82,12 +84,12 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">E-postadresse</label>
+                            <label className={label}>E-postadresse</label>
                             <input
                                 name="email"
                                 type="email"
                                 required
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium"
+                                className={input}
                                 placeholder="ola@eksempel.no"
                                 onChange={handleChange}
                             />
@@ -98,11 +100,11 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Rolle</label>
+                                <label className={label}>Rolle</label>
                                 <div className="relative">
                                     <select
                                         name="roleId"
-                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium appearance-none"
+                                        className={`${input} appearance-none pr-10`}
                                         onChange={handleChange}
                                         defaultValue={availableRoles.find(r => r.name === "Member")?.id || ""}
                                     >
@@ -115,11 +117,11 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Medlemskap</label>
+                                <label className={label}>Medlemskap</label>
                                 <div className="relative">
                                     <select
                                         name="membershipType"
-                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-sm font-medium appearance-none"
+                                        className={`${input} appearance-none pr-10`}
                                         onChange={handleChange}
                                         defaultValue="STANDARD"
                                     >
@@ -137,11 +139,11 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                             <button
                                 type="submit"
                                 disabled={isPending}
-                                className="w-full py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-sm transition-all transform active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-gray-200"
+                                className={`${btnPrimary} w-full h-12`}
                             >
                                 {isPending ? (
                                     <>
-                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></span>
+                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></span>
                                         Oppretter...
                                     </>
                                 ) : (
@@ -170,38 +172,48 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
 
                 {/* Right Side: The Creative 'Card' Preview */}
                 <div className="hidden lg:flex flex-col items-center justify-center h-full min-h-[500px] relative">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-50 to-purple-50 rounded-3xl -z-10 blur-3xl opacity-50" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-cream to-primary/5 rounded-3xl -z-10 blur-3xl opacity-60" />
 
                     {/* Perspective Container */}
                     <div className="relative group perspective-1000">
                         {/* The Card */}
-                        <div className="w-[380px] h-[240px] bg-gray-900 text-white rounded-2xl p-6 relative overflow-hidden shadow-2xl transition-transform duration-500 hover:rotate-y-6 hover:scale-105 transform-style-3d">
+                        <div
+                            className="w-[380px] h-[240px] text-white rounded-2xl p-6 relative overflow-hidden shadow-2xl transition-transform duration-500 hover:rotate-y-6 hover:scale-105 transform-style-3d"
+                            style={{ background: "linear-gradient(150deg, #1b1a16 0%, #0f0e0c 62%)" }}
+                        >
 
-                            {/* Decorative Background Elements */}
-                            <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
-                            <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30" />
+                            {/* Decorative Background Elements — warm gold glow */}
+                            <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary rounded-full mix-blend-overlay filter blur-3xl opacity-25" />
+                            <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-primary rounded-full mix-blend-overlay filter blur-3xl opacity-15" />
+                            <span
+                                aria-hidden
+                                className="pointer-events-none absolute -right-4 -bottom-8 select-none leading-none text-white/[0.04]"
+                                style={{ fontFamily: SERIF, fontSize: "12rem" }}
+                            >
+                                S
+                            </span>
 
                             {/* Card Content */}
                             <div className="relative z-10 flex flex-col justify-between h-full">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Medlemskort</p>
-                                        <h3 className="text-lg font-bold mt-1 tracking-wide">STRØEN SØNS</h3>
+                                        <p className="text-[10px] uppercase tracking-[0.2em] text-cream-muted font-medium">Medlemskort</p>
+                                        <h3 className="text-lg font-normal mt-1 tracking-wide" style={{ fontFamily: SERIF }}>STRØEN SØNS</h3>
                                     </div>
-                                    <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full border border-primary/40 text-primary flex items-center justify-center">
                                         <span className="material-symbols-outlined text-base">verified</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm">
-                                            <span className="text-xl font-medium">
+                                        <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center border border-primary/20 backdrop-blur-sm">
+                                            <span className="text-xl font-medium" style={{ fontFamily: SERIF }}>
                                                 {preview.firstName ? preview.firstName[0].toUpperCase() : "?"}
                                             </span>
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold truncate max-w-[180px]">
+                                            <p className="text-sm font-semibold truncate max-w-[180px]">
                                                 {preview.firstName || "Fornavn"} {preview.lastName || "Etternavn"}
                                             </p>
                                             <p className="text-[10px] text-gray-400 truncate max-w-[180px]">
@@ -212,16 +224,16 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
 
                                     <div className="flex justify-between items-end border-t border-white/10 pt-4">
                                         <div>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rolle</p>
+                                            <p className="text-[10px] text-cream-muted uppercase tracking-wider">Rolle</p>
                                             <div className="flex items-center gap-1.5 mt-1">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${preview.roleName === 'Admin' ? 'bg-indigo-400' : preview.roleName === 'Moderator' ? 'bg-fuchsia-400' : 'bg-emerald-400'} animate-pulse`} />
+                                                <div className={`w-1.5 h-1.5 rounded-full ${preview.roleName === 'Admin' ? 'bg-primary' : preview.roleName === 'Moderator' ? 'bg-amber-400' : 'bg-emerald-400'} animate-pulse`} />
                                                 <span className="text-xs font-semibold tracking-wide">
                                                     {preview.roleName}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Type</p>
+                                            <p className="text-[10px] text-cream-muted uppercase tracking-wider">Type</p>
                                             <p className="text-xs font-semibold tracking-wide">{preview.type}</p>
                                         </div>
                                     </div>

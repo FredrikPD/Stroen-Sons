@@ -8,6 +8,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, card, cardHover, input, AdminSectionHeader } from "@/components/admin/ui";
 
 type Member = {
     id: string;
@@ -29,24 +30,18 @@ const QUICK_ACTIONS = [
         description: "Send invitasjon via e-post",
         icon: "person_add",
         href: "/admin/users/invite",
-        colorClass: "text-[#4F46E5] bg-[#4F46E5]/10 group-hover:bg-[#4F46E5] group-hover:text-white",
-        hoverBorder: "hover:border-[#4F46E5]/50"
     },
     {
         title: "Endre Medlemsroller",
         description: "Oppdater tilganger",
         icon: "admin_panel_settings",
         href: "/admin/users/roles",
-        colorClass: "text-purple-500 bg-purple-500/10 group-hover:bg-purple-500 group-hover:text-white",
-        hoverBorder: "hover:border-purple-500/50"
     },
     {
         title: "Håndter invitasjoner",
         description: "Administrer invitasjoner",
         icon: "send",
         href: "/admin/users/invitations",
-        colorClass: "text-amber-500 bg-amber-500/10 group-hover:bg-amber-500 group-hover:text-white",
-        hoverBorder: "hover:border-amber-500/50"
     }
 ];
 
@@ -110,20 +105,20 @@ export default function UserManagementClient({ members, availableRoles }: { memb
         <div className="space-y-8">
             {/* Quick Actions */}
             <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Hurtighandlinger</h2>
+                <AdminSectionHeader title="Hurtighandlinger" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {QUICK_ACTIONS.map((action) => (
                         <Link
                             key={action.title}
                             href={action.href}
-                            className={`bg-white border border-gray-200 rounded-xl p-6 flex items-center justify-between group transition-all shadow-sm hover:shadow-md ${action.hoverBorder}`}
+                            className={`${cardHover} p-6 flex items-center justify-between group`}
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${action.colorClass}`}>
+                                <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-primary/10 text-primary group-hover:bg-[#0f0e0c] group-hover:text-white">
                                     <span className="material-symbols-outlined text-xl">{action.icon}</span>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900 text-sm">{action.title}</h3>
+                                    <h3 className="font-semibold text-gray-900 text-sm">{action.title}</h3>
                                     <p className="text-xs text-gray-500 mt-0.5">{action.description}</p>
                                 </div>
                             </div>
@@ -135,37 +130,38 @@ export default function UserManagementClient({ members, availableRoles }: { memb
 
             {/* User List */}
             <div>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold text-gray-900">Nylig Aktive Brukere</h2>
-                    {/* Search Input Could Go Here */}
-                    <input
-                        type="text"
-                        placeholder="Søk..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                </div>
+                <AdminSectionHeader
+                    title="Nylig Aktive Brukere"
+                    action={
+                        <input
+                            type="text"
+                            placeholder="Søk..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className={`${input} h-10 max-w-[220px]`}
+                        />
+                    }
+                />
 
                 <ActionInfo variant="info" icon="admin_panel_settings" title="Om å endre rolle" className="mb-4">
                     Rollen bestemmer hva medlemmet får tilgang til, og endringen gjelder med en gang. Medlemmet blir ikke varslet. Du kan når som helst velge en annen rolle for å endre tilbake.
                 </ActionInfo>
 
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div className={`${card} overflow-hidden`}>
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[980px] text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-gray-100">
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[360px]">Bruker</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[200px]">Rolle</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[180px]">Type</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[140px]">Status</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[160px]">Sist Aktiv</th>
+                                <tr className="bg-[#faf8f3] border-b border-border-color">
+                                    <th className="py-4 px-6 text-[11px] font-bold text-gray-400 uppercase tracking-wider min-w-[360px]">Bruker</th>
+                                    <th className="py-4 px-6 text-[11px] font-bold text-gray-400 uppercase tracking-wider min-w-[200px]">Rolle</th>
+                                    <th className="py-4 px-6 text-[11px] font-bold text-gray-400 uppercase tracking-wider min-w-[180px]">Type</th>
+                                    <th className="py-4 px-6 text-[11px] font-bold text-gray-400 uppercase tracking-wider min-w-[140px]">Status</th>
+                                    <th className="py-4 px-6 text-[11px] font-bold text-gray-400 uppercase tracking-wider min-w-[160px]">Sist Aktiv</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-border-color">
                                 {paginatedMembers.map((member) => (
-                                    <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr key={member.id} className="hover:bg-black/[0.02] transition-colors">
                                         <td className="py-4 px-6 min-w-[360px]">
                                             <div className="flex items-center gap-3">
                                                 {/* Avatar */}
@@ -173,11 +169,11 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                     src={member.avatarUrl}
                                                     initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
                                                     size="sm"
-                                                    className="w-10 h-10 border border-gray-200 text-gray-700 bg-gray-100 shrink-0"
+                                                    className="w-10 h-10 border border-border-color text-gray-700 bg-cream shrink-0"
                                                     alt={member.firstName || member.email}
                                                 />
                                                 <div>
-                                                    <p className="text-sm font-bold text-gray-900">{member.firstName ? `${member.firstName} ${member.lastName || ""}` : "Ukjent"}</p>
+                                                    <p className="text-sm font-semibold text-gray-900">{member.firstName ? `${member.firstName} ${member.lastName || ""}` : "Ukjent"}</p>
                                                     <p className="text-xs text-gray-500 whitespace-nowrap">{member.email}</p>
                                                 </div>
                                             </div>
@@ -194,10 +190,10 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                         e.target.value
                                                     )}
                                                     className={`
-                                                        w-full min-w-[170px] appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 transition-colors
-                                                        ${member.userRole?.name === 'Admin' ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
-                                                            member.userRole?.name === 'Moderator' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' :
-                                                                'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                                                        w-full min-w-[170px] appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 transition-colors
+                                                        ${member.userRole?.name === 'Admin' ? 'bg-primary/15 text-primary hover:bg-primary/20' :
+                                                            member.userRole?.name === 'Moderator' ? 'bg-primary/10 text-primary hover:bg-primary/15' :
+                                                                'bg-cream text-text-secondary hover:bg-cream/70'}
                                                     `}
                                                 >
                                                     {/* If user has no role, we can show a placeholder or map to "Member" role if exists */}
@@ -213,7 +209,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                                 </div>
                                                 {updatingRoleId === member.id && (
                                                     <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                                                        <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin"></span>
+                                                        <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></span>
                                                     </div>
                                                 )}
                                             </div>
@@ -228,7 +224,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                             </span>
                                         </td>
                                         <td className="py-4 px-6 min-w-[140px]">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${member.status === 'ACTIVE' ? 'bg-green-50 text-green-700' :
+                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${member.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' :
                                                 member.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
                                                     'bg-gray-50 text-gray-700'
                                                 }`}>
@@ -242,7 +238,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                                 ))}
                                 {paginatedMembers.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-gray-500 text-sm">
+                                        <td colSpan={5} className="py-8 text-center text-gray-500 text-sm italic" style={{ fontFamily: SERIF }}>
                                             Ingen medlemmer funnet.
                                         </td>
                                     </tr>
@@ -252,22 +248,22 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                     </div>
 
                     {/* Pagination */}
-                    <div className="py-4 px-6 border-t border-gray-100 flex items-center justify-between">
-                        <p className="text-sm text-gray-500">
+                    <div className="py-4 px-6 border-t border-border-color flex items-center justify-between">
+                        <p className="text-sm text-gray-500 tabular-nums">
                             Viser {Math.min((currentPage - 1) * pageSize + 1, filteredMembers.length)}-{Math.min(currentPage * pageSize, filteredMembers.length)} av {filteredMembers.length} brukere
                         </p>
                         <div className="flex gap-2">
                             <button
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(p => p - 1)}
-                                className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1.5 border border-border-color rounded-lg text-sm font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Forrige
                             </button>
                             <button
                                 disabled={currentPage === totalPages || totalPages === 0}
                                 onClick={() => setCurrentPage(p => p + 1)}
-                                className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-3 py-1.5 border border-border-color rounded-lg text-sm font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 Neste
                             </button>

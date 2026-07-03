@@ -97,13 +97,6 @@ export function MonthlyFeePauseCard({
                 </span>
             </p>
 
-            <p className="relative z-10 mt-3 text-xs text-white/60 flex items-start gap-2 leading-relaxed">
-                <span className="material-symbols-outlined text-base leading-none shrink-0">info</span>
-                <span>
-                    Når dette er på, blir den månedlige kontingenten ikke fakturert så lenge saldoen din er over <span className="font-semibold">4 500 NOK</span>. Har du allerede en ubetalt kontingent for denne måneden, settes den på pause. Slår du det av igjen, blir kontingenten et vanlig krav med ny forfallsdato. Dette gjelder kun deg og påvirker ikke saldoen din direkte.
-                </span>
-            </p>
-
             {error && (
                 <p className="relative z-10 mt-2 text-xs text-rose-300">
                     {error}

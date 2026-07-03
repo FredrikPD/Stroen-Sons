@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { Avatar } from "@/components/Avatar";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, card, btnSecondary, btnDanger, label, input } from "@/components/admin/ui";
 
 type Member = {
     id: string;
@@ -103,15 +104,15 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
     return (
         <div className="w-full max-w-6xl mx-auto space-y-8">
             {/* Search Bar */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Finn medlem</label>
+            <div className={`${card} p-6`}>
+                <label className={label}>Finn medlem</label>
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10">search</span>
                         <input
                             type="text"
                             placeholder="Søk etter navn, e-post..."
-                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-medium"
+                            className={`${input} pl-11`}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -119,7 +120,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                     {search && (
                         <button
                             onClick={() => { setSearch(""); setFilteredMembers([]); setSelectedMember(null); }}
-                            className="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                            className={`${btnSecondary} h-11`}
                         >
                             Nullstill
                         </button>
@@ -133,17 +134,17 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                             <button
                                 key={member.id}
                                 onClick={() => setSelectedMember(member)}
-                                className="flex items-center gap-3 p-3 text-left bg-white border border-gray-100 hover:border-indigo-500 hover:shadow-md rounded-xl transition-all group"
+                                className="flex items-center gap-3 p-3 text-left bg-white border border-border-color hover:border-primary/50 hover:shadow-sm rounded-xl transition-all group"
                             >
                                 <Avatar
                                     src={member.avatarUrl}
                                     initials={`${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`}
                                     alt={member.firstName || member.email}
-                                    className="w-10 h-10 text-gray-600 font-bold bg-gray-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors"
+                                    className="w-10 h-10 text-gray-600 font-bold bg-cream group-hover:bg-primary/10 group-hover:text-primary transition-colors"
                                     size="sm"
                                 />
                                 <div>
-                                    <p className="font-bold text-gray-900 leading-tight">{member.firstName} {member.lastName}</p>
+                                    <p className="font-semibold text-gray-900 leading-tight">{member.firstName} {member.lastName}</p>
                                     <p className="text-xs text-gray-500">{member.email}</p>
                                 </div>
                             </button>
@@ -161,9 +162,9 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
 
                     {/* LEFT COL: User Details */}
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm relative overflow-hidden">
+                        <div className={`${card} p-8 relative overflow-hidden`}>
                             <div className="flex justify-between items-start mb-6">
-                                <h2 className="text-lg font-bold text-gray-900">Valgt Bruker</h2>
+                                <h2 className="text-xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>Valgt Bruker</h2>
                                 <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full uppercase tracking-wide">
                                     Aktiv Status
                                 </span>
@@ -175,31 +176,31 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                     src={selectedMember.avatarUrl}
                                     initials={`${selectedMember.firstName?.[0] || ""}${selectedMember.lastName?.[0] || ""}`}
                                     alt={selectedMember.firstName || selectedMember.email}
-                                    className="w-32 h-32 rounded-2xl text-3xl font-bold text-indigo-600 bg-indigo-50 border-4 border-white shadow-xl shrink-0"
+                                    className="w-32 h-32 rounded-2xl text-3xl font-bold text-primary bg-primary/10 border-4 border-white shadow-md shrink-0"
                                     size="lg"
                                 />
 
                                 <div className="flex-1 w-full text-center md:text-left">
-                                    <h3 className="text-3xl font-bold text-gray-900">{selectedMember.firstName} {selectedMember.lastName}</h3>
+                                    <h3 className="text-3xl font-normal text-gray-900" style={{ fontFamily: SERIF }}>{selectedMember.firstName} {selectedMember.lastName}</h3>
                                     <p className="text-gray-500 font-mono text-sm mt-1">Medlemsnummer: #{selectedMember.clerkId?.slice(-6).toUpperCase() ?? "N/A"}</p>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 text-left">
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">E-post</p>
+                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-1">E-post</p>
                                             <p className="font-medium text-gray-900">{selectedMember.email}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Medlem siden</p>
+                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-1">Medlem siden</p>
                                             <p className="font-medium text-gray-900">
                                                 {new Date(selectedMember.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Rolle</p>
+                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-1">Rolle</p>
                                             <p className="font-medium text-gray-900 capitalize">{selectedMember.role.toLowerCase()}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Telefon</p>
+                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-1">Telefon</p>
                                             <p className="font-medium text-gray-900">{selectedMember.phoneNumber || "Ikke registrert"}</p>
                                         </div>
                                     </div>
@@ -207,27 +208,27 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8">
-                            <h4 className="font-bold text-gray-900 mb-4">Oversikt</h4>
+                        <div className="bg-cream/40 border border-border-color rounded-2xl p-8">
+                            <h4 className="text-lg font-normal text-gray-900 mb-4" style={{ fontFamily: SERIF }}>Oversikt</h4>
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                                <div className={`${card} flex items-center justify-between p-3`}>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                                             <span className="material-symbols-outlined text-sm">event_available</span>
                                         </div>
                                         <span className="text-sm font-medium text-gray-600">Påmeldte arrangementer</span>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900">{selectedMember._count?.eventsAttending || 0}</span>
+                                    <span className="text-lg font-normal text-gray-900 tabular-nums" style={{ fontFamily: SERIF }}>{selectedMember._count?.eventsAttending || 0}</span>
                                 </div>
 
-                                <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                                <div className={`${card} flex items-center justify-between p-3`}>
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                                             <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
                                         </div>
                                         <span className="text-sm font-medium text-gray-600">Nåværende saldo</span>
                                     </div>
-                                    <span className={`text-lg font-bold ${Number(selectedMember.balance) < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                                    <span className={`text-lg font-normal tabular-nums ${Number(selectedMember.balance) < 0 ? 'text-red-600' : 'text-emerald-700'}`} style={{ fontFamily: SERIF }}>
                                         {new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK" }).format(Number(selectedMember.balance) || 0)}
                                     </span>
                                 </div>
@@ -275,10 +276,10 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                 <button
                                     onClick={handleDelete}
                                     disabled={!confirmationChecked || isPending}
-                                    className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className={`${btnDanger} w-full h-11`}
                                 >
                                     {isPending ? (
-                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></span>
+                                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/40 border-t-white"></span>
                                     ) : (
                                         <span className="material-symbols-outlined text-lg">delete_forever</span>
                                     )}
@@ -287,7 +288,7 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
 
                                 <button
                                     onClick={() => setSelectedMember(null)}
-                                    className="w-full py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                                    className={`${btnSecondary} w-full h-11`}
                                 >
                                     Avbryt handling
                                 </button>

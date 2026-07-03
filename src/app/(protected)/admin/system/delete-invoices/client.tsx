@@ -6,6 +6,7 @@ import { RequestStatus } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { SERIF, card, btnDanger, label, input } from "@/components/admin/ui";
 
 
 // Simple debounce implementation if hook missing
@@ -127,8 +128,10 @@ export default function InvoiceDeleteClient({ members }: Props) {
 
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Slett Fakturaer</h1>
-                <p className="text-gray-500 text-sm">Søk og filtrer for å finne fakturaer du vil slette i bulk.</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">System</p>
+                <h1 className="text-3xl sm:text-4xl font-normal text-gray-900 leading-none" style={{ fontFamily: SERIF }}>Slett Fakturaer</h1>
+                <p className="text-text-secondary text-sm mt-3">Søk og filtrer for å finne fakturaer du vil slette i bulk.</p>
+                <div className="h-px bg-gray-300 mt-5" />
             </div>
 
             <ActionInfo
@@ -143,23 +146,23 @@ export default function InvoiceDeleteClient({ members }: Props) {
             />
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4">
+            <div className={`${card} p-4 flex flex-col md:flex-row gap-4`}>
                 <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Søk</label>
+                    <label className={label}>Søk</label>
                     <input
                         type="text"
                         placeholder="Tittel, beskrivelse eller navn..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className={input}
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Status</label>
+                    <label className={label}>Status</label>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
-                        className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                        className={`${input} md:w-40`}
                     >
                         <option value="ALL">Alle</option>
                         <option value="PENDING">Ubetalt</option>
@@ -168,11 +171,11 @@ export default function InvoiceDeleteClient({ members }: Props) {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Medlem</label>
+                    <label className={label}>Medlem</label>
                     <select
                         value={memberFilter}
                         onChange={(e) => setMemberFilter(e.target.value)}
-                        className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                        className={`${input} md:w-48`}
                     >
                         <option value="ALL">Alle medlemmer</option>
                         {members.map(m => (
@@ -184,14 +187,14 @@ export default function InvoiceDeleteClient({ members }: Props) {
 
             {/* Actions Bar */}
             {selectedIds.length > 0 && (
-                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex justify-between items-center animate-in fade-in slide-in-from-top-2">
-                    <span className="text-indigo-900 font-medium text-sm">
+                <div className="bg-cream border border-border-color p-4 rounded-xl flex justify-between items-center animate-in fade-in slide-in-from-top-2">
+                    <span className="text-text-secondary font-medium text-sm">
                         {selectedIds.length} fakturaer valgt
                     </span>
                     <button
                         onClick={handleDeleteSelected}
                         disabled={deleting}
-                        className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition flex items-center gap-2"
+                        className={btnDanger}
                     >
                         {deleting ? 'Sletter...' : 'Slett valgte'}
                         <span className="material-symbols-outlined text-sm">delete</span>
@@ -200,17 +203,17 @@ export default function InvoiceDeleteClient({ members }: Props) {
             )}
 
             {/* Table */}
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className={`${card} overflow-hidden`}>
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-widest text-left">
+                        <thead className="bg-[#faf8f3] text-[11px] font-bold text-gray-400 uppercase tracking-wider text-left">
                             <tr>
                                 <th className="px-6 py-4 w-10">
                                     <input
                                         type="checkbox"
                                         onChange={handleSelectAll}
                                         checked={invoices.length > 0 && selectedIds.length === invoices.filter(i => i.status !== 'PAID').length && invoices.some(i => i.status !== 'PAID')}
-                                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                        className="w-4 h-4 rounded text-primary focus:ring-primary/30 border-gray-300"
                                     />
                                 </th>
                                 <th className="px-6 py-4">Faktura</th>
@@ -220,29 +223,29 @@ export default function InvoiceDeleteClient({ members }: Props) {
                                 <th className="px-6 py-4 text-right">Opprettet</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-border-color">
                             {loading ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center">
-                                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#4F46E5]/25 border-t-[#4F46E5]"></div>
+                                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary/30 border-t-primary"></div>
                                     </td>
                                 </tr>
                             ) : invoices.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic" style={{ fontFamily: SERIF }}>
                                         Ingen fakturaer funnet.
                                     </td>
                                 </tr>
                             ) : (
                                 invoices.map((inv) => (
-                                    <tr key={inv.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(inv.id) ? 'bg-indigo-50/30' : ''}`}>
+                                    <tr key={inv.id} className={`hover:bg-black/[0.02] transition-colors ${selectedIds.includes(inv.id) ? 'bg-cream/50' : ''}`}>
                                         <td className="px-6 py-4">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedIds.includes(inv.id)}
                                                 onChange={() => handleSelectOne(inv.id)}
                                                 disabled={inv.status === 'PAID'}
-                                                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 disabled:opacity-50"
+                                                className="w-4 h-4 rounded text-primary focus:ring-primary/30 border-gray-300 disabled:opacity-50"
                                             />
                                         </td>
                                         <td className="px-6 py-4">
@@ -252,7 +255,7 @@ export default function InvoiceDeleteClient({ members }: Props) {
                                         <td className="px-6 py-4 text-sm text-gray-900">
                                             {inv.member.firstName} {inv.member.lastName}
                                         </td>
-                                        <td className="px-6 py-4 font-mono text-sm text-gray-600">
+                                        <td className="px-6 py-4 font-mono text-sm text-gray-600 tabular-nums">
                                             {formatNok(Number(inv.amount))} kr
                                         </td>
                                         <td className="px-6 py-4">
@@ -264,7 +267,7 @@ export default function InvoiceDeleteClient({ members }: Props) {
                                                 {inv.status === 'PAID' ? 'Betalt' : inv.status === 'WAIVED' ? 'Ettergitt' : inv.status === 'PAUSED' ? 'Pauset' : 'Ubetalt'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right text-sm text-gray-500">
+                                        <td className="px-6 py-4 text-right text-sm text-gray-500 tabular-nums">
                                             {new Date(inv.createdAt).toLocaleDateString()}
                                         </td>
                                     </tr>

@@ -12,7 +12,7 @@ export function LoadingState({
     return (
         <div className={`flex items-center justify-center ${className}`}>
             <div className="flex flex-col items-center gap-3 text-center">
-                <div className={`animate-spin rounded-full border-2 border-[#4F46E5]/25 border-t-[#4F46E5] ${spinnerSizeClassName}`} />
+                <div className={`animate-spin rounded-full border-2 border-primary/30 border-t-primary ${spinnerSizeClassName}`} />
                 <p className="text-xs font-semibold tracking-wide uppercase text-gray-500">{label}</p>
             </div>
         </div>

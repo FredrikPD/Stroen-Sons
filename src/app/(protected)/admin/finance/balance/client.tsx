@@ -28,6 +28,7 @@ type MemberBalance = {
 import { sendBulkPaymentReminders, sendPaymentReminder } from "@/server/actions/emails";
 import { PremiumModal } from "@/components/ui/PremiumModal";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { AdminPageHeader, SERIF, input as inputClass } from "@/components/admin/ui";
 
 export default function MemberBalancePage() {
     const [members, setMembers] = useState<MemberBalance[]>([]);
@@ -191,46 +192,45 @@ export default function MemberBalancePage() {
     }
 
     return (
-        <div className="space-y-6 min-w-0">
+        <div className="min-w-0">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Saldo og Historikk</h1>
-                    <p className="text-gray-500 text-sm max-w-3xl">
-                        Oversikt over medlemmenes betalingskrav og historikk.
-                    </p>
-                </div>
-                <button
-                    onClick={handleBulkReminder}
-                    disabled={emailSending}
-                    className="flex items-center gap-3 bg-orange-50 text-orange-900 hover:bg-orange-100 pl-4 pr-6 py-3 rounded-xl transition-all shadow-sm border border-orange-200 disabled:opacity-50 group text-left"
-                >
-                    <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600 group-hover:bg-white group-hover:shadow-sm transition-all">
-                        <span className="material-symbols-outlined text-xl">mark_email_unread</span>
-                    </div>
-                    <div className="max-w-[200px]">
-                        <span className="block font-bold text-sm">Send E-post Varsel</span>
-                        <span className="block text-xs text-orange-800/70 font-normal leading-snug">Sender e-post påminnelse til alle medlemmer med ubetalte krav.</span>
-                    </div>
-                </button>
-            </div>
+            <AdminPageHeader
+                eyebrow="Økonomi"
+                title="Saldo og Historikk"
+                description="Oversikt over medlemmenes betalingskrav og historikk."
+                actions={
+                    <button
+                        onClick={handleBulkReminder}
+                        disabled={emailSending}
+                        className="flex items-center gap-3 bg-primary/10 text-gray-900 hover:border-primary/50 pl-4 pr-5 py-3 rounded-xl transition-all border border-primary/20 disabled:opacity-50 group text-left"
+                    >
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary group-hover:bg-[#0f0e0c] group-hover:text-white transition-all">
+                            <span className="material-symbols-outlined text-xl">mark_email_unread</span>
+                        </div>
+                        <div className="max-w-[200px]">
+                            <span className="block font-bold text-sm">Send E-post Varsel</span>
+                            <span className="block text-xs text-text-secondary font-normal leading-snug">Sender e-post påminnelse til alle medlemmer med ubetalte krav.</span>
+                        </div>
+                    </button>
+                }
+            />
 
             {/* Search */}
-            <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined">search</span>
+            <div className="relative mb-6">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined z-10">search</span>
                 <input
                     type="text"
                     placeholder="Søk etter navn eller e-post..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className={`${inputClass} h-12 pl-12`}
                 />
             </div>
 
             {/* Members List */}
             <div className="space-y-4 min-w-0">
                 {filteredMembers.map((member) => (
-                    <div key={member.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md min-w-0">
+                    <div key={member.id} className="bg-white border border-border-color rounded-2xl overflow-hidden transition-all duration-200 hover:border-gray-300 hover:shadow-sm min-w-0">
                         {/* Member Row Header */}
                         <div
                             onClick={() => setExpandedMemberId(expandedMemberId === member.id ? null : member.id)}
@@ -246,7 +246,7 @@ export default function MemberBalancePage() {
                                         size="sm"
                                     />
                                     <div className="min-w-0">
-                                        <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{member.name}</h3>
+                                        <h3 className="text-lg font-normal text-gray-900 group-hover:text-primary transition-colors truncate" style={{ fontFamily: SERIF }}>{member.name}</h3>
                                         <p className="text-xs sm:text-sm text-gray-500 truncate">{member.email}</p>
                                     </div>
                                 </div>
@@ -256,15 +256,15 @@ export default function MemberBalancePage() {
                             </div>
 
                             <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end sm:gap-8">
-                                <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:min-w-[90px]">
+                                <div className="rounded-lg border border-border-color bg-cream px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:min-w-[90px]">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo</p>
-                                    <p className={`font-bold ${member.balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    <p className={`font-bold tabular-nums ${member.balance >= 0 ? 'text-emerald-600' : 'text-red-500'}`} style={{ fontFamily: SERIF }}>
                                         {formatCurrency(member.balance)}
                                     </p>
                                 </div>
-                                <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:min-w-[90px]">
+                                <div className="rounded-lg border border-border-color bg-cream px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right sm:min-w-[90px]">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ubetalte</p>
-                                    <p className={`font-bold ${member.unpaidCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                    <p className={`font-bold tabular-nums ${member.unpaidCount > 0 ? 'text-amber-600' : 'text-emerald-600'}`} style={{ fontFamily: SERIF }}>
                                         {member.unpaidCount}
                                     </p>
                                 </div>
@@ -273,16 +273,16 @@ export default function MemberBalancePage() {
 
                         {/* Expanded Details - Payment History */}
                         {expandedMemberId === member.id && (
-                            <div className="border-t border-gray-100 bg-gray-50/50 p-4 sm:p-6 animate-in slide-in-from-top-2 duration-200">
-                                <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-gray-400 text-lg">history</span>
+                            <div className="border-t border-border-color bg-[#faf8f3] p-4 sm:p-6 animate-in slide-in-from-top-2 duration-200">
+                                <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider">
+                                    <span className="material-symbols-outlined text-primary text-lg">history</span>
                                     Betalingshistorikk
                                 </h4>
 
                                 {member.requests && member.requests.length > 0 ? (
                                     <div className="grid gap-2">
                                         {member.requests.map((req) => (
-                                            <div key={req.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-white border border-gray-200 rounded-lg min-w-0">
+                                            <div key={req.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-white border border-border-color rounded-lg min-w-0">
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     <div className={`w-1 h-12 rounded-full ${req.status === 'PAID' ? 'bg-emerald-500' : (req.status === 'WAIVED' ? 'bg-gray-400' : 'bg-amber-400')}`}></div>
                                                     <div className="min-w-0">
@@ -292,17 +292,17 @@ export default function MemberBalancePage() {
                                                 </div>
 
                                                 <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-6 w-full sm:w-auto min-w-0">
-                                                    <div className="col-span-1 rounded-md bg-gray-50 px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 flex items-center justify-between gap-3 sm:block sm:text-right min-w-0">
+                                                    <div className="col-span-1 rounded-md bg-cream px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 flex items-center justify-between gap-3 sm:block sm:text-right min-w-0">
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Beløp</p>
-                                                        <p className="text-sm font-medium text-gray-900 truncate">{formatCurrency(req.amount)}</p>
+                                                        <p className="text-sm font-medium text-gray-900 tabular-nums truncate">{formatCurrency(req.amount)}</p>
                                                     </div>
 
-                                                    <div className="col-span-1 rounded-md bg-gray-50 px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 flex items-center justify-between gap-3 sm:block sm:text-right min-w-0 sm:min-w-[100px]">
+                                                    <div className="col-span-1 rounded-md bg-cream px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 flex items-center justify-between gap-3 sm:block sm:text-right min-w-0 sm:min-w-[100px]">
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Forfall</p>
                                                         <p className="text-sm text-gray-500 truncate">{formatDate(req.dueDate)}</p>
                                                     </div>
 
-                                                    <div className="col-span-2 rounded-md bg-gray-50 px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 text-left sm:text-right sm:min-w-[120px] flex items-center justify-between sm:justify-end gap-3 min-w-0">
+                                                    <div className="col-span-2 rounded-md bg-cream px-2.5 py-2 sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 text-left sm:text-right sm:min-w-[120px] flex items-center justify-between sm:justify-end gap-3 min-w-0">
                                                         <div className="min-w-0">
                                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
                                                             {req.status === 'PAID' ? (
@@ -327,7 +327,7 @@ export default function MemberBalancePage() {
                                                             <button
                                                                 onClick={(e) => handleSingleReminder(member.id, req.id, e)}
                                                                 disabled={emailSending}
-                                                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors border border-indigo-200 shrink-0"
+                                                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors border border-primary/20 shrink-0"
                                                                 title="Send påminnelse på e-post"
                                                             >
                                                                 <span className="material-symbols-outlined text-lg">forward_to_inbox</span>
@@ -339,7 +339,7 @@ export default function MemberBalancePage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-8 text-gray-500 text-sm bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
+                                    <div className="text-center py-8 text-gray-400 text-sm italic rounded-xl border border-dashed border-border-color" style={{ fontFamily: SERIF }}>
                                         Ingen betalingskrav funnet for dette medlemmet.
                                     </div>
                                 )}
@@ -349,11 +349,11 @@ export default function MemberBalancePage() {
                 ))}
 
                 {filteredMembers.length === 0 && (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <div className="text-center py-12 bg-white rounded-2xl border border-border-color">
+                        <div className="w-16 h-16 bg-cream rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                             <span className="material-symbols-outlined text-3xl">search_off</span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">Ingen medlemmer funnet</h3>
+                        <h3 className="text-lg font-normal text-gray-900 mb-1" style={{ fontFamily: SERIF }}>Ingen medlemmer funnet</h3>
                         <p className="text-gray-500 text-sm">Prøv et annet søkeord.</p>
                     </div>
                 )}

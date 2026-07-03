@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { updateSystemSetting } from "@/server/actions/settings";
 import { useModal } from "@/components/providers/ModalContext";
 import { ActionInfo } from "@/components/ui/ActionInfo";
+import { AdminPageHeader, card, input, btnPrimary } from "@/components/admin/ui";
 
 interface Props {
     initialMaxSize: number;
@@ -43,14 +44,13 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Bildeinnstillinger</h1>
-                    <p className="text-gray-500 text-sm">Administrer begrensninger for bildeopplasting.</p>
-                </div>
-            </div>
+            <AdminPageHeader
+                eyebrow="Systemverktøy"
+                title="Bildeinnstillinger"
+                description="Administrer begrensninger for bildeopplasting."
+            />
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6 max-w-2xl">
+            <div className={`${card} p-6 space-y-6 max-w-2xl`}>
 
                 <ActionInfo variant="info">
                     Når du lagrer, oppdateres grensene for alle medlemmer med én gang. Det gjelder kun nye opplastinger – bilder som allerede er lastet opp, påvirkes ikke. Du kan når som helst endre verdiene tilbake.
@@ -72,9 +72,9 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
                             step="1"
                             value={maxSize}
                             onChange={(e) => setMaxSize(parseInt(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
                         />
-                        <span className="font-mono font-bold text-lg w-16 text-right">{maxSize} MB</span>
+                        <span className="font-mono font-bold text-lg w-16 text-right tabular-nums">{maxSize} MB</span>
                     </div>
                     <div className="flex justify-between text-xs text-gray-400 mt-1 px-1">
                         <span>1 MB</span>
@@ -83,7 +83,7 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
                     </div>
                 </div>
 
-                <hr className="border-gray-100" />
+                <hr className="border-border-color" />
 
                 {/* Max File Count */}
                 <div>
@@ -99,7 +99,7 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
                         max="100"
                         value={maxFiles}
                         onChange={(e) => setMaxFiles(parseInt(e.target.value))}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className={`${input} tabular-nums`}
                     />
                 </div>
 
@@ -107,9 +107,9 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
                     <button
                         onClick={handleSave}
                         disabled={isPending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                        className={btnPrimary}
                     >
-                        {isPending && <span className="w-4 h-4 border-2 border-[#4F46E5]/25 border-t-[#4F46E5] rounded-full animate-spin" />}
+                        {isPending && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                         {isPending ? "Lagrer..." : "Lagre endringer"}
                     </button>
                 </div>
