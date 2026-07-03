@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useRef, useEffect } from "react";
 import { inviteMember } from "@/server/actions/invite-member";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 export default function InviteMemberForm({ availableRoles }: { availableRoles: { id: string, name: string }[] }) {
     const [state, formAction, isPending] = useActionState(inviteMember, {});
@@ -47,6 +48,10 @@ export default function InviteMemberForm({ availableRoles }: { availableRoles: {
                         <h1 className="text-3xl font-bold text-gray-900">Inviter Nytt Medlem</h1>
                         <p className="text-gray-500 mt-2">Opprett tilgang og send invitasjon.</p>
                     </div>
+
+                    <ActionInfo variant="info" icon="mail" title="Hva skjer når du sender invitasjonen?">
+                        Personen får en e-post fra oss med en lenke for å opprette bruker. Medlemmet blir samtidig lagt inn med status «ventende» og får rollen og medlemskapstypen du velger her – velger du Admin, får personen full admin-tilgang så snart invitasjonen godtas. Ingen faktura opprettes nå; kontingent kommer først når medlemmet er aktivt.
+                    </ActionInfo>
 
                     <form ref={formRef} action={formAction} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">

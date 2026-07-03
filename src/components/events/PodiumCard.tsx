@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/Avatar";
+import { ActionInfo } from "@/components/ui/ActionInfo";
+import { useModal } from "@/components/providers/ModalContext";
 import { upsertEventPodium, deleteEventPodium } from "@/server/actions/event-podium";
 import type { EventPodiumInput } from "@/lib/validators/event-podium";
 
@@ -251,6 +253,7 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
         return emptyEntries();
     });
     const [saving, setSaving] = useState(false);
+    const { openConfirm } = useModal();
 
     const updateEntry = (place: number, updates: Partial<PodiumEntry>) => {
         setEntries((prev) =>
@@ -298,6 +301,17 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
 
     const handleDelete = async () => {
         if (!recapId) return;
+
+        const confirmed = await openConfirm({
+            title: "Slett podium",
+            message: "Sletter podiet og alle plasseringene for godt. Dette kan ikke angres, og resultatet forsvinner fra arrangementssiden og scoreboardet.",
+            type: "error",
+            confirmText: "Slett",
+            cancelText: "Avbryt",
+        });
+
+        if (!confirmed) return;
+
         setSaving(true);
         try {
             const result = await deleteEventPodium(recapId);
@@ -344,6 +358,10 @@ export function PodiumCard({ recapId, members, existingPodium }: PodiumCardProps
                     </button>
                 </div>
             </div>
+
+            <ActionInfo variant="info" compact className="mt-0">
+                Lagrer podiet for dette arrangementet. Et eksisterende podium blir erstattet i sin helhet. Resultatet vises på arrangementssiden og på scoreboardet. Du må lagre etterrapporten før du kan lagre podium.
+            </ActionInfo>
 
             {/* Type toggle */}
             <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-1 w-fit">

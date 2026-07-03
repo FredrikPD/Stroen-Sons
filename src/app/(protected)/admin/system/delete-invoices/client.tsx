@@ -5,6 +5,7 @@ import { getInvoices, deleteMultipleInvoices } from "@/server/actions/invoices";
 import { RequestStatus } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 
 // Simple debounce implementation if hook missing
@@ -129,6 +130,17 @@ export default function InvoiceDeleteClient({ members }: Props) {
                 <h1 className="text-2xl font-bold text-gray-900">Slett Fakturaer</h1>
                 <p className="text-gray-500 text-sm">Søk og filtrer for å finne fakturaer du vil slette i bulk.</p>
             </div>
+
+            <ActionInfo
+                variant="danger"
+                title="Hva skjer når du sletter?"
+                items={[
+                    "Sletting er permanent og kan ikke angres.",
+                    "Fakturaene forsvinner fra medlemmenes oversikt, men det sendes ingen varsling til dem.",
+                    "Betalte fakturaer kan ikke slettes her - slett den registrerte betalingen først.",
+                    "Ingen penger flyttes: å slette en ubetalt faktura fjerner bare kravet, og medlemmets saldo endres ikke.",
+                ]}
+            />
 
             {/* Filters */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4">

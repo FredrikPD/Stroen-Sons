@@ -12,6 +12,7 @@ import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
 import { Toggle } from "@/components/ui/Toggle";
 import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 const parseAmount = (value: string) => {
     const parsed = Number.parseFloat(value.replace(",", "."));
@@ -163,8 +164,8 @@ export default function InvoiceDetailPage() {
         const confirmed = await openConfirm({
             title: markAsPaid ? "Registrer alle som betalt" : "Registrer alle som ubetalt",
             message: markAsPaid
-                ? `Mark ${matchingCount} invoices as paid in this group?`
-                : `Unmark ${matchingCount} paid invoices in this group?`,
+                ? `Registrere ${matchingCount} ubetalte krav i gruppen som betalt?\n- Hvert medlem får en transaksjon og saldoen øker med beløpet.\n- De får varsel om innbetalingen (også push).\n- Allerede betalte røres ikke.`
+                : `Angre betalingen for ${matchingCount} betalte krav i gruppen?\n- Transaksjonen slettes og medlemmets saldo settes tilbake.\n- Medlemmene får ikke varsel om dette.`,
             type: "warning",
             confirmText: markAsPaid ? "Registrer alle som betalt" : "Registrer alle som ubetalt",
             cancelText: "Avbryt"
@@ -241,6 +242,18 @@ export default function InvoiceDetailPage() {
                             <span className="material-symbols-outlined">close</span>
                         </button>
                     </div>
+
+                    <ActionInfo
+                        variant="warning"
+                        title="Hva skjer når du lagrer?"
+                        className="mb-4"
+                        items={[
+                            "Endringer i beskrivelse, beløp og forfall gjelder alle i gruppen.",
+                            "Legger du til nye mottakere, får de et nytt krav og varsel (også push).",
+                            "Fjerner du en ubetalt mottaker, slettes kravet deres.",
+                            "Har noen av de fjernede allerede betalt, blir hele lagringen stoppet.",
+                        ]}
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -452,6 +465,14 @@ export default function InvoiceDetailPage() {
                                         {updatingId === "group_unmark_all_paid" ? "Oppdaterer..." : "Registrer alle som ubetalt"}
                                     </button>
                                 </div>
+                                <div className="max-w-xl">
+                                    <ActionInfo variant="warning" compact>
+                                        Registrer alle som betalt: hvert ubetalt medlem får en transaksjon, saldoen øker med beløpet, og de får varsel om innbetalingen (også push). Allerede betalte røres ikke.
+                                    </ActionInfo>
+                                    <ActionInfo variant="warning" compact>
+                                        Registrer alle som ubetalt: angrer betalingen for alle betalte i gruppen — transaksjonen slettes og medlemmets saldo settes tilbake. Medlemmene får ikke varsel om dette.
+                                    </ActionInfo>
+                                </div>
                             </div>
 
                             {/* Status Sidebar */}
@@ -487,6 +508,10 @@ export default function InvoiceDetailPage() {
                     </div>
                 </div>
             )}
+
+            <ActionInfo variant="warning">
+                Slår du på Betalt for et medlem, opprettes en transaksjon, medlemmets saldo øker og medlemmet får varsel (også push). Slår du den av igjen, slettes transaksjonen og saldoen settes tilbake — uten varsel.
+            </ActionInfo>
 
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">

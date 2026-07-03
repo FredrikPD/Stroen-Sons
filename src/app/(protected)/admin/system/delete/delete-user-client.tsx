@@ -5,6 +5,7 @@ import { deleteMember } from "@/server/actions/delete-member";
 import { Role } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { Avatar } from "@/components/Avatar";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 type Member = {
     id: string;
@@ -242,24 +243,21 @@ export default function DeleteUserClient({ initialMembers }: { initialMembers: M
                                 <span className="font-bold uppercase tracking-wider text-sm">Danger Zone</span>
                             </div>
 
-                            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                                Å slette denne brukeren vil fjerne all personlig informasjon fra databasen.
-                            </p>
-
-                            <h5 className="font-bold text-gray-900 text-sm mb-3">Hva skjer med dataene?</h5>
-                            <ul className="space-y-3 mb-8">
-                                {[
-                                    "Innloggings-tilgang fjernes umiddelbart.",
-                                    "Personlig data (e-post, telefon, adresse) anonymiseres.",
-                                    "Saldo blir trukket fra klubbkontoen.",
-                                    "Navnet beholdes i historikk (regnskap, resultater, arrangementer)."
-                                ].map((item, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                            <ActionInfo
+                                variant="danger"
+                                title="Hva skjer med dataene?"
+                                className="mb-8"
+                                items={[
+                                    "Innloggingen fjernes fra Clerk, og medlemmet kan ikke logge inn igjen.",
+                                    "Personlig data (e-post, telefon, adresse) anonymiseres. Navnet beholdes i regnskap, resultater og arrangementer.",
+                                    "Hele faktura- og betalingshistorikken til medlemmet slettes permanent (ikke bare anonymisert).",
+                                    "Har medlemmet positiv saldo, betales den ut og trekkes fra klubbkontoen. Skylder medlemmet penger (negativ saldo), avskrives gjelden.",
+                                    "Månedskontingent settes på pause, så det lages ingen nye fakturaer.",
+                                    "Ingen varsling sendes til medlemmet.",
+                                ]}
+                            >
+                                <p className="font-bold text-red-900">Dette kan ikke angres.</p>
+                            </ActionInfo>
 
                             <div className="mt-auto space-y-4">
                                 <label className="flex items-start gap-3 p-3 bg-white border border-red-100 rounded-xl cursor-pointer hover:border-red-300 transition-colors">

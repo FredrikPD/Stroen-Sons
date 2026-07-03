@@ -37,7 +37,7 @@ export default function RolesClientPage() {
     const handleDelete = async (id: string, name: string) => {
         const confirmed = await openConfirm({
             title: "Slett Rolle",
-            message: `Er du sikker på at du vil slette rollen "${name}"?`,
+            message: `Er du sikker på at du vil slette rollen "${name}"?\n\nSletter rollen permanent - dette kan ikke angres. Du kan bare slette egendefinerte roller som ikke har noen medlemmer; systemroller og roller i bruk kan ikke slettes. Ingen medlemmer eller varsler påvirkes.`,
             type: "warning",
             confirmText: "Slett"
         });

@@ -17,7 +17,7 @@ export function DeleteEventButton({ id, title }: DeleteEventButtonProps) {
     const handleDelete = async () => {
         const confirmed = await openConfirm({
             title: "Slett arrangement",
-            message: `Er du sikker på at du vil slette "${title}"? Dette kan ikke angres.`,
+            message: `Er du sikker på at du vil slette "${title}"? Sletting er permanent og kan ikke angres.\n\nDette skjer:\n- Program, etterrapport og bilder slettes sammen med arrangementet\n- Alle påmeldinger fjernes\n- Fakturaer og transaksjoner beholdes, men mister koblingen til arrangementet – ingen beløp endres og ingen varsler sendes`,
             type: "error",
             confirmText: "Slett",
             cancelText: "Avbryt"

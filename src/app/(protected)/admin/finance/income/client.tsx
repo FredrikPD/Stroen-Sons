@@ -11,6 +11,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { CreateInvoiceModal } from "@/components/admin/finance/CreateInvoiceModal";
 import { InvoiceStatusModal, InvoiceStatusTarget } from "@/components/admin/finance/InvoiceStatusModal";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 // Status chip metadata for the interactive monthly-fee cells.
 const STATUS_META: Record<RequestStatus, { label: string; chip: string; icon: string }> = {
@@ -140,9 +141,9 @@ export default function IncomePage() {
 
     const handleDeleteFees = async () => {
         const confirmed = await openConfirm({
-            title: "Slett alle krav",
-            message: `ER DU SIKKER? Dette vil slette ALLE ubetalte krav for ${getMonthName(selectedMonth - 1)} ${selectedYear}.`,
-            type: "warning",
+            title: "Slett alle genererte krav",
+            message: `Sletter alle krav for ${getMonthName(selectedMonth - 1)} ${selectedYear} permanent – kan ikke angres.\n\nFungerer bare hvis ingen har betalt ennå; er ett krav betalt, må du først registrere det som ubetalt.\n\nBruk dette hvis du genererte kravene ved en feil.`,
+            type: "error",
             confirmText: "Slett",
             cancelText: "Avbryt"
         });
@@ -180,8 +181,8 @@ export default function IncomePage() {
     const handleDeleteSingle = async (requestId: string, memberName: string) => {
         const confirmed = await openConfirm({
             title: "Slett enkeltkrav",
-            message: `Vil du slette kravet for ${memberName}?`,
-            type: "warning",
+            message: `Sletter dette ene kravet for ${memberName} permanent – kan ikke angres.\n\nBetalte krav kan ikke slettes – sett dem til ubetalt først.`,
+            type: "error",
             confirmText: "Slett",
             cancelText: "Avbryt"
         });
@@ -221,7 +222,7 @@ export default function IncomePage() {
 
         const confirmed = await openConfirm({
             title: "Registrer alle som betalt",
-            message: `Er du sikker på at du vil registrere ALLE gjenværende krav for ${getMonthName(selectedMonth - 1)} ${selectedYear} som betalt? Dette vil generere transaksjoner for alle.`,
+            message: `Markerer alle ubetalte krav for ${getMonthName(selectedMonth - 1)} ${selectedYear} som betalt på én gang.\n\n- Det øker saldoen til hvert medlem\n- Medlemmene får varsel (app + push) om innbetalingen\n\nBruk bare når du faktisk har mottatt pengene.`,
             type: "warning",
             confirmText: "Registrer alle",
             cancelText: "Avbryt"
@@ -262,7 +263,7 @@ export default function IncomePage() {
 
         const confirmed = await openConfirm({
             title: "Registrer alle som ubetalt",
-            message: `Er du sikker på at du vil registrere ALLE betalte krav for ${getMonthName(selectedMonth - 1)} ${selectedYear} som ubetalt? Dette vil fjerne registrerte transaksjoner for perioden.`,
+            message: `Angrer betaling for alle betalte krav for ${getMonthName(selectedMonth - 1)} ${selectedYear}.\n\n- Transaksjonene slettes\n- Saldoen til hvert medlem reduseres tilsvarende\n- Medlemmene får ikke varsel om dette`,
             type: "warning",
             confirmText: "Registrer alle",
             cancelText: "Avbryt"
@@ -443,18 +444,23 @@ export default function IncomePage() {
 
                             {/* Logic for Generation Button */}
                             {stats && stats.totalCount === 0 ? (
-                                <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 flex items-center justify-between">
-                                    <div className="text-sm text-yellow-800">
-                                        Ingen krav generert for denne måneden.
+                                <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-yellow-800">
+                                            Ingen krav generert for denne måneden.
+                                        </div>
+                                        <button
+                                            onClick={handleGenerateFees}
+                                            disabled={generating}
+                                            className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                                        >
+                                            {generating ? 'Genererer...' : 'Generer krav'}
+                                            <span className="material-symbols-outlined text-[1.2rem]">add_card</span>
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={handleGenerateFees}
-                                        disabled={generating}
-                                        className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-                                    >
-                                        {generating ? 'Genererer...' : 'Generer krav'}
-                                        <span className="material-symbols-outlined text-[1.2rem]">add_card</span>
-                                    </button>
+                                    <ActionInfo variant="info" compact>
+                                        Oppretter et krav for hvert aktivt medlem denne måneden og sender dem varsel (app + push) om at fakturaen er klar. Ingen penger flyttes her – du fører betaling etterpå. Trygt å trykke flere ganger: medlemmer som allerede har krav hoppes over.
+                                    </ActionInfo>
                                 </div>
                             ) : (
                                 /* Progress Bar */
@@ -481,7 +487,8 @@ export default function IncomePage() {
 
                             {/* Delete Button (Only if requests exist) */}
                             {stats && stats.totalCount > 0 && (
-                                <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:justify-between sm:items-center">
+                                <div className="mt-4 space-y-3">
+                                <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-between sm:items-center">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <button
                                             onClick={handleMarkAllPaid}
@@ -531,6 +538,17 @@ export default function IncomePage() {
                                         Slett alle generatede krav
                                     </button>
                                 </div>
+                                <ActionInfo
+                                    variant="warning"
+                                    items={[
+                                        "Registrer alle som betalt: markerer alle ubetalte krav denne måneden som betalt på én gang. Det øker saldoen til hvert medlem og sender dem varsel (app + push) om innbetalingen. Bruk bare når du faktisk har mottatt pengene.",
+                                        "Registrer alle som ubetalt: angrer betaling for alle betalte krav denne måneden. Transaksjonene slettes og saldoen til hvert medlem reduseres tilsvarende. Medlemmene får ikke varsel om dette.",
+                                        "Slett alle genererte krav: sletter alle krav for denne måneden permanent – kan ikke angres. Fungerer bare hvis ingen har betalt ennå; er ett krav betalt, må du først registrere det som ubetalt.",
+                                    ]}
+                                >
+                                    Disse knappene gjelder alle medlemmer for valgt måned samtidig:
+                                </ActionInfo>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -545,7 +563,8 @@ export default function IncomePage() {
                     <p className="text-xs text-blue-900/80 leading-relaxed mb-4">
                         Systemet baserer seg på "Betalingskrav".
                         Du må trykke "Generer krav" hver måned for å opprette kravene.
-                        Deretter fører du hvem som har betalt.
+                        Da får hvert aktivt medlem et krav og varsel (app + push) om at fakturaen er klar – ingen penger flyttes før du fører betaling.
+                        Trygt å trykke flere ganger: medlemmer som allerede har krav hoppes over.
                     </p>
                     <p className="text-xs text-blue-900/80 leading-relaxed mb-4">
                         For å opprette enkeltkrav, trykk "Nytt enkeltkrav", velg person og antall måneder.

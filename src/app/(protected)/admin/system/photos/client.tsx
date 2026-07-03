@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateSystemSetting } from "@/server/actions/settings";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface Props {
     initialMaxSize: number;
@@ -50,6 +51,10 @@ export default function PhotoSettingsClient({ initialMaxSize, initialMaxFiles }:
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6 max-w-2xl">
+
+                <ActionInfo variant="info">
+                    Når du lagrer, oppdateres grensene for alle medlemmer med én gang. Det gjelder kun nye opplastinger – bilder som allerede er lastet opp, påvirkes ikke. Du kan når som helst endre verdiene tilbake.
+                </ActionInfo>
 
                 {/* Max File Size */}
                 <div>

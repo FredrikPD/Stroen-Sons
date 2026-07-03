@@ -286,7 +286,7 @@ export function EventRecapForm({
                             <option value="PUBLISHED">Publisert</option>
                         </select>
                         <p className="text-xs text-gray-500">
-                            Utkast vises kun for admin/moderator. Publisert vises for alle.
+                            Utkast vises kun for admin/moderator. Publisert vises for alle. Endringen trer i kraft først når du trykker &quot;Lagre endringer&quot;.
                         </p>
                     </div>
 

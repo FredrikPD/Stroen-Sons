@@ -13,6 +13,7 @@ import { useUploadThing } from "@/utils/uploadthing";
 import { deleteFile } from "@/server/actions/files";
 import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import { toast } from "sonner";
 
 type Member = {
@@ -479,7 +480,7 @@ export default function ExpensesPage() {
     const handleDeleteExpense = async (expense: ExpenseItem) => {
         const confirmed = await openConfirm({
             title: "Slett utgift",
-            message: `Vil du slette "${expense.description}"? Dette vil reversere saldoendringer for berørte medlemmer.`,
+            message: `Vil du slette "${expense.description}"?\n\nSletting kan ikke angres: transaksjonene og kvitteringen fjernes permanent. Saldoen til berørte medlemmer tilbakeføres, men de får ikke varsel om det.`,
             type: "error",
             confirmText: "Slett",
             cancelText: "Avbryt"
@@ -559,6 +560,12 @@ export default function ExpensesPage() {
                     </div>
 
                     <div className="p-6 space-y-6">
+                        {mode === "edit" && (
+                            <ActionInfo variant="info" title="Hva skjer når du oppdaterer?">
+                                Når du oppdaterer justeres saldoen til berørte medlemmer på nytt: gamle belastninger reverseres og nye legges til. Medlemmene får ikke varsel om endringen, så gi beskjed selv hvis det er nødvendig.
+                            </ActionInfo>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Beløp</label>
@@ -629,6 +636,9 @@ export default function ExpensesPage() {
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-gray-900">Splitt mellom medlemmer</p>
                                     <p className="text-[11px] text-gray-500">Skru av hvis dette er en felles kostnad uten medlemssaldo.</p>
+                                    <ActionInfo variant="warning" compact>
+                                        Med splitting på trekkes hvert valgte medlem for sin andel med én gang, og alle får varsel (i appen og som push) om belastningen. Skru av splitting for felles klubbkostnad, så påvirkes ingen saldo.
+                                    </ActionInfo>
                                 </div>
                                 <button
                                     type="button"

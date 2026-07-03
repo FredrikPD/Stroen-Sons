@@ -49,7 +49,7 @@ export function TransactionDeleter() {
     const handleDelete = async (id: string) => {
         const confirmed = await openConfirm({
             title: "Slett Transaksjon",
-            message: "Er du sikker på at du vil slette denne transaksjonen? Dette vil reversere saldo-endringen på medlemmet.",
+            message: "Sletting kan ikke angres. Dette skjer:\n- Medlemmets saldo justeres tilbake.\n- Var transaksjonen koblet til et betalingskrav, settes kravet tilbake til «venter».\n- Var det en medlemskontingent, blir måneden markert som ubetalt igjen.",
             type: "warning",
             confirmText: "Slett"
         });
@@ -74,7 +74,7 @@ export function TransactionDeleter() {
     const handleDeleteAll = async () => {
         const confirmed = await openConfirm({
             title: "SLETT ALLE TRANSAKSJONER?",
-            message: "ADVARSEL: Dette vil slette ALLE transaksjoner i systemet og nullstille alles saldo til 0. Dette kan IKKE angres. Er du helt sikker?",
+            message: "Dette nullstiller hele økonomien og kan IKKE angres:\n- All transaksjonshistorikk slettes for godt.\n- Alle saldoer settes til 0.\n- Alle betalingskrav settes tilbake til «venter».\n- ALLE betalinger (også de som var registrert som betalt) markeres som ubetalt.\n\nBruk kun ved full nullstilling av systemet. Er du helt sikker?",
             type: "error",
             confirmText: "JA, SLETT ALT"
         });

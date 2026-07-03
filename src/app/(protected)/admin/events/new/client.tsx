@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createEvent } from "@/server/actions/events";
 import { EventForm } from "@/components/events/EventForm";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import { EventInput } from "@/lib/validators/events";
 
 export default function CreateEventClientPage({ categories = [] }: { categories?: any[] }) {
@@ -22,6 +23,17 @@ export default function CreateEventClientPage({ categories = [] }: { categories?
                     <p className="text-gray-500 text-sm">Fyll inn detaljene for det nye arrangementet.</p>
                 </div>
             </div>
+
+            <ActionInfo
+                variant="warning"
+                icon="notifications_active"
+                title="Hva skjer når du oppretter?"
+                items={[
+                    "Arrangementet blir publisert og synlig for alle medlemmer med en gang.",
+                    "Alle medlemmer får et varsel i appen (og push-varsel på mobil hvis de har skrudd det på) – dette skjer uansett om du sender e-post eller ikke.",
+                    "E-post sendes bare hvis du huker av «Send e-postvarsel».",
+                ]}
+            />
 
             <EventForm
                 onSubmit={handleSubmit}

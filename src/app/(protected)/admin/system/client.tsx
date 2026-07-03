@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import { recalculateAllBalances } from "@/server/actions/finance";
 
 export default function AdminSystemClientPage() {
@@ -22,7 +23,7 @@ export default function AdminSystemClientPage() {
     const handleSyncBalances = async () => {
         const confirmed = await openConfirm({
             title: "Synkroniser Saldoer",
-            message: "Dette vil rekalkulere saldoen for ALLE medlemmer basert på deres transaksjonshistorikk. Er du sikker?",
+            message: "Dette regner ut saldoen til ALLE medlemmer på nytt fra transaksjonshistorikken deres, og overskriver den lagrede saldoen.\n\n- Medlemmer uten transaksjoner settes til 0.\n- Manuelle saldojusteringer som ikke ligger som transaksjon, blir borte.\n- Det sendes ingen varsler.\n\nEr du sikker?",
             type: "warning",
             confirmText: "Ja, synkroniser"
         });
@@ -103,6 +104,9 @@ export default function AdminSystemClientPage() {
                             <p className="text-sm text-gray-500 leading-snug">
                                 {syncing ? 'Synkroniserer...' : 'Gjenopprett og rekalkuler alle saldoer.'}
                             </p>
+                            <ActionInfo variant="danger" compact>
+                                Regner ut saldoen til ALLE medlemmer på nytt og overskriver den lagrede saldoen. Manuelle justeringer uten transaksjon blir borte. Ingen varsler sendes.
+                            </ActionInfo>
                         </div>
                     </button>
 

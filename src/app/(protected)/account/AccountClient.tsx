@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { updateProfile } from "@/server/actions/account";
 import { PushNotificationSettings } from "@/components/notifications/PushNotificationSettings";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface AccountClientProps {
     initialProfile: any;
@@ -183,6 +184,9 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                                     >
                                         {avatarUploading ? "Laster opp..." : "Bytt profilbilde"}
                                     </button>
+                                    <ActionInfo variant="info" compact>
+                                        Bildet byttes med en gang og vises for de andre medlemmene. Maks 8 MB, kun bildefiler.
+                                    </ActionInfo>
                                 </div>
                             </div>
 
@@ -238,6 +242,9 @@ export default function AccountClient({ initialProfile }: AccountClientProps) {
                                     <input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} placeholder="Poststed" className={`${inputClass} col-span-2`} />
                                 </div>
                             </div>
+                            <ActionInfo variant="info" compact>
+                                Dette oppdaterer bare din egen profil. Navn og kontaktinfo lagres med en gang – ingen andre varsles. E-post kan du ikke endre selv; kontakt support for det.
+                            </ActionInfo>
                             <div className="pt-1 flex justify-end gap-2">
                                 <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors">
                                     Avbryt

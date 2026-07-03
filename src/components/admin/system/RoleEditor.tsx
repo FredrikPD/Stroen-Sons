@@ -6,6 +6,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { createRole, getRole, updateRole } from "@/server/actions/roles";
 import Link from "next/link";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 const PERMISSIONS = [
     { label: "Administrator (Full Tilgang)", path: "/admin.*", description: "Gir tilgang til absolutt alt i systemet." },
@@ -99,6 +100,18 @@ export default function RoleEditor({ id }: { id?: string }) {
                 </div>
             </div>
 
+            {!id && (
+                <ActionInfo
+                    variant="info"
+                    title="Slik fungerer en ny rolle"
+                    items={[
+                        "Tilgangene du huker av styrer hvilke deler av admin medlemmer med denne rollen får se og bruke.",
+                        "Rollen påvirker ingen før du senere tildeler den til et medlem, og ingen varsler sendes ut.",
+                        "«Administrator (Full Tilgang)» gir tilgang til alt, inkludert økonomi og sletting av medlemmer – bruk den med omhu.",
+                    ]}
+                />
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
                     <div>
@@ -115,7 +128,9 @@ export default function RoleEditor({ id }: { id?: string }) {
                             // For safety, let's just let Admin do proper admin things.
                             disabled={isSystem && name === "Admin"}
                         />
-                        {isSystem && <p className="text-xs text-amber-600 mt-1">Dette er en systemrolle. Vær forsiktig med å endre navnet.</p>}
+                        <ActionInfo variant="warning" compact>
+                            Navnet styrer logikk i systemet: rollen «Admin» får automatisk full tilgang, og navnet avgjør også hvilken standardrolle nye medlemmer får. Endrer du navnet, kan tilganger slutte å fungere.
+                        </ActionInfo>
                     </div>
 
                     <div>
@@ -134,6 +149,19 @@ export default function RoleEditor({ id }: { id?: string }) {
                         <span className="material-symbols-outlined text-indigo-600">verified_user</span>
                         Tilganger
                     </h3>
+
+                    {id && (
+                        <ActionInfo
+                            variant="warning"
+                            title="Endringer gjelder alle med rollen"
+                            className="mb-4"
+                            items={[
+                                "Endringene her gjelder umiddelbart for alle medlemmer som har denne rollen, ikke bare deg.",
+                                "Fjerner du en tilgang, mister alle med rollen den ved neste sidevisning.",
+                                "«Administrator (Full Tilgang)» gir tilgang til absolutt alt.",
+                            ]}
+                        />
+                    )}
 
                     <div className="space-y-3">
                         {PERMISSIONS.map(perm => {

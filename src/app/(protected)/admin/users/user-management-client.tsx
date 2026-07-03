@@ -7,6 +7,7 @@ import { assignRole } from "@/server/actions/roles";
 import { useModal } from "@/components/providers/ModalContext";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 type Member = {
     id: string;
@@ -82,7 +83,7 @@ export default function UserManagementClient({ members, availableRoles }: { memb
 
         const confirmed = await openConfirm({
             title: "Endre Rolle",
-            message: `Vil du endre rollen til ${memberName} til "${roleName}"?`,
+            message: `Vil du endre rollen til ${memberName} til "${roleName}"?\n\nRollen bestemmer hva medlemmet får tilgang til, og endringen gjelder med en gang. Medlemmet blir ikke varslet. Du kan når som helst velge en annen rolle for å endre tilbake.`,
             type: "info",
             confirmText: "Endre"
         });
@@ -145,6 +146,10 @@ export default function UserManagementClient({ members, availableRoles }: { memb
                         className="px-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                 </div>
+
+                <ActionInfo variant="info" icon="admin_panel_settings" title="Om å endre rolle" className="mb-4">
+                    Rollen bestemmer hva medlemmet får tilgang til, og endringen gjelder med en gang. Medlemmet blir ikke varslet. Du kan når som helst velge en annen rolle for å endre tilbake.
+                </ActionInfo>
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">

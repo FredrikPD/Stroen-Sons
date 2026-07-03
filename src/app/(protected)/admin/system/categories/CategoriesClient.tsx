@@ -6,6 +6,7 @@ import { CategoryWithCount, createCategory, updateCategory, deleteCategory, getC
 import { useModal } from "@/components/providers/ModalContext";
 import { toast } from "sonner";
 import { CATEGORY_COLORS, getCategoryColorClasses } from "@/lib/category-colors";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface Props {
     initialCategories: CategoryWithCount[];
@@ -70,7 +71,7 @@ export function CategoriesClient({ initialCategories }: Props) {
     const handleDelete = async (category: CategoryWithCount) => {
         const confirmed = await openConfirm({
             title: "Slett kategori",
-            message: `Er du sikker på at du vil slette "${category.name}"?`,
+            message: `Er du sikker på at du vil slette "${category.name}"?\n\nDu kan bare slette kategorier som ikke er i bruk. Er kategorien knyttet til innlegg, må du først flytte innleggene til en annen kategori. Ingen innlegg slettes.`,
             type: "warning",
             confirmText: "Slett"
         });
@@ -184,6 +185,17 @@ export function CategoriesClient({ initialCategories }: Props) {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            {editingCategory && (
+                                <ActionInfo
+                                    variant="info"
+                                    title="Hva skjer når du lagrer?"
+                                    items={[
+                                        "Endrer du navnet, blir alle innleggene som bruker denne kategorien automatisk flyttet over til det nye navnet.",
+                                        "Farge og beskrivelse endrer bare hvordan kategorien vises.",
+                                        "Ingen varsler sendes ut.",
+                                    ]}
+                                />
+                            )}
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                                     Navn
@@ -231,6 +243,11 @@ export function CategoriesClient({ initialCategories }: Props) {
                                     </span>
                                 </div>
                             </div>
+                            {!editingCategory && (
+                                <ActionInfo variant="info" compact>
+                                    Oppretter en ny kategori som kan brukes til å merke innlegg. Navnet må være unikt. Ingen varsler sendes ut.
+                                </ActionInfo>
+                            )}
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"

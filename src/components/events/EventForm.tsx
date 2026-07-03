@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventSchema, EventInput } from "@/lib/validators/events";
 import { useUploadThing } from "@/utils/uploadthing";
@@ -177,6 +178,18 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
     return (
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
             <input type="hidden" {...register("coverImage")} />
+
+            {isEditMode && (
+                <ActionInfo
+                    variant="warning"
+                    icon="notifications_active"
+                    title="Hva skjer når du lagrer?"
+                    items={[
+                        "Alle medlemmer får et varsel i appen (og push hvis de har skrudd det på) om at arrangementet er oppdatert – dette skjer uansett, også ved små endringer.",
+                        "Kryss av for e-postvarsel i tillegg hvis du vil sende e-post til alle aktive medlemmer.",
+                    ]}
+                />
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Main Info */}
                 <div className="lg:col-span-2 space-y-6">
@@ -392,9 +405,20 @@ export function EventForm({ initialData, onSubmit, submitButtonText, isEditMode 
                                 <label htmlFor="sendNotification" className="block text-sm font-bold text-gray-900 cursor-pointer select-none">
                                     Send e-postvarsel
                                 </label>
-                                <p className="text-xs text-gray-500 leading-relaxed">
-                                    Send e-post til alle medlemmer om dette arrangementet.
-                                </p>
+                                {isEditMode ? (
+                                    <p className="text-xs text-gray-500 leading-relaxed">
+                                        Sender e-post til alle aktive medlemmer om at arrangementet er oppdatert. Varsel i appen sendes uansett, uavhengig av denne boksen.
+                                    </p>
+                                ) : (
+                                    <>
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            Sender en e-post til alle aktive medlemmer om arrangementet. Merk: medlemmene får uansett varsel i appen når du oppretter arrangementet – dette valget gjelder kun e-post i tillegg.
+                                        </p>
+                                        <ActionInfo variant="warning" compact>
+                                            E-posten kan ikke trekkes tilbake når den først er sendt.
+                                        </ActionInfo>
+                                    </>
+                                )}
                             </div>
                             <input
                                 type="checkbox"

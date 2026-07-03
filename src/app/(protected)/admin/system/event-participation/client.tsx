@@ -6,6 +6,7 @@ import { getEventParticipants, adminAddParticipant, adminRemoveParticipant, getA
 import { getMembers } from "@/server/actions/members";
 import { Avatar } from "@/components/Avatar";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 export default function EventParticipationClientPage() {
     const { openAlert, openConfirm } = useModal();
@@ -138,10 +139,13 @@ export default function EventParticipationClientPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* List Existing */}
                     <div>
-                        <h3 className="font-bold text-gray-900 mb-4 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-900 mb-1 flex justify-between items-center">
                             <span>Påmeldte ({participants.length})</span>
                             {pLoading && <span className="text-xs text-gray-400">Oppdaterer...</span>}
                         </h3>
+                        <ActionInfo variant="info" className="mb-4">
+                            Å fjerne et medlem melder det av arrangementet, uavhengig av frister. Medlemmet får ingen beskjed, og ingen faktura endres. Du kan legge til medlemmet igjen etterpå.
+                        </ActionInfo>
 
                         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden max-h-[500px] overflow-y-auto">
                             {participants.length === 0 ? (
@@ -172,7 +176,10 @@ export default function EventParticipationClientPage() {
 
                     {/* Add New */}
                     <div>
-                        <h3 className="font-bold text-gray-900 mb-4">Legg til deltaker</h3>
+                        <h3 className="font-bold text-gray-900 mb-1">Legg til deltaker</h3>
+                        <ActionInfo variant="info" className="mb-4">
+                            Medlemmet meldes på arrangementet med én gang, selv om påmeldingsfristen har gått ut. Kapasitetsgrensen respekteres hvis den er satt. Medlemmet får ingen e-post eller varsel, og det opprettes ingen faktura. Kan angres med Fjern.
+                        </ActionInfo>
                         <div className="bg-white rounded-xl border border-gray-200 p-4">
                             <input
                                 type="text"

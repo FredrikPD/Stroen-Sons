@@ -105,7 +105,7 @@ export function PremiumModal({
                                     {title}
                                 </h3>
                                 <div className="mt-2">
-                                    <p className="text-sm text-gray-500 leading-relaxed">
+                                    <p className="text-sm text-gray-500 leading-relaxed whitespace-pre-line">
                                         {message}
                                     </p>
                                 </div>

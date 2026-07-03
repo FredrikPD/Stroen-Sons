@@ -7,6 +7,7 @@ import { notifyNewPhotos } from "@/server/actions/notifications";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface PhotoManagerProps {
     initialEvents: Awaited<ReturnType<typeof getRecentEvents>>;
@@ -194,7 +195,7 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
 
         const confirmed = await openConfirm({
             title: "Slett bilder",
-            message: `Er du sikker på at du vil slette ${selectedPhotos.size} bilder?`,
+            message: `Er du sikker på at du vil slette ${selectedPhotos.size} bilder?\n\nSletting er permanent. Bildene fjernes både fra galleriet og fra lagringen, og kan ikke gjenopprettes.`,
             type: "error",
             confirmText: "Slett",
             cancelText: "Avbryt"
@@ -349,6 +350,9 @@ export function PhotoManager({ initialEvents, initialPhotos, settings }: PhotoMa
                                     >
                                         Velg filer fra maskin
                                     </button>
+                                    <ActionInfo variant="warning" compact className="max-w-[240px] text-left">
+                                        Når opplastingen er ferdig blir bildene straks synlige i galleriet for alle medlemmer, og alle får varsel (i appen og som push) om nye bilder i albumet. Dobbeltsjekk at du har valgt riktig arrangement.
+                                    </ActionInfo>
                                 </>
                             )}
                         </div>

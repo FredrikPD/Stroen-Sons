@@ -7,6 +7,7 @@ import { useModal } from "@/components/providers/ModalContext";
 import { getMembersAndEvents, setMemberBalance } from "@/server/actions/finance";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 type Member = {
     id: string;
@@ -85,6 +86,19 @@ export default function SetBalancePage() {
                 <p className="text-gray-500 mt-2">
                     Juster saldo manuelt. Dette vil opprette en korrigerende transaksjon automatisk.
                 </p>
+            </div>
+
+            <div className="max-w-2xl mx-auto w-full">
+                <ActionInfo
+                    variant="warning"
+                    title="Hva skjer når du setter saldoen?"
+                    items={[
+                        "Du setter saldoen til en bestemt sum – du legger ikke til eller trekker fra.",
+                        "Systemet lager automatisk en justeringstransaksjon for differansen.",
+                        "Medlemmet får varsel (i appen og som push) der beløpet og årsaken du skriver vises.",
+                        "Det kan bare angres ved en ny justering eller ved å slette transaksjonen.",
+                    ]}
+                />
             </div>
 
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">

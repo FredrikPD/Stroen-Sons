@@ -6,6 +6,7 @@ import { createBulkPaymentRequests } from "@/server/actions/payment-requests";
 import { PaymentCategory } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 const parseAmount = (value: string) => {
     const parsed = Number.parseFloat(value.replace(",", "."));
@@ -321,6 +322,17 @@ export default function CreateInvoicePage() {
                             </div>
                         </div>
                     </div>
+
+                    <ActionInfo
+                        variant="warning"
+                        title="Hva skjer når du trykker Send?"
+                        items={[
+                            "Det opprettes ett betalingskrav per mottaker med det samme, og alle får varsel i appen og push på mobilen.",
+                            "Ingen e-post sendes, og ingen penger flyttes – beløpet påvirker først saldoen når kravet blir registrert som betalt.",
+                            "«Alle medlemmer» sender også til medlemmer på pause.",
+                            "Du kan slette ubetalte krav i etterkant, men varslene som allerede er sendt kan ikke trekkes tilbake.",
+                        ]}
+                    />
 
                     <div className="flex justify-end pt-4">
                         <button

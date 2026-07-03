@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { deleteFile } from "@/server/actions/files";
 import { useModal } from "@/components/providers/ModalContext";
 import { useRouter } from "next/navigation";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface PostFormProps {
     initialData?: Partial<PostInput> & { id?: string };
@@ -147,6 +148,25 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                 </div>
             )}
 
+            {/* Notification / consequences banner */}
+            <ActionInfo
+                variant="warning"
+                icon="notifications_active"
+                title={isEditMode ? "Hva skjer når du lagrer?" : "Hva skjer når du publiserer?"}
+                items={
+                    isEditMode
+                        ? [
+                              "Alle medlemmer får et varsel (i appen og som push) om at innlegget er oppdatert – hver gang du lagrer.",
+                              "E-post sendes bare hvis du huker av for «Send e-postvarsel».",
+                              "Merk: bare administratorer kan lagre endringer.",
+                          ]
+                        : [
+                              "Innlegget legges ut på tavlen og alle medlemmer får et varsel i appen og en push-melding med en gang.",
+                              "E-post sendes bare hvis du huker av for «Send e-postvarsel».",
+                          ]
+                }
+            />
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Main Info */}
                 <div className="lg:col-span-2 space-y-6">
@@ -269,9 +289,11 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                                 <label htmlFor="sendNotification" className="block text-sm font-bold text-gray-900 cursor-pointer select-none">
                                     Send e-postvarsel
                                 </label>
-                                <p className="text-xs text-gray-500 leading-relaxed">
-                                    Send e-post til alle medlemmer om dette innlegget.
-                                </p>
+                                <ActionInfo variant="warning" compact>
+                                    {isEditMode
+                                        ? "Huker du av her, sender vi en e-post til alle aktive medlemmer om oppdateringen når du lagrer. Lar du den stå tom, blir det ingen e-post – men medlemmene får uansett et varsel i appen."
+                                        : "Sender e-post til alle aktive medlemmer når du publiserer. Dette kan ikke angres. Varsel i appen og push sendes uansett, også hvis du lar denne stå av."}
+                                </ActionInfo>
                             </div>
                             <input
                                 type="checkbox"
@@ -288,6 +310,10 @@ export function PostForm({ initialData, onSubmit, submitButtonText, isEditMode =
                             <span className="material-symbols-outlined text-indigo-600">attach_file</span>
                             Vedlegg
                         </h2>
+
+                        <ActionInfo variant="danger" compact>
+                            Klikker du på søppelbøtta, slettes filen fra lagringen med en gang – ikke først når du lagrer. Dette kan ikke angres, du må laste opp filen på nytt for å få den tilbake.
+                        </ActionInfo>
 
                         {/* File List */}
                         {watch("attachments") && watch("attachments")!.length > 0 && (

@@ -6,6 +6,7 @@ import { EventCategoryWithCount, createEventCategory, updateEventCategory, delet
 import { useModal } from "@/components/providers/ModalContext";
 import { toast } from "sonner";
 import { CATEGORY_COLORS, getCategoryColorClasses } from "@/lib/category-colors";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface Props {
     initialCategories: EventCategoryWithCount[];
@@ -68,7 +69,7 @@ export function EventCategoriesClient({ initialCategories }: Props) {
     const handleDelete = async (category: EventCategoryWithCount) => {
         const confirmed = await openConfirm({
             title: "Slett kategori",
-            message: `Er du sikker på at du vil slette "${category.name}"?`,
+            message: `Er du sikker på at du vil slette "${category.name}"?\n\nDu kan bare slette kategorier som ikke er i bruk. Er tallet i "Arrangementer" over 0, blir slettingen stoppet. Sletting kan ikke angres.`,
             type: "warning",
             confirmText: "Slett"
         });
@@ -182,6 +183,11 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            {!editingCategory && (
+                                <ActionInfo variant="info">
+                                    Oppretter en ny kategori du kan velge når du lager arrangementer. Navnet må være unikt. Ingen varsler sendes ut.
+                                </ActionInfo>
+                            )}
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                                     Navn
@@ -195,6 +201,11 @@ export function EventCategoriesClient({ initialCategories }: Props) {
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 />
+                                {editingCategory && (
+                                    <ActionInfo variant="warning" compact>
+                                        Endrer du navnet, oppdateres kategorien automatisk på alle arrangementene som bruker den (se tallet i kolonnen &quot;Arrangementer&quot;). Beskrivelse og farge påvirker ikke arrangementene. Ingen varsler sendes til medlemmene.
+                                    </ActionInfo>
+                                )}
                             </div>
                             <div>
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { PremiumModal } from "@/components/ui/PremiumModal";
 import { createFutureMonthlyFees } from "@/server/actions/finance";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 interface MemberOption {
     id: string;
@@ -168,6 +169,10 @@ export function CreateInvoiceModal({ isOpen, onClose, members, onSuccess }: Crea
                                         Genererer {count} faktura(er) fra og med valgt måned.
                                     </p>
                                 </div>
+
+                                <ActionInfo variant="info">
+                                    Oppretter månedskrav for ett medlem for de valgte månedene og varsler medlemmet (app + push) om hvert krav. Måneder som allerede har krav hoppes over. Ingen penger flyttes – du fører betaling senere.
+                                </ActionInfo>
                             </div>
                         </div>
 

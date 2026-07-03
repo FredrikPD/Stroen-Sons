@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { Avatar } from "@/components/Avatar";
 import { getCategoryColorClasses } from "@/lib/category-colors";
 import { PremiumModal } from "@/components/ui/PremiumModal";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import AddToCalendarButton from "./AddToCalendarButton";
 
 // Types
@@ -715,6 +716,11 @@ export default function EventDetailView({ event, attendees, currentUserIsAttendi
                                     </>
                                 )}
                             </button>
+                            {!currentUserIsAttending && !isRegistrationClosed && (
+                                <ActionInfo variant="info" compact>
+                                    Når du melder deg på blir du med på kostnadsdelingen (din andel over). Etter påmeldingsfristen kan du ikke melde deg av selv. Ingen varsler sendes ut.
+                                </ActionInfo>
+                            )}
                         </div>
                     )}
 

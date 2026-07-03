@@ -93,7 +93,7 @@ export default function MemberBalancePage() {
         setModal({
             isOpen: true,
             title: "Bekreft utsending",
-            message: "Er du sikker på at du vil sende betalingspåminnelse til alle medlemmer med ubetalte krav? Dette kan ikke angres.",
+            message: "Sender en e-post til hvert aktive medlem som har minst ett ubetalt krav (status «Ubetalt»). Hver mottaker får kun sine egne ubetalte fakturaer listet, med lenke til betaling.\n\n- E-postene sendes med en gang og kan ikke angres.\n- Betalte og fritatte krav tas ikke med.\n- Saldo eller status endres ikke.",
             type: "warning",
             isConfirm: true,
             onConfirm: async () => {
@@ -131,7 +131,7 @@ export default function MemberBalancePage() {
         setModal({
             isOpen: true,
             title: "Send påminnelse",
-            message: "Vil du sende en betalingspåminnelse for denne fakturaen på e-post til medlemmet?",
+            message: "Sender en e-post til dette medlemmet om akkurat denne fakturaen, med lenke til betaling.\n\nE-posten sendes med en gang og kan ikke angres. Knappen vises for alle ubetalte krav, også de som ennå ikke har forfalt.",
             type: "warning",
             isConfirm: true,
             onConfirm: async () => {

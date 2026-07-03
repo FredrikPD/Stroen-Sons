@@ -19,7 +19,7 @@ export function DeletePostButton({ id, title }: DeletePostButtonProps) {
     const handleDelete = async () => {
         const confirmed = await openConfirm({
             title: "Slett innlegg",
-            message: `Er du sikker på at du vil slette "${title}"? Dette kan ikke angres.`,
+            message: `Er du sikker på at du vil slette "${title}"? Sletting er permanent og kan ikke angres.\n\n- Innlegget forsvinner fra nyhetsfeeden for alle medlemmer\n- Vedlegg som er knyttet til innlegget slettes sammen med det\n- Det sendes ingen varsling om at innlegget er fjernet\n- Kun administratorer kan slette innlegg`,
             type: "error",
             confirmText: "Slett",
             cancelText: "Avbryt"

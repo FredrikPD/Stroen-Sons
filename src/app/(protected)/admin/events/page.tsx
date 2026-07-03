@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { DeleteEventButton } from "./_components/DeleteEventButton";
 import { SetHeader } from "@/components/layout/SetHeader";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Prisma, Role } from "@prisma/client";
@@ -65,6 +66,11 @@ export default async function EventsListPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
+                        <div className="px-6 pt-4">
+                            <ActionInfo variant="danger" compact>
+                                Sletting av et arrangement er permanent. Program, etterrapport, bilder og alle påmeldinger fjernes. Fakturaer og transaksjoner beholdes uten kobling – ingen beløp endres og ingen varsler sendes.
+                            </ActionInfo>
+                        </div>
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-50 border-b border-gray-100">
                                 <tr>

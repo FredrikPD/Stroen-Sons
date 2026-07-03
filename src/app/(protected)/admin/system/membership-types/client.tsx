@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { MembershipTypeWithCount, createMembershipType, updateMembershipType, deleteMembershipType } from "@/server/actions/membership-types";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import PageTitleUpdater from "@/components/layout/PageTitleUpdater";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -224,6 +225,15 @@ function MembershipTypeForm({
                     min="0"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
                 />
+                {initialData ? (
+                    <ActionInfo variant="info" compact>
+                        Endrer du kontingenten, gjelder den nye summen bare for krav som genereres framover. Krav som allerede er laget, beholder sitt opprinnelige beløp og må eventuelt rettes manuelt.
+                    </ActionInfo>
+                ) : (
+                    <ActionInfo variant="info" compact>
+                        Kontingenten du setter her blir beløpet som brukes neste gang det genereres kontingentkrav for medlemmer med denne typen. Ingen krav opprettes akkurat nå, og eksisterende krav endres ikke.
+                    </ActionInfo>
+                )}
             </div>
             <div className="flex justify-end gap-3 pt-4">
                 <button

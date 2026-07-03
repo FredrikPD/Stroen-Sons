@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Role } from "@prisma/client";
 import { useModal } from "@/components/providers/ModalContext";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import { revokeInvitation, type Invitation } from "@/server/actions/invitations";
 import { inviteMember } from "@/server/actions/invite-member"; // We can reuse the action, but might need a form
 
@@ -33,8 +34,8 @@ export default function InvitationsClientPage({ initialInvitations, initialError
     const handleRevoke = async (inv: Invitation) => {
         const confirmed = await openConfirm({
             title: "Trekk tilbake invitasjon",
-            message: `Er du sikker på at du vil trekke tilbake invitasjonen til ${inv.email}?`,
-            type: "warning",
+            message: `Er du sikker på at du vil trekke tilbake invitasjonen til ${inv.email}?\n\nDette sletter det ventende medlemmet og gjør registreringslenken ugyldig, så personen ikke lenger kan opprette konto.\n\nHandlingen kan ikke angres – du må sende en ny invitasjon for å invitere på nytt.`,
+            type: "error",
             confirmText: "Trekk tilbake",
             cancelText: "Avbryt"
         });
@@ -230,6 +231,17 @@ export default function InvitationsClientPage({ initialInvitations, initialError
                                     </select>
                                 </div>
                             </div>
+
+                            <ActionInfo
+                                variant="info"
+                                icon="mail"
+                                title="Hva skjer når du sender invitasjonen?"
+                                items={[
+                                    "Personen får en e-post med en registreringslenke, og det opprettes et ventende medlem med rollen og medlemskapstypen du velger.",
+                                    "Rollen bestemmer tilgangsnivået etter at de har registrert seg – Administrator og Moderator gir utvidet tilgang.",
+                                    "Du kan ikke invitere en e-post som allerede finnes i systemet.",
+                                ]}
+                            />
 
                             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
                                 <button

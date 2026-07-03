@@ -6,6 +6,7 @@ import { ensureRole } from "@/server/auth/ensureRole";
 import { SetHeader } from "@/components/layout/SetHeader";
 import { EventRecapForm } from "@/components/events/EventRecapForm";
 import { PodiumCard } from "@/components/events/PodiumCard";
+import { ActionInfo } from "@/components/ui/ActionInfo";
 import { upsertEventRecap } from "@/server/actions/event-recaps";
 import { EventRecapInput } from "@/lib/validators/event-recaps";
 
@@ -141,14 +142,19 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
                         Skriv eller oppdater etterrapport for {event.title}.
                     </p>
                 </div>
-                <button
-                    type="submit"
-                    form={recapFormId}
-                    className="inline-flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4F46E5] text-white text-sm font-bold hover:bg-[#4338ca]"
-                >
-                    <span className="material-symbols-outlined text-base">save</span>
-                    Lagre endringer
-                </button>
+                <div className="flex shrink-0 flex-col items-end">
+                    <button
+                        type="submit"
+                        form={recapFormId}
+                        className="inline-flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4F46E5] text-white text-sm font-bold hover:bg-[#4338ca]"
+                    >
+                        <span className="material-symbols-outlined text-base">save</span>
+                        Lagre endringer
+                    </button>
+                    <ActionInfo variant="info" compact className="max-w-xs text-right">
+                        Lagrer hele etterrapporten. Er status &quot;Publisert&quot; blir rapporten synlig for alle medlemmer &ndash; &quot;Utkast&quot; vises kun for admin/moderator. Kamplisten erstattes helt av det som står i skjemaet nå, så kamper du har fjernet blir borte. Ingen varsler sendes ut.
+                    </ActionInfo>
+                </div>
             </div>
 
             <EventRecapForm

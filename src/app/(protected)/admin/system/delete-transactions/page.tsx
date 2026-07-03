@@ -27,8 +27,15 @@ export default async function TransactionDeletePage() {
                 <div>
                     <h3 className="font-bold text-amber-900 text-sm">Advarsel</h3>
                     <p className="text-amber-800 text-xs mt-1">
-                        Sletting av transaksjoner vil automatisk reversere saldo-endringen på det berørte medlemmet.
-                        Sletting av <strong>ALLE</strong> transaksjoner vil sette alles saldo til 0.
+                        Sletting av en enkelttransaksjon kan ikke angres. Medlemmets saldo justeres tilbake, og hvis
+                        transaksjonen var koblet til et betalingskrav settes kravet tilbake til «venter». Var det en
+                        medlemskontingent, blir måneden markert som ubetalt igjen.
+                    </p>
+                    <p className="text-amber-800 text-xs mt-2">
+                        <strong>Slett ALLE</strong> nullstiller hele økonomien: all transaksjonshistorikk slettes for godt,
+                        alle saldoer settes til 0, alle betalingskrav settes tilbake til «venter», og ALLE betalinger
+                        (også de som var registrert som betalt) markeres som ubetalt. Kan ikke angres — bruk kun ved full
+                        nullstilling av systemet.
                     </p>
                 </div>
             </div>
