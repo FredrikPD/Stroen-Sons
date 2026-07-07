@@ -11,7 +11,7 @@ export default function Footer() {
             <div className={CONTAINER + " flex h-14 items-center justify-between gap-4"}>
                 {/* Left: copyright */}
                 <p className="text-sm font-medium text-gray-300 whitespace-nowrap">
-                    &copy; 2026 Strøen Søns
+                    &copy; 2026
                 </p>
 
                 {/* Right: brand */}
