@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Role } from "@prisma/client";
@@ -18,6 +18,10 @@ interface Props {
 export default function InvitationsClientPage({ initialInvitations, initialError }: Props) {
     const [invitations, setInvitations] = useState<Invitation[]>(initialInvitations);
     const [loadingId, setLoadingId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setInvitations(initialInvitations);
+    }, [initialInvitations]);
     const { openConfirm, openAlert } = useModal();
     const router = useRouter();
 
