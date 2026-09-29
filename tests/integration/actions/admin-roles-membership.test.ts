@@ -264,7 +264,7 @@ describe("roles.getRoles", () => {
         expect(prismaMock.userRole.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
                 orderBy: { name: "asc" },
-                include: { _count: { select: { members: true } } }
+                include: { _count: { select: { members: { where: { deletedAt: null } } } } }
             })
         );
     });
