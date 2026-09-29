@@ -1,7 +1,12 @@
+const CACHE_NAME = "stroen-sons-pwa-v8";
+const OFFLINE_URL = "/offline";
 const PUSH_META_CACHE_NAME = "stroen-sons-pwa-push-meta-v1";
 const PUSH_SEEN_KEY = "/__push_seen_notifications";
 
-self.addEventListener("install", () => {
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_URL)).catch(() => undefined)
+  );
   self.skipWaiting();
 });
 
@@ -11,9 +16,48 @@ self.addEventListener("activate", (event) => {
       .keys()
       // Delete asset caches left behind by earlier versions of this worker.
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== PUSH_META_CACHE_NAME).map((key) => caches.delete(key)))
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME && key !== PUSH_META_CACHE_NAME)
+            .map((key) => caches.delete(key))
+        )
       )
       .then(() => self.clients.claim())
+  );
+});
+
+// Network-only while online. The cache is read only when the network fails,
+// so the offline page (and the scripts/styles it needs) can still render.
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith("/api/")) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_URL)));
+    return;
+  }
+
+  const isCriticalAsset =
+    request.destination === "style" ||
+    request.destination === "script" ||
+    url.pathname.startsWith("/_next/static/");
+
+  if (!isCriticalAsset) return;
+
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const cloned = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
 
