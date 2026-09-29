@@ -1,19 +1,7 @@
-const CACHE_NAME = "stroen-sons-pwa-v7";
-const OFFLINE_URL = "/offline";
 const PUSH_META_CACHE_NAME = "stroen-sons-pwa-push-meta-v1";
 const PUSH_SEEN_KEY = "/__push_seen_notifications";
-const PRECACHE_ASSETS = [
-  OFFLINE_URL,
-  "/manifest.webmanifest",
-  "/favicon/apple-touch-icon.png",
-  "/favicon/web-app-manifest-192x192.png",
-  "/favicon/web-app-manifest-512x512.png",
-];
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)).catch(() => undefined)
-  );
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
@@ -21,66 +9,11 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
+      // Delete asset caches left behind by earlier versions of this worker.
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+        Promise.all(keys.filter((key) => key !== PUSH_META_CACHE_NAME).map((key) => caches.delete(key)))
       )
       .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  if (request.method !== "GET") return;
-
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/")) return;
-
-  if (request.mode === "navigate") {
-    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_URL)));
-    return;
-  }
-
-  const isCriticalAsset =
-    request.destination === "style" ||
-    request.destination === "script" ||
-    url.pathname.startsWith("/_next/static/");
-
-  if (isCriticalAsset) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const cloned = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
-
-  const shouldCacheAsset =
-    request.destination === "image" ||
-    request.destination === "font";
-
-  if (!shouldCacheAsset) return;
-
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const networkFetch = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const cloned = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
-          }
-          return response;
-        })
-        .catch(() => cached);
-
-      return cached || networkFetch;
-    })
   );
 });
 

@@ -489,7 +489,6 @@ describe("GET /api/events/[id]/ics", () => {
         expect(res.headers.get("Content-Disposition")).toBe(
             'attachment; filename="Cup___Grill_2026_.ics"'
         );
-        expect(res.headers.get("Cache-Control")).toBe("public, max-age=3600");
     });
 
     it("derives DTSTAMP from the current time", async () => {

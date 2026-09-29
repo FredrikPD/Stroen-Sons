@@ -1092,8 +1092,7 @@ export async function getMembersAndEvents() {
                     avatarUrl: true,
                     role: true,
                     createdAt: true
-                },
-                cacheStrategy: { ttl: 60, swr: 60 }
+                }
             }),
             prisma.event.findMany({
                 orderBy: { startAt: 'desc' },
@@ -1106,8 +1105,7 @@ export async function getMembersAndEvents() {
                     id: true,
                     title: true,
                     startAt: true
-                },
-                cacheStrategy: { ttl: 60, swr: 60 }
+                }
             })
         ]);
 

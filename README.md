@@ -12,7 +12,7 @@ Strøen Søns is a Next.js application used to run day-to-day club workflows:
 - membership and role management
 - balance, transactions, and invoice/payment request handling
 - admin tools for finance and system configuration
-- email + push notifications, plus PWA/offline support
+- email + push notifications, plus PWA support
 
 ## Tech Stack
 
@@ -107,7 +107,6 @@ Authorization: Bearer <CRON_SECRET>
 ## PWA and Push Notifications
 
 - Service worker is registered in production only.
-- Offline fallback route: `/offline`
 - Push notifications are resolved via subscription endpoint `/api/push/latest-by-subscription`
 - Use `npm run pwa:vapid` to generate VAPID key pair
 

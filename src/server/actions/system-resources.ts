@@ -82,8 +82,7 @@ export async function getSystemStats(): Promise<{ success: boolean; data?: Syste
 
                 // Endpoint: https://api.prisma.io/v1/databases/{id}/usage
                 const usageRes = await fetch(`https://api.prisma.io/v1/databases/${dbId}/usage?start=${start.toISOString()}`, {
-                    headers: { 'Authorization': `Bearer ${mgmtToken}` },
-                    next: { revalidate: 60 } // Cache for 60 seconds
+                    headers: { 'Authorization': `Bearer ${mgmtToken}` }
                 });
 
                 if (usageRes.ok) {

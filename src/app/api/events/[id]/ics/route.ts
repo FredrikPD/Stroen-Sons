@@ -62,7 +62,6 @@ export async function GET(
             "Content-Type": "text/calendar; charset=utf-8",
             // Force download with "attachment"
             "Content-Disposition": `attachment; filename="${event.title.replace(/[^a-zA-Z0-9]/g, "_")}.ics"`,
-            "Cache-Control": "public, max-age=3600",
         },
     });
 }

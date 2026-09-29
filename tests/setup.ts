@@ -17,9 +17,7 @@ vi.mock("@/server/auth/ensureRole", () => ({ ensureRole: vi.fn() }));
 
 vi.mock("next/cache", () => ({
     revalidatePath: vi.fn(),
-    revalidateTag: vi.fn(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    unstable_cache: (fn: any) => fn
+    revalidateTag: vi.fn()
 }));
 
 vi.mock("next/navigation", () => ({
