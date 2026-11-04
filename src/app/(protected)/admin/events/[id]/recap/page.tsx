@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Prisma, Role } from "@prisma/client";
 import { db } from "@/server/db";
 import { ensureRole } from "@/server/auth/ensureRole";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { EventRecapForm } from "@/components/events/EventRecapForm";
 import { PodiumCard } from "@/components/events/PodiumCard";
 import { ActionInfo } from "@/components/ui/ActionInfo";
@@ -135,7 +134,6 @@ export default async function EditEventRecapPage({ params }: EditEventRecapPageP
 
     return (
         <div className="space-y-8 pb-12">
-            <SetHeader backHref={`/events/${event.id}`} backLabel={event.title} />
             <div className="mb-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div className="min-w-0">

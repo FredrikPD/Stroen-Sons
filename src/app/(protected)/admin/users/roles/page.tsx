@@ -1,5 +1,4 @@
 import RolesManager from "@/components/admin/roles-manager";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { ActionInfo } from "@/components/ui/ActionInfo";
 import { AdminPageHeader } from "@/components/admin/ui";
 
@@ -14,8 +13,6 @@ export default async function MemberRolesPage() {
     await ensureRole([Role.ADMIN]);
     return (
         <div className="space-y-6">
-            <SetHeader backHref="/admin/users" backLabel="Brukere" />
-
             <AdminPageHeader
                 eyebrow="Brukeradministrasjon"
                 title="Medlemsroller"

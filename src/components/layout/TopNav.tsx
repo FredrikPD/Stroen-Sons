@@ -5,9 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { MAIN_NAV, ACCOUNT_NAV, ADMIN_NAV } from "./nav";
-import { useHeader } from "./HeaderContext";
 import NotificationBell from "../notifications/NotificationBell";
-import { resolveBack } from "./backNav";
 
 const CONTAINER = "mx-auto w-full px-4 sm:px-5 lg:px-6";
 
@@ -190,13 +188,6 @@ export default function TopNav({
   onMenuClick: () => void;
 }) {
   const pathname = usePathname();
-  const { backHref, backLabel } = useHeader();
-
-  // A page may set a custom back target (HeaderContext); otherwise derive one
-  // from the route so every page has a correct back button. See backNav.ts.
-  const auto = resolveBack(pathname);
-  const effHref = backHref ?? auto?.href ?? null;
-  const effLabel = backLabel ?? auto?.label ?? null;
 
   return (
     <div className="shrink-0 z-30">
@@ -206,24 +197,8 @@ export default function TopNav({
         style={{ background: "#0f0e0c", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
       >
         <div className={CONTAINER + " relative h-full grid grid-cols-[1fr_auto_1fr] items-center gap-4"}>
-          {/* Left: back (sub-pages) + hamburger (mobile) + logo */}
+          {/* Left: hamburger (mobile) + logo */}
           <div className="col-start-1 flex items-center gap-3 min-w-0 overflow-hidden justify-self-start">
-            {effHref && (
-              <Link
-                href={effHref}
-                aria-label={effLabel || "Tilbake"}
-                className="group flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors min-w-0"
-              >
-                <span className="material-symbols-outlined text-[22px] group-hover:-translate-x-0.5 transition-transform">
-                  arrow_back
-                </span>
-                <span className="hidden md:block text-[13px] font-medium truncate">
-                  {effLabel || "Tilbake"}
-                </span>
-              </Link>
-            )}
-            {effHref && <span className="h-5 w-px bg-white/10" />}
-
             <button
               type="button"
               onClick={onMenuClick}

@@ -3,7 +3,6 @@ import { db } from "@/server/db";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { DeleteEventButton } from "./_components/DeleteEventButton";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { ActionInfo } from "@/components/ui/ActionInfo";
 import { AdminPageHeader, AdminEmptyState, btnPrimary, card, seeAllLink, SERIF } from "@/components/admin/ui";
 
@@ -31,8 +30,6 @@ export default async function EventsListPage() {
 
     return (
         <div className="space-y-8 pb-12">
-            <SetHeader backHref="/admin/dashboard" backLabel="Dashboard" />
-
             <AdminPageHeader
                 eyebrow="Arrangementer"
                 title="Alle Arrangementer"

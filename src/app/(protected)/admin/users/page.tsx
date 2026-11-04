@@ -1,6 +1,5 @@
 import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
 import UserManagementClient from "./user-management-client";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { Role } from "@prisma/client";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { AdminHero } from "@/components/admin/ui";
@@ -96,8 +95,6 @@ export default async function UserManagementPage() {
 
     return (
         <div className="space-y-8">
-            <SetHeader backHref="/admin/dashboard" backLabel="Dashboard" />
-
             <AdminHero
                 eyebrow="Administrasjon"
                 title="Brukeradministrasjon"

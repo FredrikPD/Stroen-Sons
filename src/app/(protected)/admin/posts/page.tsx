@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { getPosts } from "@/server/actions/posts";
 import { DeletePostButton } from "./_components/DeletePostButton";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
 import { AdminPageHeader, AdminEmptyState, btnPrimary, card, SERIF } from "@/components/admin/ui";
@@ -20,7 +19,6 @@ export default async function AdminPostsPage() {
 
     return (
         <div className="space-y-8 pb-12">
-            <SetHeader backHref="/admin/dashboard" backLabel="Dashboard" />
             {/* Header */}
             <AdminPageHeader
                 eyebrow="Innhold"

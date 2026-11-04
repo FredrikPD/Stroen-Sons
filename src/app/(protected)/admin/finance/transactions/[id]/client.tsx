@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getTransactionDetails } from "@/server/actions/finance";
 import { useRouter } from "next/navigation";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Avatar } from "@/components/Avatar";
 import { SERIF, card, seeAllLink } from "@/components/admin/ui";
@@ -31,10 +30,6 @@ export default function TransactionDetailPage({ id }: { id: string }) {
     if (loading) {
         return (
             <div className="max-w-4xl mx-auto space-y-8">
-                <SetHeader
-                    backHref="/admin/finance/transactions"
-                    backLabel="Transaksjonshistorikk"
-                />
                 <LoadingState className="min-h-[60vh] px-4" />
             </div>
         );
@@ -80,11 +75,6 @@ export default function TransactionDetailPage({ id }: { id: string }) {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <SetHeader
-                backHref="/admin/finance/transactions"
-                backLabel="Transaksjonshistorikk"
-            />
-
             {/* Header Card */}
             <div className={`${card} p-8`}>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">

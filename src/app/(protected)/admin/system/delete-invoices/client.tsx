@@ -124,7 +124,7 @@ export default function InvoiceDeleteClient({ members }: Props) {
 
     return (
         <div className="space-y-6">
-            <PageTitleUpdater title="Slett Fakturaer" backHref="/admin/system" backLabel="System" />
+            <PageTitleUpdater title="Slett Fakturaer" />
 
             {/* Header */}
             <div>

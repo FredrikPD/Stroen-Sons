@@ -1,7 +1,6 @@
 import { getRecentEvents, getRecentPhotos } from "@/server/actions/admin-photos";
 import Link from "next/link";
 import { PhotoManager } from "@/components/admin/photo-manager";
-import { SetHeader } from "@/components/layout/SetHeader";
 
 interface PageProps {
     searchParams: Promise<{ eventId?: string }>;
@@ -29,7 +28,6 @@ export default async function AdminPhotosPage(props: PageProps) {
 
     return (
         <div className="space-y-6">
-            <SetHeader backHref="/admin/dashboard" backLabel="Dashboard" />
             <PhotoManager initialEvents={events} initialPhotos={photos} settings={settings} />
         </div>
     );

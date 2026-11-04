@@ -82,7 +82,7 @@ export default async function PostDetailPage({ params }: PageProps) {
 
     return (
         <div className="max-w-4xl mx-auto pb-16">
-            <PageTitleUpdater title={post.title} backHref="/posts" backLabel="Nyheter" />
+            <PageTitleUpdater title={post.title} />
 
             <article className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 lg:p-10">
 

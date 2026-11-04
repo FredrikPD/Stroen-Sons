@@ -238,7 +238,7 @@ export default function InvoiceDetailPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div className="flex justify-between items-center">
-                    <PageTitleUpdater title={displayTitle} backHref="/admin/finance/invoices" backLabel="Fakturaer" />
+                    <PageTitleUpdater title={displayTitle} />
                 </div>
             </div>
 

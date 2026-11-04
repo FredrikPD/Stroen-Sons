@@ -2,7 +2,6 @@ import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
 import { getInvitations } from "@/server/actions/invitations";
 import InvitationsClientPage from "./client";
-import { SetHeader } from "@/components/layout/SetHeader";
 
 export const metadata = {
     title: "Invitasjoner",
@@ -28,7 +27,6 @@ export default async function InvitationsPage() {
 
     return (
         <>
-            <SetHeader backHref="/admin/users" backLabel="Brukere" />
             <InvitationsClientPage
                 initialInvitations={invitationsData}
                 initialError={errorData}

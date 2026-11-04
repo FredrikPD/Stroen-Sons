@@ -86,7 +86,7 @@ export default function FinancialReportsPage() {
 
     return (
         <div className="space-y-6">
-            <PageTitleUpdater title="Regnskap og Rapporter" backHref="/admin/finance" backLabel="Økonomi" />
+            <PageTitleUpdater title="Regnskap og Rapporter" />
 
             <div className={`${card} p-8`}>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">

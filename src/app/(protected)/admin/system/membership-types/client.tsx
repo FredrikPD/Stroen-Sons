@@ -69,7 +69,7 @@ export default function MembershipTypesClient({ initialTypes }: { initialTypes: 
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 pb-20 animate-in fade-in duration-500">
-            <PageTitleUpdater title="Medlemstyper" backHref="/admin/system" backLabel="System" />
+            <PageTitleUpdater title="Medlemstyper" />
 
             <AdminPageHeader
                 eyebrow="Medlemspleie"

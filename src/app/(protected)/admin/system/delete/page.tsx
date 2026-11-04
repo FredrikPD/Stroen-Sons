@@ -1,6 +1,5 @@
 import { db, ACTIVE_MEMBER_FILTER } from "@/server/db";
 import DeleteUserClient from "./delete-user-client";
-import { SetHeader } from "@/components/layout/SetHeader";
 import { ensureRole } from "@/server/auth/ensureRole";
 import { Role } from "@prisma/client";
 import { AdminPageHeader } from "@/components/admin/ui";
@@ -42,7 +41,6 @@ export default async function DeleteUserPage() {
 
     return (
         <div className="min-h-[80vh] flex flex-col p-4">
-            <SetHeader backHref="/admin/users" backLabel="Brukere" />
             <AdminPageHeader
                 eyebrow="System"
                 title="Slett Medlem"

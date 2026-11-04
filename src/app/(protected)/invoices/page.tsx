@@ -124,7 +124,7 @@ export default async function AllInvoicesPage() {
 
     return (
         <div className="flex flex-col gap-8 min-w-0 overflow-x-hidden pb-20">
-            <PageTitleUpdater title="Mine Fakturaer" backHref="/balance" backLabel="Saldo & Økonomi" />
+            <PageTitleUpdater title="Mine Fakturaer" />
 
             {/* ── Page Header ─────────────────────────────────────────── */}
             <div className="flex items-end justify-between gap-4 pt-1">

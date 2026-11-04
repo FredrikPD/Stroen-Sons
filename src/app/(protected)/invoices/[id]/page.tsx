@@ -55,11 +55,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
     return (
         <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
-            <PageTitleUpdater
-                title={invoice.title}
-                backHref="/balance"
-                backLabel="Saldo & Økonomi"
-            />
+            <PageTitleUpdater title={invoice.title} />
 
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                 {/* Header Status Bar */}
