@@ -104,7 +104,7 @@ export function EventHero({ event, color, isAttending }: { event: EventListItem;
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-[13px] text-gray-400">
                     <span className="inline-flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px] text-gray-500">calendar_today</span>
-                        {event.isTba ? "Tidspunkt annonseres" : `${dateCap} · kl. ${time24}`}
+                        {dateCap} · kl. {time24}
                     </span>
                     {(event.location || event.isTba) && (
                         <span className="inline-flex items-center gap-2">

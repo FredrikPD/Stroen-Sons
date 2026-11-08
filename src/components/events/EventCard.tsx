@@ -83,7 +83,7 @@ export function UpcomingEventRow({
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-400">
                     <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <span className="material-symbols-outlined text-[13px]">schedule</span>
-                        {event.isTba ? "TBA" : `kl. ${time}`}
+                        kl. {time}
                     </span>
                     {(event.location || event.isTba) && (
                         <span className="inline-flex items-center gap-1 min-w-0">
